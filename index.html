@@ -1610,30 +1610,93 @@ function goalPoint(g) {
   }
   return null;
 }
-function renderGuide() {
-  if (S.showGuide === false || dlg || menu || mode !== 'play') return;
-  const g = navGoal(), pt = goalPoint(g);
-  if (!pt) return;
-  const tx = pt.x * T + 8 - cam.x, ty = pt.y * T + 8 - cam.y, px = P.px + 8 - cam.x, py = P.py + 8 - cam.y;
-  const top = HUD_H + 4, bot = UB - 30, left = 6, right = GW - 6;
-  if (tx > left && tx < right && ty > top && ty < bot) {
-    if (Math.abs(pt.x - P.tx) + Math.abs(pt.y - P.ty) <= 1) return;
-    const b = Math.round(Math.sin(frame / 8) * 2), ax = Math.round(tx), ay = Math.round(ty - 20 + b);
-    for (let i = 0; i < 4; i++) { R(ax - 4 + i, ay + i, 9 - i * 2, 1, 3); }
-    R(ax - 2, ay - 3, 5, 3, 3); R(ax - 1, ay - 2, 3, 2, 0); R(ax - 2, ay + 1, 5, 1, 0);
-    return;
+/* 任务指引：地上一串脚印通往目标（会绕开树和房子），人物身边一个大箭头，屏幕下方写着目标和还有几步 */
+let trail = null, trailT = 0;
+const walkable = (x, y) => { const t = tileAt(x, y); return !SOLID.has(t) || ((t === '*' || t === '&') && isDepleted(x, y)); };
+function findTrail(pt) {
+  const key = (x, y) => y * 1000 + x, prev = new Map([[key(P.tx, P.ty), -1]]), q = [[P.tx, P.ty]];
+  const goalAdj = !walkable(pt.x, pt.y) || npcAt(pt.x, pt.y) || enemyAt(pt.x, pt.y);
+  let end = null;
+  while (q.length) {
+    const [x, y] = q.shift();
+    if (goalAdj ? Math.abs(x - pt.x) + Math.abs(y - pt.y) === 1 : (x === pt.x && y === pt.y)) { end = [x, y]; break; }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, k = key(nx, ny);
+      if (prev.has(k) || nx < 0 || ny < 0 || nx >= map.w || ny >= map.h || !walkable(nx, ny)) continue;
+      prev.set(k, key(x, y)); q.push([nx, ny]);
+    }
   }
-  const dx = tx - px, dy = ty - py, k = Math.min((right - left) / 2 / Math.max(1, Math.abs(dx)) * 0.92, (bot - top) / 2 / Math.max(1, Math.abs(dy)) * 0.92);
-  const cx = (left + right) / 2, cy = (top + bot) / 2;
-  const ex = clamp(cx + dx * k, left + 6, right - 6), ey = clamp(cy + dy * k, top + 6, bot - 6), a = Math.atan2(dy, dx);
-  if (frame % 40 > 32) return;
-  /* 实心三角箭头，尖端朝目标：深色描边、浅色填充 */
-  for (let r = 0; r <= 10; r++) { const hw = (10 - r) * 0.55; for (let w = -hw; w <= hw; w += 0.5) {
-    const xx = ex + Math.cos(a) * (r - 5) - Math.sin(a) * w, yy = ey + Math.sin(a) * (r - 5) + Math.cos(a) * w;
-    R(xx, yy, 1, 1, Math.abs(w) > hw - 1 || r === 0 || r >= 9 ? 3 : 0);
-  } }
-  if (pt.hop) { const lbl = `往${pt.hop}`, w2 = tw(lbl) + 4, lx = clamp(Math.round(ex - w2 / 2), 2, GW - w2 - 2), ly = clamp(Math.round(ey + (dy > 0 ? -21 : 8)), top, bot - 12); R(lx, ly, w2, 12, 3); txt(lbl, lx + 2, ly, 0); }
+  if (!end) return null;
+  const out = []; let k = key(end[0], end[1]);
+  while (k !== -1) { out.push([k % 1000, Math.floor(k / 1000)]); k = prev.get(k); }
+  return out.reverse();
 }
+/* 实心深色箭头 + 浅色描边：在草地、房子、水面上都看得清 */
+function arrowAt(cx, cy, a, len, half) {
+  const ca = Math.cos(a), sa = Math.sin(a);
+  const inside = (u, v, grow) => u >= -grow && u <= len + grow && Math.abs(v) <= (len - u) * half / len + grow * 1.6;
+  const x0 = Math.floor(cx - len - 3), x1 = Math.ceil(cx + len + 3), y0 = Math.floor(cy - len - 3), y1 = Math.ceil(cy + len + 3);
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const dx = x + 0.5 - cx, dy = y + 0.5 - cy, u = dx * ca + dy * sa + len / 2, v = -dx * sa + dy * ca;
+    if (inside(u, v, 0)) R(x, y, 1, 1, 3); else if (inside(u, v, 1.3)) R(x, y, 1, 1, 0);
+  }
+}
+function guideInfo() {
+  if (S.showGuide === false || mode !== 'play' || P.dead) return null;
+  const g = navGoal(), pt = goalPoint(g);
+  if (!g) return null;
+  if (pt && (--trailT <= 0 || !trail || trail.map !== map.id || trail.x !== pt.x || trail.y !== pt.y || trail.px !== P.tx || trail.py !== P.ty)) {
+    trailT = 20; const path = findTrail(pt);
+    trail = { map: map.id, x: pt.x, y: pt.y, px: P.tx, py: P.ty, path };
+  }
+  return { g, pt, path: pt && trail ? trail.path : null };
+}
+/* 在地面层画脚印（人物和怪物会盖在上面） */
+function renderTrail() {
+  if (dlg || menu) return;
+  const gi = guideInfo(); if (!gi || !gi.path) return;
+  const path = gi.path, n = path.length;
+  for (let i = 1; i < n; i++) {
+    const [x, y] = path[i], sx = x * T - cam.x, sy = y * T - cam.y;
+    if (sx < -T || sy < -T || sx > GW || sy > GH) continue;
+    const wave = (i * 4 - frame / 2) % 24, big = ((wave % 24) + 24) % 24 < 5;
+    const [px, py] = path[i - 1], dx = x - px, dy = y - py, ox = dy ? (i % 2 ? -2 : 2) : 0, oy = dx ? (i % 2 ? -2 : 2) : 0;
+    const fx2 = sx + 8 + ox - 1, fy2 = sy + 8 + oy - 1;
+    if (big) { R(fx2 - 1, fy2 - 1, 5, 5, 3); R(fx2, fy2, 3, 3, 0); }
+    else { R(fx2, fy2, 3, 3, 3); }
+  }
+  /* 终点：一圈闪动的方框 */
+  const [ex, ey] = path[n - 1], tsx = gi.pt.x * T - cam.x, tsy = gi.pt.y * T - cam.y;
+  if (n > 1 && frame % 30 < 22) { const o = frame % 30 < 11 ? 0 : 1; R(tsx - o, tsy - o, 16 + o * 2, 2, 3); R(tsx - o, tsy + 14 + o, 16 + o * 2, 2, 3); R(tsx - o, tsy - o, 2, 16 + o * 2, 3); R(tsx + 14 + o, tsy - o, 2, 16 + o * 2, 3); }
+}
+let guideShown = false;
+function renderGuide() {
+  guideShown = false;
+  if (dlg || menu) return;
+  const gi = guideInfo(); if (!gi) return;
+  guideShown = true;
+  const { g, pt, path } = gi;
+  const px = P.px + 8 - cam.x, py = P.py + 8 - cam.y;
+  let steps = null, a = null;
+  if (path && path.length > 1) {
+    steps = path.length - 1;
+    const [ax, ay] = path[Math.min(path.length - 1, 4)];
+    a = Math.atan2(ay * T + 8 - cam.y - py, ax * T + 8 - cam.x - px);
+  } else if (pt) { const d = Math.abs(pt.x - P.tx) + Math.abs(pt.y - P.ty); if (d > 1) { a = Math.atan2(pt.y * T - P.py, pt.x * T - P.px); steps = d; } else steps = 0; }
+  /* 人物身边的大箭头，指着下一段路的方向 */
+  if (a != null && steps > 1 && !P.sit) {
+    const bob = Math.sin(frame / 6) * 1.5;
+    const ry = Math.sin(a) < -0.4 ? 34 : 17; /* 朝上时绕过头顶的名字 */
+    arrowAt(px + Math.cos(a) * (20 + bob), py + 2 + Math.sin(a) * (ry + bob), a, 12, 6.5);
+  }
+  /* 目标栏 */
+  const where = pt && pt.hop ? `往${pt.hop}` : null;
+  const lbl = `目标 ${g.text}${where ? ` · ${where}` : ''}${steps ? ` · ${steps}步` : steps === 0 ? ' · 就在旁边' : ''}`;
+  const w = Math.min(GW - 8, tw(lbl) + 8), x = Math.round((GW - w) / 2), y = UB - 15;
+  R(x, y, w, 13, 3); R(x + 1, y + 1, w - 2, 11, 0);
+  g_clip(x + 2, y, w - 4, 13, () => txt(lbl, x + 4, y + 1, 3));
+}
+function g_clip(x, y, w, h, fn) { g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); fn(); g.restore(); }
 /* 江湖地图页：各地方的位置、相互连通，当前所在和目标所在 */
 const MAP_NODES = { songshan: [80, 38], taohua: [134, 38], emei: [24, 60], xiangyang: [46, 82], village: [80, 60], wild: [124, 60], meadow: [80, 104], forest: [124, 82], heimuya: [124, 104] };
 function renderWorldMap() {
@@ -2358,7 +2421,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v17', 156, 0, 2, 'right');
+  txt('v18', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -3006,7 +3069,9 @@ function renderWorld() {
   const mw = map.w * T, mh = map.h * T;
   const VH = UB - HUD_H;
   let cx = Math.round(P.px + 8 - GW / 2), cy = Math.round(P.py + 8 - HUD_H - VH / 2);
-  cx = mw <= GW ? Math.round((mw - GW) / 2) : clamp(cx, 0, mw - GW);
+  /* 横屏时两侧有按键，镜头允许越过地图边缘一些，人物不会躲到按键底下 */
+  const mx = GW > GH * 1.4 ? Math.round(GW * 0.22) : 0;
+  cx = mw + mx * 2 <= GW ? Math.round((mw - GW) / 2) : clamp(cx, -mx, mw - GW + mx);
   cy = mh <= VH ? Math.round(-HUD_H - (VH - mh) / 2) : clamp(cy, -HUD_H, mh - UB);
   if (shake) { cx += rnd(-1, 1); cy += rnd(-1, 1); }
   cam.x = cx; cam.y = cy;
@@ -3024,6 +3089,7 @@ function renderWorld() {
     const s2 = ph < 6 || ph > 20 ? 1 : 2, gx = x * T - cx + 13, gy = y * T - cy + 1;
     R(gx, gy - s2, 1, s2 * 2 + 1, 3); R(gx - s2, gy, s2 * 2 + 1, 1, 3); R(gx, gy, 1, 1, 0);
   }
+  renderTrail();
   for (const b of map.buildings || []) {
     const bx = b.x * T - cx, by = b.y * T - cy;
     if (bx > -b.w * T - 10 && bx < GW + 10 && by > -b.h * T - 10 && by < GH + 10) drawBuilding(b, bx, by);
@@ -3171,7 +3237,7 @@ function renderUI() {
   }
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   if (!dlg && !menu) toasts.slice(-2).reverse().forEach((t, i) => {
-    const w = Math.min(158, tw(t.text) + 8), y = 131 - i * 13;
+    const w = Math.min(158, tw(t.text) + 8), y = 131 - (guideShown ? 15 : 0) - i * 13;
     R(80 - w / 2, y, w, 12, 3); txt(t.text, 80, y + 1, 0, 'center');
   });
   if (dlg) renderDialog();
