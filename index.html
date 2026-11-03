@@ -86,8 +86,8 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 .chatbar button{font:700 14px/1 var(--sans);padding:0 10px;border:2px solid var(--gb0);background:var(--gb2);color:var(--gb0);border-radius:0;cursor:pointer}
 .chatbar button.main{background:var(--gb0);color:var(--gb3)}
 #savecode{font:500 11px/1.35 ui-monospace,Menlo,monospace;color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:6px 8px;width:100%;height:120px;box-sizing:border-box;resize:none;word-break:break-all;-webkit-user-select:text;user-select:text;border-radius:0}
-@media (orientation:landscape){
-  .ctl{top:0;align-items:end;padding-block:0 max(8px,env(safe-area-inset-bottom,0px))}
+/* 只有横屏布局 */
+.ctl{top:0;align-items:end;padding-block:0 max(8px,env(safe-area-inset-bottom,0px))}
   .ab{padding-bottom:2px}
   .dpad{grid-row:1/3}
   .ab{grid-row:1/3}
@@ -95,14 +95,11 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .smalls .small{pointer-events:auto;flex-direction:row}
   .sgrp{gap:10px;pointer-events:none}
   .small button{width:64px;height:28px}
-  .rotate{display:none !important}
-}
-.rotate{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--gb3);color:var(--gb0);font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
-.rotate[hidden]{display:none}
+.rotate{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--gb3);color:var(--gb0);font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
+@media (orientation:portrait){.rotate{display:flex}}
 .rotate .ph{width:54px;height:90px;border:4px solid var(--gb0);border-radius:10px;animation:rot 2.4s ease-in-out infinite}
 @keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 .rotate small{font-weight:500;font-size:13px;color:var(--gb1)}
-.rotate button{font:700 14px/1 var(--sans);padding:10px 18px;border:3px solid var(--gb0);background:transparent;color:var(--gb0);border-radius:0;cursor:pointer}
 </style>
 
 <div class="game" id="game">
@@ -124,7 +121,7 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
       <div class="nb-row"><button type="button" id="sbclose">关闭</button><button type="button" class="main" id="sbok">复制</button></div>
     </div>
   </div>
-  <div class="rotate" id="rotate"><div class="ph"></div><div>请把手机横过来玩</div><small>横屏画面更宽，按键在两侧，双手握持更顺手。<br>iPhone 请先在控制中心关闭「竖排方向锁定」。</small><button type="button" id="rotok">仍用竖屏</button></div>
+  <div class="rotate" id="rotate"><div class="ph"></div><div>请把手机横过来玩</div><small>本游戏只支持横屏。<br>iPhone 请先在控制中心关闭「竖排方向锁定」。</small></div>
   <div class="namebox" id="authbox" hidden>
     <form class="nb-card" id="authform" autocomplete="on">
       <div class="nb-title" id="authtitle">登录江湖</div>
@@ -343,18 +340,15 @@ function resize() {
   world.width = GW; world.height = GH; g.imageSmoothingEnabled = false;
   screen.width = GW * SCALE; screen.height = GH * SCALE;
   UX = Math.floor((GW - 160) / 2);
-  if (W > H) UB = GH - 3;
-  else {
-    const top = Math.min(...[...ctlEl.querySelectorAll('.dpad,.ab,.smalls')].map(el => el.getBoundingClientRect().top)) - gameEl.getBoundingClientRect().top;
-    UB = clamp(Math.floor(top / sc0) - 2, 144, GH);
-  }
+  UB = GH - 3;
   buildGrid();
 }
 addEventListener('resize', resize);
-/* 竖屏提示：选过“仍用竖屏”就不再提示 */
+/* 只支持横屏：竖着拿手机时盖一层“请横过来”的提示 */
 const rotEl = document.getElementById('rotate');
-try { if (localStorage.getItem('jianghu-portrait') === '1') rotEl.hidden = true; } catch (e) {}
-document.getElementById('rotok').addEventListener('click', () => { rotEl.hidden = true; try { localStorage.setItem('jianghu-portrait', '1'); } catch (e) {} });
+/* 安卓等支持的浏览器：全屏后锁定横屏 */
+function lockLandscape() { try { const o = window.screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) {} }
+lockLandscape(); window.addEventListener('pointerdown', lockLandscape, { once: true });
 setPalette(palIdx); resize();
 
 /* ---------------- data ---------------- */
@@ -2899,7 +2893,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v23', 156, 0, 2, 'right');
+  txt('v24', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
