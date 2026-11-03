@@ -318,17 +318,24 @@ function setPad(d) {
   if (d) { press(d); arrows[d].classList.add('on'); }
 }
 const knob = document.getElementById('knob');
+/* 摇杆：手指落下的地方当作中心（按在边上的方向箭头时仍以摇杆中心为准），
+   离中心 16 像素以内不走；换方向要明显偏过去才换，斜着推不会上下左右乱跳 */
+let padO = null;
 function padPoint(e) {
-  const r = dpad.getBoundingClientRect();
-  let x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
-  const d = Math.hypot(x, y), max = r.width * 0.26;
-  const k = d > max ? max / d : 1;
+  const r = dpad.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  if (!padO) { const far = Math.hypot(e.clientX - cx, e.clientY - cy) > r.width * 0.28; padO = far ? { x: cx, y: cy } : { x: e.clientX, y: e.clientY }; }
+  const x = e.clientX - padO.x, y = e.clientY - padO.y;
+  const d = Math.hypot(x, y), max = r.width * 0.26, k = d > max ? max / d : 1;
   knob.style.transform = `translate(${x * k}px, ${y * k}px)`;
-  if (d < r.width * 0.12) return setPad(null);
-  setPad(Math.abs(x) > Math.abs(y) ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
+  if (d < (padDir ? 12 : 16)) return setPad(null);
+  const ax = Math.abs(x), ay = Math.abs(y);
+  let horiz = ax > ay;
+  if (padDir === 'left' || padDir === 'right') horiz = ax * 1.6 > ay;
+  else if (padDir === 'up' || padDir === 'down') horiz = ax > ay * 1.6;
+  setPad(horiz ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
 }
-function padEnd() { setPad(null); knob.style.transform = ''; dpad.classList.remove('active'); }
-dpad.addEventListener('pointerdown', e => { e.preventDefault(); try { dpad.setPointerCapture(e.pointerId); } catch (_) {} dpad.classList.add('active'); padPoint(e); });
+function padEnd() { setPad(null); padO = null; knob.style.transform = ''; dpad.classList.remove('active'); }
+dpad.addEventListener('pointerdown', e => { e.preventDefault(); try { dpad.setPointerCapture(e.pointerId); } catch (_) {} dpad.classList.add('active'); padO = null; padPoint(e); });
 dpad.addEventListener('pointermove', e => { if (dpad.classList.contains('active')) padPoint(e); });
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => dpad.addEventListener(n, padEnd));
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -3096,7 +3103,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v26', 156, 0, 2, 'right');
+  txt('v27', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
