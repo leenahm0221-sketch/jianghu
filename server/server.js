@@ -176,6 +176,15 @@ function onMessage(c, m) {
       else for (const o of online.values()) o.send(msg);
       return;
     }
+    case 'insp': {
+      /* 查看别的玩家：只给看装备、武功、名望，不给看银两、行囊 */
+      let o = null; for (const x of online.values()) if (x.id === (m.id | 0)) o = x;
+      const sv = o && db.accounts[o.user] && db.accounts[o.user].save;
+      if (!o || !sv) return c.send({ t: 'insp', id: m.id | 0, card: null });
+      const skills = {}; for (const [k, v] of Object.entries(sv.skills || {})) if (typeof v === 'number') skills[k] = Math.round(v * 100) / 100;
+      const card = { age: sv.age | 0, sect: sv.sect || null, rep: sv.rep | 0, zheng: sv.zheng | 0, xie: sv.xie | 0, equip: sv.equip || {}, active: sv.active || null, passive: sv.passive || {}, skills };
+      return c.send({ t: 'insp', id: o.id, name: o.name, card });
+    }
     case 'who': return c.send({ t: 'who', n: online.size });
   }
 }
