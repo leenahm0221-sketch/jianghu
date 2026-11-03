@@ -18,7 +18,8 @@
 <style>
 :root{
   /* Layout: the game picture fills the whole screen; GB-style controls float over it */
-  --bg:#0f380f;
+  --bg:var(--gb3);
+  --gb0:#e8e8e0;--gb1:#a8a8a0;--gb2:#58585a;--gb3:#18181a;
   --pad:rgba(28,30,34,.62);
   --pad-on:rgba(28,30,34,.88);
   --btn:rgba(140,42,51,.66);
@@ -60,19 +61,20 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
 .small button.on{background:var(--pad-on)}
 button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 .namebox[hidden]{display:none}
-.namebox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,56,15,.55);z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.nb-card{background:#9bbc0f;border:4px solid #0f380f;box-shadow:0 0 0 3px #9bbc0f,0 0 0 6px #0f380f;padding:18px 16px;width:min(300px,100%);display:flex;flex-direction:column;gap:12px;font:700 15px/1.3 var(--sans);color:#0f380f}
+.namebox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.nb-card{background:var(--gb0);border:4px solid var(--gb3);box-shadow:0 0 0 3px var(--gb0),0 0 0 6px var(--gb3);padding:18px 16px;width:min(300px,100%);display:flex;flex-direction:column;gap:12px;font:700 15px/1.3 var(--sans);color:var(--gb3)}
 .nb-title{font-size:16px;letter-spacing:.06em}
-.nb-sub{font-weight:500;font-size:12px;color:#306230}
-#nameinput{font:700 20px/1.2 var(--sans);color:#0f380f;background:#8bac0f;border:3px solid #0f380f;padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text;border-radius:0}
-#nameinput:focus{outline:2px dashed #306230;outline-offset:2px}
+.nb-sub{font-weight:500;font-size:12px;color:var(--gb2)}
+#nameinput{font:700 20px/1.2 var(--sans);color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text;border-radius:0}
+#nameinput:focus{outline:2px dashed var(--gb2);outline-offset:2px}
 .nb-row{display:flex;gap:10px}
-.nb-row button{flex:1;font:700 15px/1 var(--sans);padding:11px 0;border:3px solid #0f380f;background:#8bac0f;color:#0f380f;cursor:pointer;border-radius:0}
-.nb-row button.main{background:#0f380f;color:#9bbc0f}
-.nb-err{min-height:14px;font-size:12px;color:#306230}
-#savecode{font:500 11px/1.35 ui-monospace,Menlo,monospace;color:#0f380f;background:#8bac0f;border:3px solid #0f380f;padding:6px 8px;width:100%;height:120px;box-sizing:border-box;resize:none;word-break:break-all;-webkit-user-select:text;user-select:text;border-radius:0}
+.nb-row button{flex:1;font:700 15px/1 var(--sans);padding:11px 0;border:3px solid var(--gb3);background:var(--gb1);color:var(--gb3);cursor:pointer;border-radius:0}
+.nb-row button.main{background:var(--gb3);color:var(--gb0)}
+.nb-err{min-height:14px;font-size:12px;color:var(--gb2)}
+#savecode{font:500 11px/1.35 ui-monospace,Menlo,monospace;color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:6px 8px;width:100%;height:120px;box-sizing:border-box;resize:none;word-break:break-all;-webkit-user-select:text;user-select:text;border-radius:0}
 @media (orientation:landscape){
-  .ctl{top:0;align-items:center;padding-block:0 10px}
+  .ctl{top:0;align-items:end;padding-block:0 max(8px,env(safe-area-inset-bottom,0px))}
+  .ab{padding-bottom:2px}
   .dpad{grid-row:1/3}
   .ab{grid-row:1/3}
   .smalls{grid-column:auto;grid-row:auto;position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));justify-content:space-between;pointer-events:none}
@@ -80,12 +82,12 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .small button{width:64px;height:28px}
   .rotate{display:none !important}
 }
-.rotate{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0f380f;color:#9bbc0f;font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
+.rotate{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--gb3);color:var(--gb0);font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
 .rotate[hidden]{display:none}
-.rotate .ph{width:54px;height:90px;border:4px solid #9bbc0f;border-radius:10px;animation:rot 2.4s ease-in-out infinite}
+.rotate .ph{width:54px;height:90px;border:4px solid var(--gb0);border-radius:10px;animation:rot 2.4s ease-in-out infinite}
 @keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
-.rotate small{font-weight:500;font-size:13px;color:#8bac0f}
-.rotate button{font:700 14px/1 var(--sans);padding:10px 18px;border:3px solid #9bbc0f;background:transparent;color:#9bbc0f;border-radius:0;cursor:pointer}
+.rotate small{font-weight:500;font-size:13px;color:var(--gb1)}
+.rotate button{font:700 14px/1 var(--sans);padding:10px 18px;border:3px solid var(--gb0);background:transparent;color:var(--gb0);border-radius:0;cursor:pointer}
 </style>
 
 <div class="game" id="game">
@@ -127,13 +129,14 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 'use strict';
 /* Palettes: real DMG pea-green LCD, the grey Pocket LCD, and a brighter backlit look */
 const PALETTES = [
+  { name: '黑白', c: ['#e8e8e0', '#a8a8a0', '#58585a', '#18181a'] },
   { name: '豆绿', c: ['#9bbc0f', '#8bac0f', '#306230', '#0f380f'] },
   { name: '口袋', c: ['#c4cfa1', '#8b956d', '#4d533c', '#1f1f1f'] },
   { name: '背光', c: ['#e0f8d0', '#88c070', '#346856', '#081820'] },
 ];
 let palIdx = 0;
-try { palIdx = clamp0(parseInt(localStorage.getItem('jianghu-pal') || '0', 10)); } catch (e) { palIdx = 0; }
-function clamp0(v) { return v >= 0 && v < 3 ? v : 0; }
+try { palIdx = clamp0(parseInt(localStorage.getItem('jianghu-pal2') || '0', 10)); } catch (e) { palIdx = 0; }
+function clamp0(v) { return v >= 0 && v < PALETTES.length ? v : 0; }
 let PAL = PALETTES[palIdx].c.slice();
 const T = 16;
 let GW = 160, GH = 144, UX = 0, UB = 144, SCALE = 4;
@@ -197,8 +200,8 @@ function wrap(s, maxW) {
 }
 function setPalette(i) {
   palIdx = i; PAL = PALETTES[i].c.slice(); glyphCache.clear(); buildGrid();
-  document.documentElement.style.setProperty('--gb0', PAL[0]);
-  try { localStorage.setItem('jianghu-pal', String(i)); } catch (e) {}
+  PAL.forEach((c, k) => document.documentElement.style.setProperty('--gb' + k, c));
+  try { localStorage.setItem('jianghu-pal2', String(i)); } catch (e) {}
 }
 /* LCD dot-matrix: thin light gaps between the big pixels, like the DMG panel */
 const grid = document.createElement('canvas');
@@ -2421,7 +2424,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v19', 156, 0, 2, 'right');
+  txt('v20', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -2714,6 +2717,110 @@ function drawBuilding(b, sx, sy) {
     return;
   }
   let wallTop, bot = H - 3;
+  const look = b.style !== 'hall' ? b.style : (BUILD_LOOK[b.kind] || 'hall');
+  /* 茅草屋：圆鼓鼓的草顶、土墙木框、小方窗、柴堆和篱笆 */
+  if (look === 'thatch') {
+    const top = 4, eave = 22;
+    for (let y = top; y < eave; y++) {
+      const t = (y - top) / (eave - top), ins = Math.round(14 * (1 - Math.sin(t * Math.PI / 2)) ) + 2;
+      r(ins, y, W - ins * 2, 1, y === top ? 3 : 1);
+      r(ins, y, 1, 1, 3); r(W - ins - 1, y, 1, 1, 3);
+      for (let x = ins + 2 + (y % 3); x < W - ins - 2; x += 5) r(x, y, 1, 2, 2);
+    }
+    for (let x = 1; x < W - 1; x += 3) r(x, eave, 2, 2 + ((x / 3) % 2), 2);
+    r(1, eave, W - 2, 1, 3);
+    r(cx - 10, 2, 20, 2, 3);
+    wallTop = eave + 2;
+    r(5, wallTop, W - 10, bot - wallTop, 3); r(6, wallTop, W - 12, bot - wallTop - 1, 1);
+    for (let y = wallTop + 3; y < bot - 2; y += 4) for (let x = 8 + (y % 8 ? 0 : 3); x < W - 8; x += 7) r(x, y, 2, 1, 2);
+    r(6, wallTop + 2, W - 12, 1, 3); [6, cx - 9, cx + 8, W - 9].forEach(x => r(x, wallTop, 3, bot - wallTop, 3));
+    const win = x => { r(x, wallTop + 5, 11, 9, 3); r(x + 1, wallTop + 6, 9, 7, 0); for (let i = x + 3; i < x + 10; i += 3) r(i, wallTop + 6, 1, 7, 3); };
+    win(12); win(W - 23);
+    r(cx - 6, bot - 14, 12, 14, 3); r(cx - 5, bot - 13, 10, 13, 2); r(cx - 5, bot - 9, 10, 1, 3); r(cx + 2, bot - 7, 1, 2, 0);
+    r(cx - 8, bot, 16, 2, 2);
+    for (let i = 0; i < 3; i++) { r(W - 6 - i * 0, bot - 3 - i * 3, 6, 3, 3); r(W - 5, bot - 2 - i * 3, 4, 1, 1); }
+    for (let x = 0; x < 5; x += 2) { r(x, bot - 7, 1, 9, 3); } r(0, bot - 5, 5, 1, 3); r(0, bot - 2, 5, 1, 3);
+    if (b.label) plaque(wallTop - 3, b.label);
+    return;
+  }
+  /* 店铺：短屋檐、布篷、敞开的柜台摆着货，铁匠铺有烟囱冒烟 */
+  if (look === 'shop') {
+    roof(0, 1, W, 13);
+    wallTop = 14;
+    r(3, wallTop, W - 6, bot - wallTop, 3); r(4, wallTop, W - 8, bot - wallTop - 1, 1);
+    pillars(wallTop, bot - wallTop, [3, W - 7]);
+    const aw = wallTop + 12;
+    r(2, aw, W - 4, 2, 3);
+    for (let x = 3; x < W - 3; x += 8) { r(x, aw + 2, 8, 5, 3); r(x + 1, aw + 2, 3, 4, 0); r(x + 4, aw + 2, 3, 4, 2); r(x + 1, aw + 6, 6, 1, 3); }
+    const ct = aw + 7;
+    r(7, ct, W - 14, bot - ct, 3); r(8, ct + 1, W - 16, bot - ct - 1, 2);
+    r(6, bot - 7, W - 12, 2, 3); r(7, bot - 5, W - 14, 5, 1);
+    for (let x = 9; x < W - 9; x += 4) r(x, bot - 4, 1, 4, 3);
+    if (b.kind === 'smith') {
+      r(W - 20, -6, 8, 14, 3); r(W - 19, -5, 6, 13, 2);
+      const sm = (frame / 10) % 12; r(W - 18 + Math.round(Math.sin(frame / 15) * 2), -10 - sm, 4, 3, 1); r(W - 19, -16 - sm / 2, 3, 2, 1);
+      for (let i = 0; i < 4; i++) { const x = 12 + i * 6; r(x, ct + 2, 1, 9, 0); r(x - 1, ct + 2, 3, 2, 0); }
+      r(W - 26, bot - 12, 14, 3, 3); r(W - 24, bot - 9, 10, 2, 3); r(W - 22, bot - 7, 6, 2, 3); r(W - 25, bot - 12, 12, 1, 0);
+      if (frame % 40 < 6) { r(W - 20, bot - 15, 1, 1, 0); r(W - 17, bot - 16, 1, 1, 0); r(W - 23, bot - 15, 1, 1, 0); }
+    } else if (b.kind === 'pharmacy') {
+      for (let j = 0; j < 2; j++) for (let i = 0; i < 6; i++) { const x = 10 + i * 10, y = ct + 2 + j * 6; if (x + 8 > W - 9) continue; r(x, y, 8, 5, 3); r(x + 1, y + 1, 6, 3, 1); r(x + 3, y + 2, 2, 1, 3); }
+      const gx = W - 12, gy = aw + 8; r(gx + 2, gy, 1, 3, 3); r(gx, gy + 3, 5, 4, 3); r(gx + 1, gy + 4, 3, 2, 0); r(gx - 1, gy + 7, 7, 7, 3); r(gx, gy + 8, 5, 5, 0); r(gx + 1, gy + 9, 1, 2, 1);
+    } else if (b.kind === 'cloth') {
+      for (let i = 0; i < 7; i++) { const x = 9 + i * 7; if (x + 5 > W - 8) break; r(x, ct + 1, 5, 12, 3); r(x + 1, ct + 1, 3, 11, i % 2 ? 0 : 1); if (i % 2) for (let y = ct + 3; y < ct + 12; y += 3) r(x + 1, y, 3, 1, 2); }
+    }
+    if (b.label) plaque(wallTop + 1, b.label);
+    return;
+  }
+  /* 大院门楼：一道高墙，中间是带小屋顶的门楼和大门，墙后露出正房屋脊 */
+  if (look === 'gate') {
+    roof(6, 1, W - 12, 13);
+    r(9, 14, W - 18, 4, 3); r(10, 14, W - 20, 3, 2);
+    const wt = 22;
+    r(0, wt, W, 3, 3); for (let x = 1; x < W - 1; x += 3) r(x, wt + 1, 2, 1, 2);
+    r(0, wt + 3, W, bot - wt - 3, 3); r(1, wt + 3, W - 2, bot - wt - 4, 0);
+    r(1, bot - 5, W - 2, 4, 1); for (let x = 2; x < W - 2; x += 6) r(x, bot - 5, 1, 4, 3);
+    const gw = 30, gx = cx - gw / 2;
+    roof(gx - 4, wt - 8, gw + 8, 11);
+    r(gx, wt + 3, gw, bot - wt - 3, 3); r(gx + 2, wt + 3, 2, bot - wt - 3, 2); r(gx + gw - 4, wt + 3, 2, bot - wt - 3, 2);
+    r(cx - 9, bot - 16, 18, 16, 3); r(cx - 8, bot - 15, 7, 15, 2); r(cx + 1, bot - 15, 7, 15, 2);
+    for (let y = bot - 13; y < bot - 1; y += 4) for (const x of [cx - 6, cx - 3, cx + 3, cx + 6]) r(x, y, 1, 1, 0);
+    r(cx - 11, bot, 22, 3, 3); r(cx - 10, bot + 1, 20, 1, 1);
+    r(cx - 15, bot - 5, 4, 5, 3); r(cx + 11, bot - 5, 4, 5, 3);
+    if (b.kind === 'escort') { flag(8, wt - 10, '镖'); flag(W - 4, wt - 10, '镖'); }
+    if (b.kind === 'school') { rack(4, wt + 6); rack(W - 20, wt + 6); }
+    if (b.kind === 'bank') { for (let j = 0; j < 9; j++) for (let i = 0; i < 9; i++) { const d = (i - 4) ** 2 + (j - 4) ** 2; if (d <= 18) r(8 + i, wt + 7 + j, 1, 1, d > 11 ? 3 : (Math.abs(i - 4) <= 1 && Math.abs(j - 4) <= 1) ? 3 : 1); } lattice(W - 22, wt + 6, 14, 10); }
+    if (b.label) plaque(wt - 1, b.label);
+    return;
+  }
+  /* 庙宇道观：红柱大殿，门前石阶和香炉 */
+  if (look === 'temple') {
+    roof(0, 1, W, 18);
+    r(3, 19, W - 6, 2, 3); for (let x = 6; x < W - 6; x += 6) r(x, 19, 2, 1, 1);
+    wallTop = 21;
+    r(3, wallTop, W - 6, bot - wallTop - 4, 3); r(4, wallTop, W - 8, bot - wallTop - 5, 1);
+    for (const x of [3, 16, cx - 9, cx + 6, W - 19, W - 6]) { r(x, wallTop, 3, bot - wallTop - 4, 3); r(x + 1, wallTop, 1, bot - wallTop - 4, 2); }
+    moon(cx - 30 < 6 ? 6 : 7, wallTop + 4); moon(W - 20, wallTop + 4);
+    r(cx - 7, bot - 17, 14, 13, 3); r(cx - 6, bot - 16, 5, 12, 2); r(cx + 1, bot - 16, 5, 12, 2);
+    for (let i = 0; i < 3; i++) { r(cx - 10 - i * 3, bot - 4 + i * 2, 20 + i * 6, 2, 3); r(cx - 9 - i * 3, bot - 4 + i * 2, 18 + i * 6, 1, i === 2 ? 1 : 0); }
+    const dx0 = 2; r(dx0 + 1, bot - 8, 9, 6, 3); r(dx0 + 2, bot - 7, 7, 3, 2); r(dx0, bot - 9, 11, 1, 3); r(dx0 + 2, bot - 2, 1, 2, 3); r(dx0 + 8, bot - 2, 1, 2, 3);
+    const sm = (frame / 8) % 10; r(dx0 + 5 + Math.round(Math.sin(frame / 12)), bot - 12 - sm, 1, 3, 2);
+    if (b.label) plaque(wallTop, b.label);
+    return;
+  }
+  /* 客栈：屋檐下一排小窗和栏杆，门口挂“客”字幌子和灯笼 */
+  if (look === 'inn') {
+    roof(0, 1, W, 14);
+    wallTop = 15;
+    r(3, wallTop, W - 6, bot - wallTop, 3); r(4, wallTop, W - 8, bot - wallTop - 1, 1);
+    for (let x = 6; x < W - 10; x += 12) { r(x, wallTop + 2, 9, 7, 3); r(x + 1, wallTop + 3, 7, 5, 0); r(x + 4, wallTop + 3, 1, 5, 3); }
+    r(2, wallTop + 11, W - 4, 2, 3); for (let x = 3; x < W - 3; x += 3) r(x, wallTop + 13, 1, 4, 3); r(2, wallTop + 17, W - 4, 1, 3);
+    pillars(wallTop + 18, bot - wallTop - 18, [4, W - 8]);
+    door(bot); base(bot);
+    lantern(14, wallTop + 18); lantern(W - 19, wallTop + 18);
+    flag(W - 2, wallTop - 6, '客');
+    if (b.label) plaque(wallTop + 18, b.label);
+    return;
+  }
   if (b.style === 'tall') {
     roof(4, 1, W - 8, 16);
     wall(7, 17, W - 14, 15);
@@ -2753,6 +2860,8 @@ function drawBuilding(b, sx, sy) {
   if (b.kind === 'pharmacy') { r(W - 16, wallTop, 1, 3, 3); r(W - 18, wallTop + 3, 5, 4, 3); r(W - 17, wallTop + 4, 3, 2, 1); r(W - 19, wallTop + 7, 7, 7, 3); r(W - 18, wallTop + 8, 5, 5, 1); r(W - 17, wallTop + 9, 1, 2, 0); }
   if (b.kind === 'hall') { r(cx - 4, bot + 3, 8, 1, 3); }
 }
+/* 没指定样式的房子按用途选外观 */
+const BUILD_LOOK = { chief: 'thatch', house: 'thatch', smith: 'shop', pharmacy: 'shop', cloth: 'shop', bank: 'gate', escort: 'gate', school: 'gate', temple: 'temple', nunnery: 'temple', inn: 'inn' };
 /* 人物：衣服、头戴、背上的兵器都按装备分别绘制 */
 const BODY = {
   buyi: { f: 0, belt: 2, pants: 2 },                                  // 粗布短衣：浅色上衣，深色裤
@@ -3148,6 +3257,7 @@ function renderNpcTags() {
     if (mark || n.icon) {
       const bob = mark ? ((frame >> 3) % 2) : 0;
       const bx = sx + 2, by = sy - 15 - bob;
+      if (by < HUD_H) continue;
       if (mark) {
         R(bx, by, 12, 12, 3); R(bx + 4, by + 12, 4, 1, 3); R(bx + 5, by + 13, 2, 1, 3);
         if (frame % 40 < 30) txt(mark, bx + 6, by, 0, 'center');
@@ -3159,7 +3269,7 @@ function renderNpcTags() {
     if (near && !dlg && !menu) {
       const label = `${n.name}·${n.role}`, w = tw(label) + 6;
       const below = P.ty > n.y;
-      const lx = Math.round(sx + 8 - w / 2), ly = below ? sy - 30 : sy + 17;
+      const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
       R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
     }
   }
