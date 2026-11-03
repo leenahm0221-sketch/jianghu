@@ -1,0 +1,9 @@
+{
+  "name": "jianghu-server",
+  "version": "1.0.0",
+  "description": "江湖少年 联网服务器（第 1 步：账号、云存档、同图看见彼此、聊天）",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
