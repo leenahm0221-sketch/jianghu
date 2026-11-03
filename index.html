@@ -1684,7 +1684,7 @@ function renderGuide() {
     a = Math.atan2(ay * T + 8 - cam.y - py, ax * T + 8 - cam.x - px);
   } else if (pt) { const d = Math.abs(pt.x - P.tx) + Math.abs(pt.y - P.ty); if (d > 1) { a = Math.atan2(pt.y * T - P.py, pt.x * T - P.px); steps = d; } else steps = 0; }
   /* 人物身边的大箭头，指着下一段路的方向 */
-  if (a != null && steps > 1 && !P.sit) {
+  if (false) { /* 人物旁的三角箭头已去掉，只用地上的点点导航 */
     const bob = Math.sin(frame / 6) * 1.5;
     const ry = Math.sin(a) < -0.4 ? 34 : 17; /* 朝上时绕过头顶的名字 */
     arrowAt(px + Math.cos(a) * (20 + bob), py + 2 + Math.sin(a) * (ry + bob), a, 12, 6.5);
@@ -2421,7 +2421,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v18', 156, 0, 2, 'right');
+  txt('v19', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
