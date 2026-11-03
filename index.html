@@ -22,10 +22,10 @@
   --gb0:#e8e8e0;--gb1:#a8a8a0;--gb2:#58585a;--gb3:#18181a;
   --pad:rgba(28,30,34,.62);
   --pad-on:rgba(28,30,34,.88);
-  --btn:rgba(140,42,51,.66);
-  --btn-on:rgba(140,42,51,.92);
-  --pill:rgba(110,108,100,.62);
-  --label:rgba(232,240,200,.85);
+  --btn:rgba(150,36,46,.9);
+  --btn-on:rgba(205,60,70,1);
+  --pill:rgba(18,18,20,.8);
+  --label:#fff;
   --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
   color-scheme: dark;
 }
@@ -40,8 +40,8 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
   display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;align-items:end;row-gap:10px;
 }
 .ctl > *{pointer-events:auto}
-.dpad{grid-column:1;grid-row:1;width:148px;height:148px;position:relative;touch-action:none;cursor:pointer;border-radius:50%;background:var(--pad);box-shadow:inset 0 0 0 2px rgba(255,255,255,.08)}
-.dpad i{position:absolute;z-index:1;width:0;height:0;border:8px solid transparent;opacity:.55}
+.dpad{grid-column:1;grid-row:1;width:148px;height:148px;position:relative;touch-action:none;cursor:pointer;border-radius:50%;background:var(--pad);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
+.dpad i{position:absolute;z-index:1;width:0;height:0;border:8px solid transparent;opacity:.9}
 .dpad i.u{left:66px;top:12px;border-bottom-color:#e6e6e6;border-top:0}
 .dpad i.d{left:66px;bottom:12px;border-top-color:#e6e6e6;border-bottom:0}
 .dpad i.l{top:66px;left:12px;border-right-color:#e6e6e6;border-left:0}
@@ -49,15 +49,16 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
 .dpad i.on{opacity:1}
 .knob{position:absolute;left:46px;top:46px;width:56px;height:56px;border-radius:50%;background:rgba(70,72,78,.85);box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),0 0 0 2px rgba(255,255,255,.12);pointer-events:none;transition:transform .06s}
 .dpad.active .knob{transition:none}
-.ab{grid-column:3;grid-row:1;display:flex;gap:14px;transform:rotate(-22deg);padding:0 4px 8px 0}
+.ab{grid-column:3;grid-row:1;display:flex;gap:16px;padding:0 4px 4px 0;align-items:flex-start}
 .btn{display:flex;flex-direction:column;align-items:center;gap:5px}
-.btn button{width:62px;height:62px;border-radius:50%;border:0;background:var(--btn);color:#f6e6e6;font:700 20px/1 var(--sans);touch-action:none;cursor:pointer}
+.btn button{width:66px;height:66px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:var(--btn);color:#fff;font:800 24px/1 var(--sans);touch-action:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.btn button small{font:700 11px/1 var(--sans);letter-spacing:0;pointer-events:none}
 .btn button.on{background:var(--btn-on)}
 .ab .btn:first-child{margin-top:28px}
-.btn span,.small span{font:700 10px/1 var(--sans);letter-spacing:.1em;color:var(--label);text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.btn span,.small span{display:none}
 .smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
 .sgrp{display:flex;gap:12px}
-.smalls .small button{width:58px;font:700 12px/1 var(--sans);color:var(--label);letter-spacing:.05em}
+.smalls .small button{width:62px;font:700 14px/1 var(--sans);color:var(--label);letter-spacing:.05em;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .small{display:flex;flex-direction:column;align-items:center;gap:5px}
 .small button{width:72px;height:30px;border-radius:15px;border:0;background:var(--pill);touch-action:none;cursor:pointer}
 .small button.on{background:var(--pad-on)}
@@ -94,9 +95,10 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .smalls{grid-column:auto;grid-row:auto;position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));justify-content:space-between;pointer-events:none}
   .smalls .small{pointer-events:auto;flex-direction:row}
   .sgrp{gap:10px;pointer-events:none}
-  .small button{width:64px;height:28px}
+  .small button{width:66px;height:30px}
 .rotate{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--gb3);color:var(--gb0);font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
 @media (orientation:portrait){.rotate{display:flex}}
+.game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
 .rotate .ph{width:54px;height:90px;border:4px solid var(--gb0);border-radius:10px;animation:rot 2.4s ease-in-out infinite}
 @keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 .rotate small{font-weight:500;font-size:13px;color:var(--gb1)}
@@ -145,8 +147,8 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   <div class="ctl" id="ctl">
     <div class="dpad" id="dpad" aria-label="方向键"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i><span class="knob" id="knob"></span></div>
     <div class="ab">
-      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B</button><span>打坐·返回</span></div>
-      <div class="btn"><button data-k="a" aria-label="A 攻击或确定">A</button><span>攻击·确定</span></div>
+      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B<small>打坐·返回</small></button><span>打坐·返回</span></div>
+      <div class="btn"><button data-k="a" aria-label="A 攻击或确定">A<small>攻击·确定</small></button><span>攻击·确定</span></div>
     </div>
     <div class="smalls">
       <div class="sgrp">
@@ -344,6 +346,15 @@ function resize() {
   buildGrid();
 }
 addEventListener('resize', resize);
+/* 大地图打开时：点上方「←」「→」换页，点其他地方返回 */
+let fullMapOn = false;
+screen.addEventListener('pointerdown', e => {
+  if (!fullMapOn || !menu) return;
+  const r = screen.getBoundingClientRect(), gx = (e.clientX - r.left) / r.width * GW, gy = (e.clientY - r.top) / r.height * GH;
+  if (gy < 16 && Math.abs(gx - GW / 2) < 70) menu.tab = (menu.tab + (gx < GW / 2 ? TABS.length - 1 : 1)) % TABS.length, menu.sel = 0;
+  else menu = null;
+  sfx('menu');
+});
 /* 只支持横屏：竖着拿手机时盖一层“请横过来”的提示 */
 const rotEl = document.getElementById('rotate');
 /* 安卓等支持的浏览器：全屏后锁定横屏 */
@@ -2005,29 +2016,58 @@ const MAP_NODES = { guangming: [0, 0], damo: [1, 0], caoyuan: [3, 0], pingding: 
   zhongnan: [0, 2], tongguan: [2, 2], songshan: [3, 2], luoyang: [4, 2], shudao: [0, 3], xiangyang: [2, 3], village: [3, 3], wild: [4, 3], yangzhou: [5, 3],
   emei: [0, 4], meadow: [3, 4], forest: [4, 4], hangzhou: [5, 4], taohua: [6, 4], jueqing: [0, 5] };
 const MAP_SHORT = { guangming: '光明', damo: '大漠', caoyuan: '草原', pingding: '平定', heimuya: '黑木', huashan: '华山', yanmen: '雁门', shanhai: '山海', zhongnan: '终南', tongguan: '潼关', songshan: '嵩山', luoyang: '洛阳', shudao: '蜀道', xiangyang: '襄阳', village: '牛村', wild: '伏牛', yangzhou: '扬州', emei: '峨眉', meadow: '兔坡', forest: '松林', hangzhou: '杭州', taohua: '桃花', jueqing: '绝情' };
-const nodeXY = id => { const [c, r] = MAP_NODES[id]; return [13 + c * 22, 38 + r * 14]; };
-function renderWorldMap() {
-  /* 阵营底色：上面一排邪派（深），左边一片正派（点阵） */
-  for (let y = 32; y < 46; y += 2) for (let x = 2 + (y % 4 ? 1 : 0); x < 158; x += 2) R(x, y, 1, 1, 2);
-  for (let y = 46; y < 114; y += 2) for (let x = 2 + (y % 4 ? 1 : 0); x < 47; x += 2) R(x, y, 1, 1, 1);
-  const seen = new Set();
-  for (const id in MAP_NODES) for (const l of mapLinks(id)) {
-    const key = [id, l.to].sort().join('-'); if (seen.has(key)) continue; seen.add(key);
-    const [x1, y1] = nodeXY(id), [x2, y2] = nodeXY(l.to), n = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
-    const ferry = FERRY[id] && FERRY[id].to === l.to;
-    for (let i = 0; i <= n; i++) if (!ferry || i % 4 < 2) R(x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n, 2, 2, 3);
-  }
-  const g = navGoal();
-  for (const id in MAP_NODES) {
-    const [x, y] = nodeXY(id), name = MAP_SHORT[id], w = tw(name) + 1, bx = Math.round(x - w / 2), by = y - 5;
-    const here = id === map.id, goal = g && g.map === id;
-    if (here) { R(bx - 1, by - 1, w + 2, 13, 3); txt(name, bx + 1, by, 0); }
-    else { R(bx, by, w, 11, 0); txt(name, bx + 1, by, 3); }
-    if (goal && frame % 40 < 28) { R(bx + w - 3, by - 4, 6, 7, 3); R(bx + w - 1, by - 3, 2, 3, 0); R(bx + w - 1, by + 1, 2, 1, 0); }
-  }
-  txt(g ? `目标：${g.text}` : '目标：暂无，随意闯荡', 4, 117, 3);
+/* 全屏地图：铺满整个屏幕，有框的地名、去目标的粗线、图例 */
+function mapRoute(from, to) {
+  const prev = { [from]: null }, q = [from];
+  while (q.length) { const c = q.shift(); if (c === to) break; for (const l of mapLinks(c)) if (!(l.to in prev)) { prev[l.to] = c; q.push(l.to); } }
+  const path = []; if (!(to in prev)) return path;
+  for (let c = to; c != null; c = prev[c]) path.unshift(c);
+  return path;
 }
-
+function mapLine(x1, y1, x2, y2, t, c, dash) {
+  const n = Math.ceil(Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1))), o = Math.floor(t / 2);
+  for (let i = 0; i <= n; i++) if (!dash || i % 5 < 3) R(Math.round(x1 + (x2 - x1) * i / n) - o, Math.round(y1 + (y2 - y1) * i / n) - o, t, t, c);
+}
+function renderWorldMap() {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  R(0, 0, GW, GH, 0);
+  /* 顶部：换页提示 */
+  const cx = Math.round(GW / 2), pv = TABS[(menu.tab + TABS.length - 1) % TABS.length], nx = TABS[(menu.tab + 1) % TABS.length];
+  R(cx - 25, 1, 50, 13, 3); txt('江湖地图', cx, 2, 0, 'center');
+  txt(`←${pv}`, cx - 30, 2, 2, 'right'); txt(`${nx}→`, cx + 30, 2, 2);
+  R(0, 15, GW, 1, 3);
+  /* 地点与道路 */
+  const top = 18, bot = GH - 25, m = 4, colW = (GW - 2 * m) / 7, rowH = (bot - top) / 6;
+  const XY = id => { const [c, r] = MAP_NODES[id]; return [Math.round(m + colW * (c + 0.5)), Math.round(top + rowH * (r + 0.5))]; };
+  const gl = navGoal(), route = gl ? mapRoute(map.id, gl.map) : [], onRoute = new Set();
+  for (let i = 1; i < route.length; i++) onRoute.add([route[i - 1], route[i]].sort().join('-'));
+  const seen = new Set(), edges = [];
+  for (const id in MAP_NODES) for (const l of mapLinks(id)) {
+    if (!MAP_NODES[l.to]) continue;
+    const key = [id, l.to].sort().join('-'); if (seen.has(key)) continue; seen.add(key);
+    edges.push({ a: id, b: l.to, hot: onRoute.has(key), ferry: !!(FERRY[id] && FERRY[id].to === l.to) });
+  }
+  edges.sort((p, q) => p.hot - q.hot);
+  for (const e of edges) { const [x1, y1] = XY(e.a), [x2, y2] = XY(e.b); mapLine(x1, y1, x2, y2, e.hot ? 3 : 1, e.hot ? 3 : 2, e.ferry); }
+  const blink = frame % 40 < 26;
+  for (const id in MAP_NODES) {
+    const [x, y] = XY(id), name = MAP_SHORT[id], w = tw(name) + 6, h = 12, bx = Math.round(x - w / 2), by = Math.round(y - h / 2);
+    if (id === map.id) { R(bx - 2, by - 2, w + 4, h + 4, 3); R(bx - 1, by - 1, w + 2, h + 2, 0); R(bx, by, w, h, 3); txt(name, bx + 3, by + 1, 0); }
+    else if (gl && gl.map === id) { R(bx - 1, by - 1, w + 2, h + 2, 3); R(bx, by, w, h, blink ? 1 : 0); txt(name, bx + 3, by + 1, 3); }
+    else { R(bx - 1, by - 1, w + 2, h + 2, 3); R(bx, by, w, h, 0); txt(name, bx + 3, by + 1, 3); }
+  }
+  /* 底部：所在、目标、图例 */
+  R(0, GH - 23, GW, 1, 3);
+  const info = `你在 ${MAPS[map.id].name}　　目标 ${gl ? gl.text : '暂无，随意闯荡'}${route.length > 1 ? `（还要走${route.length - 1}张地图）` : ''}`;
+  g_clip(0, GH - 22, GW, 12, () => txt(info, 4, GH - 21, 3));
+  let lx = 4; const ly = GH - 11;
+  const item = (draw, label) => { draw(lx, ly); lx += 14; txt(label, lx, ly, 2); lx += tw(label) + 10; };
+  item((x, y) => { R(x, y + 1, 11, 9, 3); R(x + 1, y + 2, 9, 7, 0); R(x + 2, y + 3, 7, 5, 3); }, '你在这里');
+  item((x, y) => { R(x, y + 1, 11, 9, 3); R(x + 1, y + 2, 9, 7, blink ? 1 : 0); }, '目标');
+  item((x, y) => mapLine(x, y + 5, x + 11, y + 5, 3, 3), '去目标的路');
+  item((x, y) => mapLine(x, y + 5, x + 11, y + 5, 1, 2, true), '坐船');
+  txt('点屏幕返回', GW - 4, ly, 2, 'right');
+}
 /* ---------------- dialog & menu ---------------- */
 function say(speaker, texts, onEnd) {
   const arr = Array.isArray(texts) ? texts : [texts];
@@ -2893,7 +2933,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v24', 156, 0, 2, 'right');
+  txt('v25', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -3835,6 +3875,7 @@ function renderUI() {
   g.setTransform(1, 0, 0, 1, UX, 0);
   renderHud();
   if (menu) renderMenu();
+  const fm = !!(menu && menu.tab === 5 && !menu.detail); if (fm !== fullMapOn) { fullMapOn = fm; gameEl.classList.toggle('fullmap', fm); }
   if (banner && !menu) {
     const w = tw(banner.text) + 18;
     box(80 - w / 2, HUD_H + 4, w, 17); txt(banner.text, 80, HUD_H + 7, 3, 'center');
@@ -3902,6 +3943,7 @@ function renderSkillDetail(k) {
   txt(sk.cat === '生产' ? 'B返回' : 'A运用此功　B返回', 80, 129, 2, 'center');
 }
 function renderMenu() {
+  if (menu.tab === 5 && !menu.detail) return renderWorldMap();
   box(0, 12, 160, 132);
   TABS.forEach((t, i) => {
     const x = 3 + i * 22;
@@ -3922,7 +3964,6 @@ function renderMenu() {
     const b = S.bounty;
     pair(112, '悬赏', b ? (b.cnt >= b.need ? '回镖局领赏' : `${EN[b.kind].name} ${b.cnt}/${b.need}`) : '无');
   } else if (menu.tab === 5) {
-    renderWorldMap();
   } else if (menu.tab === 4) {
     const pair = (y, a, av, b, bv) => { txt(a, 8, y, 2); txt(av, b ? 74 : 152, y, 3, 'right'); if (b) { txt(b, 84, y, 2); txt(bv, 152, y, 3, 'right'); } };
     const c = campOf();
