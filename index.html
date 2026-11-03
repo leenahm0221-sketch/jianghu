@@ -2445,10 +2445,15 @@ function pathStep(e) {
   while (prev[key(...c)] && !(prev[key(...c)][0] === P.tx && prev[key(...c)][1] === P.ty)) c = prev[key(...c)];
   return [c[0] - P.tx, c[1] - P.ty];
 }
+/* 怪物只在窝边这么远内追人；人追怪也只追这么远，打架就地解决，不满地图跑 */
+const LEASH = 5, CHASE = 4;
 function autoFight() {
   let e = P.target;
-  if (!e || e.dead || distTo(e) > VIEW_R() + 4) { e = P.target = nearestEnemy(1, { passive: true }); if (!e) return; }
-  if (inReach(e)) { faceTo(e); if (P.atkCD <= 0) attack(); return; }
+  if (e && !e.dead && distTo(e) > CHASE) { P.target = null; P.waitT = 0; toast(`${e.name || EN[e.kind].name}跑远了`); return; }
+  if (!e || e.dead) { e = P.target = nearestEnemy(1, { passive: true }); P.waitT = 0; if (!e) return; }
+  if (inReach(e)) { P.waitT = 0; faceTo(e); if (P.atkCD <= 0) attack(); return; }
+  const d0 = EN[e.kind], comes = !d0.passive && !d0.dummy && (!d0.camp || campHostile(d0.camp) || e.provoked) && distTo(e) <= 2;
+  if (comes && (P.waitT = (P.waitT || 0) + 1) < 45) { faceTo(e); return; }
   const st = pathStep(e);
   if (st) { P.dir = dirOf(st[0], st[1]); P.tx += st[0]; P.ty += st[1]; P.moving = true; return; }
   const dx = e.tx - P.tx, dy = e.ty - P.ty;
@@ -2530,7 +2535,7 @@ function actA() {
   if ((t === '~' || t === 'i') && !nearestEnemy(4)) return startFish(fx_, fy);
   const front = enemyAt(fx_, fy);
   if (front) { P.target = front; P.sit = false; attack(); return; }
-  const e = nearestEnemy(VIEW_R(), { passive: true }) || nearestEnemy(1, { camp: true });
+  const e = nearestEnemy(CHASE, { passive: true }) || nearestEnemy(1, { camp: true });
   if (e) { P.target = e; P.sit = false; if (inReach(e)) { faceTo(e); attack(); } else autoFight(); return; }
   for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
     const m = npcAt(P.tx + ddx, P.ty + ddy);
@@ -2602,7 +2607,7 @@ function hurtEnemy(e, dmg, label) {
   const d = EN[e.kind];
   if (d.camp && !e.provoked) { e.provoked = true; if (!campHostile(d.camp)) toast(`你对${d.name}出手了！`); }
   if (!d.dummy) e.hp -= dmg;
-  e.hitT = 14; e.adj = true;
+  e.hitT = 14; e.adj = true; if (d.passive) e.flee = 1;
   floatText(e.px + 8, e.py, label || String(dmg));
   sfx('hit'); shake = d.dummy ? 1 : 3;
   if (e.hp <= 0) killEnemy(e);
@@ -2783,10 +2788,10 @@ function updEnemies() {
     if (--e.stepT > 0) continue;
     e.stepT = d.step + rnd(0, 6);
     let tries = [];
-    if (d.passive && e.adj && dist <= 4) {
-      tries = [[-Math.sign(dx), 0], [0, -Math.sign(dy)], [0, Math.random() < 0.5 ? 1 : -1], [Math.random() < 0.5 ? 1 : -1, 0]].filter(([a, b]) => a || b);
-      if (Math.random() < 0.4) tries = [];
-    } else if (!d.passive && !calmCamp && dist <= d.sight && !P.dead) {
+    if (d.passive && e.flee > 0 && dist <= 4) {
+      e.flee--;
+      tries = [[-Math.sign(dx), 0], [0, -Math.sign(dy)], [0, Math.random() < 0.5 ? 1 : -1], [Math.random() < 0.5 ? 1 : -1, 0]].filter(([a, b]) => (a || b) && Math.abs(e.tx + a - e.home.x) + Math.abs(e.ty + b - e.home.y) <= 2);
+    } else if (!d.passive && !calmCamp && dist <= d.sight && !P.dead && (d.boss || d.hunter || e.kind === 'hunter' || e.kind === 'pantu' || Math.abs(P.tx - e.home.x) + Math.abs(P.ty - e.home.y) <= LEASH)) {
       const ax = [Math.sign(dx), 0], ay = [0, Math.sign(dy)];
       tries = (Math.abs(dx) >= Math.abs(dy) ? [ax, ay] : [ay, ax]).filter(([a, b]) => a || b);
     } else {
@@ -3103,7 +3108,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v27', 156, 0, 2, 'right');
+  txt('v28', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
