@@ -90,6 +90,8 @@ function resize() {
   const dr = localRect(ctlEl.querySelector('.dpad')), ar = localRect(ctlEl.querySelector('.ab'));
   const cx = UX + 80, l = dr.right / sc0, r = ar.left / sc0;
   SAFE_W = Math.max(160, Math.min(GW - 8, Math.floor(2 * Math.min(cx - l, r - cx)) - 4));
+  /* 四个小键的高度跟着状态栏走，永远放在状态栏里面，不会突出来 */
+  gameEl.style.setProperty('--hudh', Math.floor(24 * sc0) + 'px'  /* 状态栏高24个游戏像素（HUD_H 在后面的文件里才定义，这里不能用） */);
   /* 状态栏两侧的空位不够并排放两个小键时，改成竖着排 */
   gameEl.classList.toggle('narrow', UX * sc0 < 175);
   buildGrid();

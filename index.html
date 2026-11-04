@@ -75,7 +75,7 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
 .small span{display:none}
 .smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
 .sgrp{display:flex;gap:12px}
-.smalls .small button{width:46px;height:46px;position:relative;padding:0;border:3px solid var(--gb3);border-radius:0;background:var(--gb1);font:800 12px/1.15 var(--sans);color:var(--gb3);letter-spacing:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 var(--gb2);display:flex;align-items:center;justify-content:center;text-align:center}
+.smalls .small button{width:46px;height:calc(var(--hudh, 64px) - 12px);position:relative;padding:0;border:3px solid var(--gb3);border-radius:0;background:var(--gb1);font:800 12px/1.15 var(--sans);color:var(--gb3);letter-spacing:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 var(--gb2);display:flex;align-items:center;justify-content:center;text-align:center}
 .small{display:flex;flex-direction:column;align-items:center}
 .smalls .small button.on{background:var(--gb2);color:var(--gb0);transform:translateY(2px);box-shadow:0 1px 0 var(--gb2)}
 button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
@@ -112,11 +112,13 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .smalls .small{pointer-events:auto;flex-direction:row}
   .sgrp{gap:10px;pointer-events:none}
 .game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
+/* 小键贴着状态栏顶上放，上下各留几个像素 */
+.game .smalls{top:4px}
 /* 画面窄（比如浏览器竖着拿、地址栏占了地方）时，两侧的小键改成上下两个一排，不压到状态栏 */
 .game.narrow .smalls{left:8px;right:8px}
 .game.narrow.rot .smalls{left:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-bottom,0px))}
 .game.narrow .sgrp{gap:4px}
-.game.narrow .smalls .small button{width:42px;height:42px;font-size:11px}
+.game.narrow .smalls .small button{width:42px;font-size:11px}
 </style>
 
 <div class="game" id="game">
@@ -428,6 +430,8 @@ function resize() {
   const dr = localRect(ctlEl.querySelector('.dpad')), ar = localRect(ctlEl.querySelector('.ab'));
   const cx = UX + 80, l = dr.right / sc0, r = ar.left / sc0;
   SAFE_W = Math.max(160, Math.min(GW - 8, Math.floor(2 * Math.min(cx - l, r - cx)) - 4));
+  /* 四个小键的高度跟着状态栏走，永远放在状态栏里面，不会突出来 */
+  gameEl.style.setProperty('--hudh', Math.floor(24 * sc0) + 'px'  /* 状态栏高24个游戏像素（HUD_H 在后面的文件里才定义，这里不能用） */);
   /* 状态栏两侧的空位不够并排放两个小键时，改成竖着排 */
   gameEl.classList.toggle('narrow', UX * sc0 < 175);
   buildGrid();
@@ -3730,7 +3734,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v43 加速' : 'v43', 156, 0, 2, 'right');
+  txt(FAST ? 'v44 加速' : 'v44', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
