@@ -199,9 +199,8 @@ function renderWorldMap() {
   g.setTransform(1, 0, 0, 1, 0, 0);
   R(0, 0, GW, GH, 0);
   /* 顶部：换页提示 */
-  const cx = Math.round(GW / 2), pv = TABS[(menu.tab + TABS.length - 1) % TABS.length], nx = TABS[(menu.tab + 1) % TABS.length];
+  const cx = Math.round(GW / 2);
   R(cx - 25, 1, 50, 13, 3); txt('江湖地图', cx, 2, 0, 'center');
-  txt(`←${pv}`, cx - 30, 2, 2, 'right'); txt(`${nx}→`, cx + 30, 2, 2);
   R(0, 15, GW, 1, 3);
   /* 地点与道路 */
   const top = 18, bot = GH - 25, m = 4, colW = (GW - 2 * m) / 7, rowH = (bot - top) / 6;

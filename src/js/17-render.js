@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v39 加速' : 'v39', 156, 0, 2, 'right');
+  txt(FAST ? 'v40 加速' : 'v40', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1013,7 +1013,7 @@ function renderHud() {
   bar(73, 3, 32, 6, S.st / maxST(), 0);
   txt('内', 108, 1, 0); bar(119, 3, 39, 6, S.mp / maxMP(), 1);
   /* 头臂腿三条伤势条铺满到右边的武功等级前面，中间不留空 */
-  const skl = P.sit ? '打坐中' : `${SK[S.active].short} ${lv(S.active).toFixed(2)}`, slot = Math.floor((158 - tw(skl) - 5 - 2) / 3), pw = slot - 14;
+  const xf_ = S.passive['心法'], skl = P.sit ? (xf_ ? `${SK[xf_].short || SK[xf_].name.slice(0, 2)} ${lv(xf_).toFixed(2)}` : '未学心法') : `${SK[S.active].short} ${lv(S.active).toFixed(2)}`, slot = Math.floor((158 - tw(skl) - 5 - 2) / 3), pw = slot - 14;
   ['head', 'arm', 'leg'].forEach((k, i) => {
     const x = 2 + i * slot, hurt = injured(k);
     if (!hurt || frame % 30 < 18) txt(PART_NAME[k], x, 12, hurt ? 1 : 0);
@@ -1194,9 +1194,9 @@ function renderMenu() {
   if (menu.page === 'heard') return renderHeard();
   if (menu.tab === 5 && !menu.detail) return renderWorldMap();
   box(0, 12, MW, 132);
-  TABS.forEach((t, i) => {
-    const tw_ = (MW - 6) / 7, x = Math.round(3 + i * tw_);
-    if (i === menu.tab) { R(x, 16, Math.round(tw_), 13, 3); txt(t, x + Math.round(tw_ / 2), 17, 0, 'center'); }
+  MENU_TABS.forEach((t, i) => {
+    const tw_ = (MW - 6) / MENU_TABS.length, x = Math.round(3 + i * tw_);
+    if (TABS[menu.tab] === t) { R(x, 16, Math.round(tw_), 13, 3); txt(t, x + Math.round(tw_ / 2), 17, 0, 'center'); }
     else txt(t, x + Math.round(tw_ / 2), 17, 2, 'center');
   });
   R(4, 30, MW - 8, 1, 3);

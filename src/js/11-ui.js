@@ -25,6 +25,8 @@ function updDialog() {
   }
 }
 const TABS = ['状态', '武功', '装备', '行囊', '江湖', '地图', '系统'];
+/* 菜单上显示的页：地图有自己的「地图」键，不放进菜单里左右翻 */
+const MENU_TABS = TABS.filter(t => t !== '地图');
 /* 武功三层：基础武功（谁都能练）→ 门派武功（只有门派武功受门派约束，叛出后最多 49.99）→ 特殊武功（秘籍、奇人所传，不受门派约束） */
 const KIND_ORDER = ['基础', '门派', '特殊', '生产'];
 const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier === 2 ? '特殊' : '基础'; };
@@ -119,8 +121,10 @@ function updMenu() {
   if (menu.tab === 4 && pressed.a) { menu.page = 'heard'; menu.sel = 0; sfx('menu'); return; }
   if (pressed.chat) { openChat(); return; }
   if (pressed.start || pressed.b || pressed.map) { menu = null; sfx('menu'); return; }
-  if (pressed.left) { menu.tab = (menu.tab + TABS.length - 1) % TABS.length; menu.sel = 0; menu.confirm = false; sfx('menu'); }
-  if (pressed.right) { menu.tab = (menu.tab + 1) % TABS.length; menu.sel = 0; menu.confirm = false; sfx('menu'); }
+  const step = d => { const i = MENU_TABS.indexOf(TABS[menu.tab]), n = MENU_TABS.length; menu.tab = TABS.indexOf(MENU_TABS[(Math.max(0, i) + d + n) % n]); menu.sel = 0; menu.confirm = false; sfx('menu'); };
+  if (menu.tab === TABS.indexOf('地图')) { if (pressed.a) { menu = null; sfx('menu'); } return; }  // 大地图：只看，不换页
+  if (pressed.left) step(-1);
+  if (pressed.right) step(1);
   const items = menuItems();
   if (menu.sel >= items.length) menu.sel = Math.max(0, items.length - 1);
   if (items.length) {

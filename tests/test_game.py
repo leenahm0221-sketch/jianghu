@@ -65,6 +65,28 @@ def 竖着拿手机也是横屏(b):
     g.close()
 
 @case
+def 转屏后画面不超出屏幕(b):
+    g = Game(b); g.new_game()
+    for w, h in [(390, 664), (844, 390), (390, 844), (664, 390)]:
+        g.pg.set_viewport_size({'width': w, 'height': h}); g.pg.wait_for_timeout(1200)
+        r = g.ev("(() => { const r = document.getElementById('game').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; })()")
+        assert r[0] >= -1 and r[1] >= -1 and r[2] <= w + 1 and r[3] <= h + 1, f'{w}×{h} 时画面超出屏幕：{r}'
+        a = g.ev("(() => { const r = document.querySelector('.ab').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; })()")
+        assert a[0] >= 0 and a[1] >= 0 and a[2] <= w and a[3] <= h, f'{w}×{h} 时 AB 键跑出屏幕：{a}'
+    g.close()
+
+@case
+def 菜单里没有地图页(b):
+    g = Game(b); g.new_game(); g.tap('start')
+    seen = set()
+    for _ in range(8):
+        seen.add(g.ev(f'{G}.menu && {G}.menu.tab')); g.tap('right')
+    assert 5 not in seen, '左右翻菜单还会翻到地图页'
+    g.tap('b'); g.tap('map'); g.pg.wait_for_timeout(150)
+    assert g.ev(f'{G}.menu && {G}.menu.tab') == 5, '地图键打不开大地图'
+    g.close()
+
+@case
 def 地图连通_出口_NPC_怪物都走得到(b):
     g = Game(b); g.new_game()
     bad = g.ev(f'''(() => {{

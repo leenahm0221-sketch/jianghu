@@ -67,10 +67,18 @@ function localRect(el) {
   const left = Math.min(a.x, b.x), top = Math.min(a.y, b.y), right = Math.max(a.x, b.x), bottom = Math.max(a.y, b.y);
   return { left, top, right, bottom, width: right - left, height: bottom - top };
 }
+/* 手机上真正看得到的区域：Safari 的地址栏、工具栏会变来变去，转屏后 innerWidth 有时还是旧的 */
+function viewSize() {
+  const v = window.visualViewport, de = document.documentElement;
+  const w = Math.round(v ? v.width * (v.scale || 1) : de.clientWidth || innerWidth), h = Math.round(v ? v.height * (v.scale || 1) : de.clientHeight || innerHeight);
+  return [w || innerWidth, h || innerHeight];
+}
+let lastView = '';
 function resize() {
-  ROT = innerHeight > innerWidth;
+  const [vw, vh] = viewSize(); lastView = vw + 'x' + vh;
+  ROT = vh > vw;
   gameEl.classList.toggle('rot', ROT);
-  Object.assign(gameEl.style, ROT ? { width: innerHeight + 'px', height: innerWidth + 'px', left: innerWidth + 'px' } : { width: '', height: '', left: '' });
+  Object.assign(gameEl.style, ROT ? { width: vh + 'px', height: vw + 'px', left: vw + 'px', top: '0px' } : { width: vw + 'px', height: vh + 'px', left: '0px', top: '0px', position: 'fixed' });
   const W = gameEl.clientWidth || innerWidth, H = gameEl.clientHeight || innerHeight;
   const sc0 = Math.min(W / 160, H / 144);
   GW = Math.max(160, Math.round(W / sc0)); GH = Math.max(144, Math.round(H / sc0));
@@ -87,7 +95,11 @@ function resize() {
   buildGrid();
 }
 addEventListener('resize', resize);
-/* 大地图打开时：点上方「←」「→」换页，点其他地方返回 */
+addEventListener('orientationchange', () => { resize(); setTimeout(resize, 300); setTimeout(resize, 900); });
+if (window.visualViewport) visualViewport.addEventListener('resize', resize);
+/* 保险：每半秒核对一次，屏幕尺寸变了就重新排版 */
+setInterval(() => { const [w, h] = viewSize(); if (w + 'x' + h !== lastView) resize(); }, 500);
+/* 大地图打开时：点屏幕任意处返回 */
 let fullMapOn = false;
 screen.addEventListener('pointerdown', e => {
   const pt = toLocal(e.clientX, e.clientY), gx = pt.x / gameEl.clientWidth * GW, gy = pt.y / gameEl.clientHeight * GH;
@@ -99,8 +111,7 @@ screen.addEventListener('pointerdown', e => {
     return;
   }
   if (!fullMapOn || !menu) return;
-  if (gy < 16 && Math.abs(gx - GW / 2) < 70) menu.tab = (menu.tab + (gx < GW / 2 ? TABS.length - 1 : 1)) % TABS.length, menu.sel = 0;
-  else menu = null;
+  menu = null;
   sfx('menu');
 });
 /* 安卓等支持的浏览器：全屏后锁定横屏 */
