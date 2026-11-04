@@ -59,6 +59,13 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
 .btn button small{font:700 11px/1 var(--sans);letter-spacing:0;pointer-events:none}
 .btn button.on{background:var(--btn-on)}
 .ab .btn:first-child{margin-top:28px}
+/* A 键上方的快捷药格：点一下服用，按住换下一种药 */
+.abtn{position:relative}
+.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);width:54px;height:46px;border-radius:8px;border:2px solid rgba(255,255,255,.75);background:rgba(18,18,20,.82);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.btn button.quick b{font:800 15px/1 var(--sans);pointer-events:none}
+.btn button.quick i{font:700 11px/1 var(--sans);font-style:normal;opacity:.85;pointer-events:none}
+.btn button.quick.empty{opacity:.45}
+.btn button.quick.on{background:rgba(70,72,78,.95)}
 .btn span,.small span{display:none}
 .smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
 .sgrp{display:flex;gap:12px}
@@ -146,7 +153,8 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
     <div class="dpad" id="dpad" aria-label="方向键"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i><span class="knob" id="knob"></span></div>
     <div class="ab">
       <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B<small>打坐·返回</small></button><span>打坐·返回</span></div>
-      <div class="btn"><button data-k="a" aria-label="A 攻击或确定">A<small>攻击·确定</small></button><span>攻击·确定</span></div>
+      <div class="btn abtn"><button data-k="a" aria-label="A 攻击或确定">A<small>攻击·确定</small></button><span>攻击·确定</span>
+        <button class="quick" id="quick" aria-label="快捷药：点一下服用，按住换药"><b id="qname">药</b><i id="qcnt">—</i></button></div>
     </div>
     <div class="smalls">
       <div class="sgrp">
@@ -423,6 +431,39 @@ function lockLandscape() { try { const o = window.screen.orientation; if (o && o
 lockLandscape(); window.addEventListener('pointerdown', lockLandscape, { once: true });
 setPalette(palIdx); resize();
 
+
+/* ---------- 快捷药格：点一下服用；按住半秒换成下一种药 ---------- */
+const QUICK_ORDER = ['baoming', 'yulu', 'baiyao', 'yao', 'duanxu', 'xugu', 'dieda', 'qidan', 'qingxin', 'ganliang', 'niurou', 'hongshao', 'kaoyu', 'yutang', 'zhurou', 'tourou', 'jiu'];
+const QUICK_SHORT = { baiyao: '白药', yulu: '玉露', duanxu: '断续', baoming: '保命', niurou: '牛肉', zhurou: '猪肉', hongshao: '鲤鱼', ganliang: '干粮' };
+const quickEl = document.getElementById('quick'), qName = document.getElementById('qname'), qCnt = document.getElementById('qcnt');
+const quickOwned = () => QUICK_ORDER.filter(k => S && (S.items[k] || 0) > 0);
+function quickPick() { if (!S) return null; if (!(S.items[S.quick] > 0)) S.quick = quickOwned()[0] || null; return S.quick; }
+function quickUse() {
+  if (!S || mode !== 'play' || P.dead || dlg || menu) return;
+  const k = quickPick(); if (!k) { toast('身上没有药，可以在药铺、货郎那里买'); return; }
+  if (ITEMS[k].use()) { S.items[k]--; save(); }
+}
+function quickNext() {
+  const own = quickOwned(); if (!own.length) { toast('身上没有药'); return; }
+  S.quick = own[(own.indexOf(quickPick()) + 1) % own.length]; sfx('menu'); toast(`快捷药：${ITEMS[S.quick].name}`);
+}
+let quickT = null, quickLong = false;
+quickEl.addEventListener('pointerdown', e => {
+  e.preventDefault(); audioInit(); try { quickEl.setPointerCapture(e.pointerId); } catch (_) {}
+  quickEl.classList.add('on'); quickLong = false;
+  quickT = setTimeout(() => { quickLong = true; quickNext(); }, 450);
+});
+const quickUp = () => { if (!quickEl.classList.contains('on')) return; quickEl.classList.remove('on'); clearTimeout(quickT); if (!quickLong) quickUse(); };
+quickEl.addEventListener('pointerup', quickUp);
+quickEl.addEventListener('pointercancel', () => { quickEl.classList.remove('on'); clearTimeout(quickT); });
+quickEl.addEventListener('contextmenu', e => e.preventDefault());
+addEventListener('keydown', e => { if (e.key === 'q' && !e.repeat && document.activeElement.tagName !== 'INPUT') quickUse(); });
+let quickShown = '';
+function quickRefresh() {
+  const k = S && mode === 'play' ? quickPick() : null, label = k ? `${QUICK_SHORT[k] || ITEMS[k].name.slice(0, 2)}|${S.items[k]}` : '药|—';
+  if (label === quickShown) return; quickShown = label;
+  const [a, b] = label.split('|'); qName.textContent = a; qCnt.textContent = k ? `×${b}` : '—'; quickEl.classList.toggle('empty', !k);
+}
 /* ---------------- data ---------------- */
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
@@ -3655,7 +3696,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v34', 156, 0, 2, 'right');
+  txt('v35', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4789,7 +4830,7 @@ let last = performance.now(), acc = 0;
 function loop(t) {
   acc += Math.min(100, t - last); last = t;
   while (acc >= 1000 / 60) { update(); netTick(); for (const k in pressed) pressed[k] = false; acc -= 1000 / 60; }
-  render(); musicTick();
+  render(); musicTick(); if (frame % 10 === 0) quickRefresh();
   requestAnimationFrame(loop);
 }
 function start(data) {

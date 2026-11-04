@@ -177,6 +177,18 @@ def 反派都在各自地点_掉独门秘籍(b):
     g.close()
 
 @case
+def A键上方快捷药格(b):
+    g = Game(b); g.new_game(); g.pg.wait_for_timeout(300)
+    g.ev(f'(() => {{ const S = {G}.S; S.items.yao = 3; S.items.qingxin = 2; S.hp = 10; }})()'); g.pg.wait_for_timeout(300)
+    assert '金创' in g.pg.inner_text('#quick'), g.pg.inner_text('#quick')
+    g.pg.click('#quick'); g.pg.wait_for_timeout(300)
+    assert g.ev(f'{G}.S.items.yao') == 2, '点快捷药没服药'
+    box = g.pg.locator('#quick').bounding_box(); g.pg.mouse.move(box['x'] + 10, box['y'] + 10); g.pg.mouse.down(); g.pg.wait_for_timeout(700); g.pg.mouse.up(); g.pg.wait_for_timeout(300)
+    assert '清心' in g.pg.inner_text('#quick'), '按住没换药：' + g.pg.inner_text('#quick')
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

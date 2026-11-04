@@ -3,7 +3,7 @@ let last = performance.now(), acc = 0;
 function loop(t) {
   acc += Math.min(100, t - last); last = t;
   while (acc >= 1000 / 60) { update(); netTick(); for (const k in pressed) pressed[k] = false; acc -= 1000 / 60; }
-  render(); musicTick();
+  render(); musicTick(); if (frame % 10 === 0) quickRefresh();
   requestAnimationFrame(loop);
 }
 function start(data) {

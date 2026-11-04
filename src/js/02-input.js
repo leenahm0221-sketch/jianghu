@@ -106,3 +106,36 @@ function lockLandscape() { try { const o = window.screen.orientation; if (o && o
 lockLandscape(); window.addEventListener('pointerdown', lockLandscape, { once: true });
 setPalette(palIdx); resize();
 
+
+/* ---------- 快捷药格：点一下服用；按住半秒换成下一种药 ---------- */
+const QUICK_ORDER = ['baoming', 'yulu', 'baiyao', 'yao', 'duanxu', 'xugu', 'dieda', 'qidan', 'qingxin', 'ganliang', 'niurou', 'hongshao', 'kaoyu', 'yutang', 'zhurou', 'tourou', 'jiu'];
+const QUICK_SHORT = { baiyao: '白药', yulu: '玉露', duanxu: '断续', baoming: '保命', niurou: '牛肉', zhurou: '猪肉', hongshao: '鲤鱼', ganliang: '干粮' };
+const quickEl = document.getElementById('quick'), qName = document.getElementById('qname'), qCnt = document.getElementById('qcnt');
+const quickOwned = () => QUICK_ORDER.filter(k => S && (S.items[k] || 0) > 0);
+function quickPick() { if (!S) return null; if (!(S.items[S.quick] > 0)) S.quick = quickOwned()[0] || null; return S.quick; }
+function quickUse() {
+  if (!S || mode !== 'play' || P.dead || dlg || menu) return;
+  const k = quickPick(); if (!k) { toast('身上没有药，可以在药铺、货郎那里买'); return; }
+  if (ITEMS[k].use()) { S.items[k]--; save(); }
+}
+function quickNext() {
+  const own = quickOwned(); if (!own.length) { toast('身上没有药'); return; }
+  S.quick = own[(own.indexOf(quickPick()) + 1) % own.length]; sfx('menu'); toast(`快捷药：${ITEMS[S.quick].name}`);
+}
+let quickT = null, quickLong = false;
+quickEl.addEventListener('pointerdown', e => {
+  e.preventDefault(); audioInit(); try { quickEl.setPointerCapture(e.pointerId); } catch (_) {}
+  quickEl.classList.add('on'); quickLong = false;
+  quickT = setTimeout(() => { quickLong = true; quickNext(); }, 450);
+});
+const quickUp = () => { if (!quickEl.classList.contains('on')) return; quickEl.classList.remove('on'); clearTimeout(quickT); if (!quickLong) quickUse(); };
+quickEl.addEventListener('pointerup', quickUp);
+quickEl.addEventListener('pointercancel', () => { quickEl.classList.remove('on'); clearTimeout(quickT); });
+quickEl.addEventListener('contextmenu', e => e.preventDefault());
+addEventListener('keydown', e => { if (e.key === 'q' && !e.repeat && document.activeElement.tagName !== 'INPUT') quickUse(); });
+let quickShown = '';
+function quickRefresh() {
+  const k = S && mode === 'play' ? quickPick() : null, label = k ? `${QUICK_SHORT[k] || ITEMS[k].name.slice(0, 2)}|${S.items[k]}` : '药|—';
+  if (label === quickShown) return; quickShown = label;
+  const [a, b] = label.split('|'); qName.textContent = a; qCnt.textContent = k ? `×${b}` : '—'; quickEl.classList.toggle('empty', !k);
+}
