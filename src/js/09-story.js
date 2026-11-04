@@ -44,7 +44,7 @@ function storyTalk(camp) {
 const CAMP_CITY = { 正: '襄阳的正派接引使', 邪: '平定州的邪派接引使', 中: '扬州的中立接引使' };
 const CAMP_NAME = { 正: '正派', 邪: '邪派', 中: '中立' };
 const SPECIAL_JOIN = {
-  quanzhen: { ok: () => lv('quanzhen') >= 10, need: () => `全真心法练到 10 级（现在 ${lv('quanzhen').toFixed(2)}）。心法由清虚道长先教：随便哪门武功练到 5 级去找他。`, where: '牛家村清虚观的清虚道长' },
+  quanzhen: { ok: () => lv('quanzhen') >= 10, need: () => `基础心法练到 10 级（现在 ${lv('quanzhen').toFixed(2)}）。心法由清虚道长先教：随便哪门武功练到 5 级去找他。`, where: '牛家村清虚观的清虚道长' },
   gaibang: { ok: () => (S.side.gaibang || 0) >= 1 && (S.items.tourou || 0) >= 5, need: () => '给鲁长老送 5 块兔肉，兔儿坡的野兔就有。', where: '牛家村池塘边的鲁长老' },
 };
 const sectOrder = camp => Object.keys(SECTS).sort((a, b) => (SECTS[a].camp !== camp) - (SECTS[b].camp !== camp));
@@ -599,7 +599,7 @@ function masterMenu(who, sect) {
 function taoTalk() {
   const who = '清虚道长';
   if (S.skills.quanzhen == null) {
-    if (bestAtk() >= 5) return say(who, ['你的功夫已有些火候，可惜空有招式，没有内劲。', '贫道传你全真心法。四下无人时按 B 打坐，便会运转心法。', '心法越深，内功越足，元气也越旺。'], () => { learn('quanzhen'); S.passive['心法'] = 'quanzhen'; save(); });
+    if (bestAtk() >= 5) return say(who, ['你的功夫已有些火候，可惜空有招式，没有内劲。', '贫道传你基础心法。四下无人时按 B 打坐，便会运转心法。', '心法越深，内功越足，元气也越旺。'], () => { learn('quanzhen'); S.passive['心法'] = 'quanzhen'; save(); });
     return say(who, ['年轻人，武功是一招一式练出来的。', `随便哪门拳脚兵器练到 5 级再来找我（现在最高 ${bestAtk().toFixed(2)}）。`]);
   }
   if (S.sect === 'quanzhen') return masterMenu(who, 'quanzhen');
@@ -621,7 +621,7 @@ function luTalk() {
 const KID_TIPS = [
   '打架时按一下 A 就行，会自己追着最近的敌人打！',
   '拿什么兵器就练什么武功：拳、剑、刀、枪、锤，五样都能练。',
-  '挨打能练铁布衫，走路能练草上飞，打坐能练心法！',
+  '挨打能练基础护体，走路能练基础步法，打坐能练心法！',
   '头、手臂、腿是分开受伤的。腿伤了跑不动，手伤了打不疼，头伤重了会昏过去！',
   '木人桩不会还手，可练到三十级就没用了，得去野外。',
   '鲁长老是丐帮的，他好像很爱吃兔肉。',

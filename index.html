@@ -511,11 +511,11 @@ const RV = [0.6, 0.8, 0.95, 1.05, 1.2, 1.4];
 const LOCS = ['身', '头', '手', '脚'];
 /* 攻击武功：spd 攻击速度、rec 回击速度（挨打后多快能还手）、eva 闪躲、acc 命中、atk 身头手脚四处攻击力 */
 const SK = {
-  changquan: { name: '太祖长拳', short: '长拳', cat: '拳', tier: 1, spd: 3, rec: 3, eva: 1, acc: 3, atk: [3, 1, 3, 1], move: '千斤坠', desc: '宋太祖所创，招式朴实平衡' },
-  huashan: { name: '华山剑法', short: '华山', cat: '剑', tier: 1, spd: 4, rec: 3, eva: 3, acc: 4, atk: [3, 4, 2, 1], move: '苍松迎客', desc: '华山入门剑法，轻快善刺头' },
-  wuhu: { name: '五虎断门刀', short: '断门', cat: '刀', tier: 1, spd: 2, rec: 1, eva: 1, acc: 2, atk: [4, 3, 4, 2], move: '猛虎下山', desc: '大开大合，刀刀见肉，收招慢' },
-  yangjia: { name: '杨家枪法', short: '杨家', cat: '枪', tier: 1, spd: 2, rec: 3, eva: 2, acc: 3, atk: [3, 2, 2, 4], reach: 2, move: '回马枪', desc: '杨家将枪法，远及两格善攻脚' },
-  kaishan: { name: '开山锤法', short: '开山', cat: '槌', tier: 1, spd: 1, rec: 1, eva: 0, acc: 1, atk: [5, 4, 3, 3], stun: 0.15, move: '力劈华山', desc: '一锤千钧，出手慢，常打晕人' },
+  changquan: { name: '基础拳法', short: '拳法', cat: '拳', tier: 1, spd: 3, rec: 3, eva: 1, acc: 3, atk: [3, 1, 3, 1], move: '千斤坠', desc: '人人都会的拳脚，招式朴实平衡' },
+  huashan: { name: '基础剑法', short: '剑法', cat: '剑', tier: 1, spd: 4, rec: 3, eva: 3, acc: 4, atk: [3, 4, 2, 1], move: '苍松迎客', desc: '入门剑法，轻快善刺头' },
+  wuhu: { name: '基础刀法', short: '刀法', cat: '刀', tier: 1, spd: 2, rec: 1, eva: 1, acc: 2, atk: [4, 3, 4, 2], move: '猛虎下山', desc: '入门刀法，大开大合，收招慢' },
+  yangjia: { name: '基础枪法', short: '枪法', cat: '枪', tier: 1, spd: 2, rec: 3, eva: 2, acc: 3, atk: [3, 2, 2, 4], reach: 2, move: '回马枪', desc: '入门枪法，远及两格善攻脚' },
+  kaishan: { name: '基础槌法', short: '槌法', cat: '槌', tier: 1, spd: 1, rec: 1, eva: 0, acc: 1, atk: [5, 4, 3, 3], stun: 0.15, move: '力劈华山', desc: '入门锤法，一锤千钧，常打晕人' },
   xianglong: { name: '降龙十八掌', short: '降龙', cat: '拳', tier: 2, spd: 3, rec: 4, eva: 2, acc: 4, atk: [5, 4, 4, 3], move: '亢龙有悔', sect: 'gaibang', req: ['changquan', 30], qi: 20, desc: '丐帮镇帮绝学，掌力刚猛' },
   quanzhenjian: { name: '全真剑法', short: '全真', cat: '剑', tier: 2, spd: 5, rec: 4, eva: 4, acc: 5, atk: [4, 5, 3, 2], move: '一气化三清', sect: 'quanzhen', req: ['huashan', 30], qi: 20, desc: '全真教正宗剑法，快准灵动' },
   hujia: { name: '胡家刀法', short: '胡家', cat: '刀', tier: 2, spd: 4, rec: 3, eva: 2, acc: 3, atk: [5, 4, 5, 4], move: '八方藏刀式', req: ['wuhu', 30], qi: 20, desc: '刀势如风，四面八方伤人' },
@@ -523,13 +523,13 @@ const SK = {
   miejian: { name: '灭剑', short: '灭剑', cat: '剑', tier: 2, spd: 5, rec: 3, eva: 4, acc: 4, atk: [3, 5, 4, 3], move: '金顶佛光', sect: 'emei', req: ['huashan', 30], qi: 20, desc: '峨眉绝学，剑走轻灵，招招夺命' },
   liehuo: { name: '烈火刀法', short: '烈火', cat: '刀', tier: 2, spd: 3, rec: 3, eva: 2, acc: 3, atk: [5, 5, 5, 4], move: '圣火燎原', sect: 'mingjiao', req: ['wuhu', 30], qi: 20, desc: '明教刀法，刀势如烈火燎原' },
   yuejia: { name: '岳家枪法', short: '岳家', cat: '枪', tier: 2, spd: 3, rec: 4, eva: 3, acc: 4, atk: [4, 3, 4, 5], reach: 2, move: '枪挑小梁王', req: ['yangjia', 30], qi: 20, desc: '岳武穆所传，枪出如龙' },
-  tiebushan: { name: '铁布衫', cat: '护体', tier: 1, def: [4, 1, 3, 3], info: '挨打时修炼', desc: '外家硬功护身，头是罩门' },
+  tiebushan: { name: '基础护体', cat: '护体', tier: 1, def: [4, 1, 3, 3], info: '挨打时修炼', desc: '入门护体功，头是罩门' },
   hunyuan: { name: '混元功', cat: '护体', tier: 2, def: [5, 4, 4, 4], sect: 'gaibang', req: ['tiebushan', 30], qi: 25, info: '挨打时修炼', desc: '丐帮内家护体，周身一体' },
   qiankun: { name: '乾坤大挪移', cat: '护体', tier: 2, def: [4, 5, 5, 5], sect: 'mingjiao', req: ['tiebushan', 30], qi: 25, info: '挨打时修炼', desc: '明教神功，借力卸力' },
-  caoshangfei: { name: '草上飞', cat: '步法', tier: 1, mv: 4, eva: 3, info: '走路时修炼', desc: '轻身入门功夫，脚步轻快' },
+  caoshangfei: { name: '基础步法', cat: '步法', tier: 1, mv: 4, eva: 3, info: '走路时修炼', desc: '入门轻功，脚步轻快' },
   shenxing: { name: '神行百变', cat: '步法', tier: 2, mv: 5, eva: 5, req: ['caoshangfei', 20], info: '走路时修炼', desc: '身法变幻莫测，来去如风' },
   taxue: { name: '踏雪无痕', cat: '步法', tier: 2, mv: 5, eva: 4, sect: 'emei', req: ['caoshangfei', 30], info: '走路时修炼', desc: '峨眉轻功，雪上不留痕迹' },
-  quanzhen: { name: '全真心法', cat: '心法', tier: 1, mp: 4, hp: 3, yq: 3, info: '打坐时修炼', desc: '全真教入门心法，调息养气' },
+  quanzhen: { name: '基础心法', cat: '心法', tier: 1, mp: 4, hp: 3, yq: 3, info: '打坐时修炼', desc: '入门心法，调息养气' },
   xiantian: { name: '先天功', cat: '心法', tier: 2, mp: 5, hp: 4, yq: 5, sect: 'quanzhen', req: ['quanzhen', 40], qi: 30, info: '打坐时修炼', desc: '王重阳独门内功，绵绵不绝' },
   yijin: { name: '易筋经', cat: '心法', tier: 2, mp: 3, hp: 5, yq: 5, sect: 'shaolin', req: ['quanzhen', 40], qi: 30, info: '打坐时修炼', desc: '少林至高内功，脱胎换骨' },
   caiji: { name: '采集', cat: '生产', info: '采药挖矿摘棉时修炼', desc: '熟练了常能多采到一份' },
@@ -735,18 +735,18 @@ const ITEMS = {
   hantie: { name: '寒铁', info: '光明顶、雪山挖矿偶得，打造寒铁兵器', sell: 30, buyer: 'smith' },
   xuantiekuang: { name: '玄铁', info: '剑冢、地宫深处才有的天外玄铁', sell: 80, buyer: 'smith' },
   wujin: { name: '乌金', info: '大漠深处挖矿偶得，极重极硬', sell: 40, buyer: 'smith' },
-  book_hujia: { name: '胡家刀法秘籍', info: '断门刀30级可研读', book: 'hujia' },
-  book_yuejia: { name: '岳家枪法秘籍', info: '杨家枪30级可研读', buy: 300, book: 'yuejia' },
-  book_shenxing: { name: '神行百变秘籍', info: '草上飞20级可研读', book: 'shenxing' },
-  book_bixie: { name: '辟邪剑谱', info: '华山剑法50级可研读', sell: 100, book: 'bixie' },
-  book_kuihua: { name: '葵花宝典', info: '华山剑法60级可研读', sell: 150, book: 'kuihua' },
-  book_hanbing: { name: '寒冰真气心法', info: '全真心法50级可研读', sell: 120, book: 'hanbing' },
-  book_hama: { name: '蛤蟆功秘籍', info: '太祖长拳50级可研读', sell: 120, book: 'hama' },
-  book_chilian: { name: '赤练神掌图谱', info: '太祖长拳55级可研读', sell: 120, book: 'chilian' },
-  book_yinyang: { name: '阴阳倒乱刃谱', info: '五虎断门刀55级可研读', sell: 120, book: 'yinyang' },
-  book_huoyan: { name: '火焰刀秘要', info: '五虎断门刀50级可研读', sell: 120, book: 'huoyan' },
-  book_xuedao: { name: '血刀经', info: '五虎断门刀40级可研读', sell: 100, book: 'xuedaofa' },
-  book_longxiang: { name: '龙象般若经', info: '开山锤法50级可研读', sell: 120, book: 'longxiang' },
+  book_hujia: { name: '胡家刀法秘籍', info: '基础刀法30级可研读', book: 'hujia' },
+  book_yuejia: { name: '岳家枪法秘籍', info: '基础枪法30级可研读', buy: 300, book: 'yuejia' },
+  book_shenxing: { name: '神行百变秘籍', info: '基础步法20级可研读', book: 'shenxing' },
+  book_bixie: { name: '辟邪剑谱', info: '基础剑法50级可研读', sell: 100, book: 'bixie' },
+  book_kuihua: { name: '葵花宝典', info: '基础剑法60级可研读', sell: 150, book: 'kuihua' },
+  book_hanbing: { name: '寒冰真气心法', info: '基础心法50级可研读', sell: 120, book: 'hanbing' },
+  book_hama: { name: '蛤蟆功秘籍', info: '基础拳法50级可研读', sell: 120, book: 'hama' },
+  book_chilian: { name: '赤练神掌图谱', info: '基础拳法55级可研读', sell: 120, book: 'chilian' },
+  book_yinyang: { name: '阴阳倒乱刃谱', info: '基础刀法55级可研读', sell: 120, book: 'yinyang' },
+  book_huoyan: { name: '火焰刀秘要', info: '基础刀法50级可研读', sell: 120, book: 'huoyan' },
+  book_xuedao: { name: '血刀经', info: '基础刀法40级可研读', sell: 100, book: 'xuedaofa' },
+  book_longxiang: { name: '龙象般若经', info: '基础槌法50级可研读', sell: 120, book: 'longxiang' },
 };
 
 /* 装备：每件都会画在人物身上，换了就看得出来 */
@@ -1778,11 +1778,11 @@ const NPCS = {
   ],
   songshan: [
     { id: 'fangzhang', name: '玄慈方丈', role: '少林寺', icon: '少', x: 12, y: 7, dir: 'down', look: { body: 'kasaya', hair: 'bald', beard: true }, talk: () => sectTalk('玄慈方丈', 'shaolin') },
-    { id: 'zhike', name: '知客僧', role: '少林寺', x: 11, y: 12, dir: 'down', look: { body: 'sengyi', hair: 'bald' }, talk: () => say('知客僧', ['阿弥陀佛。施主是来礼佛，还是来学武？', '方丈说，铁布衫练到十级、筋骨结实的人，才能入少林。']) },
+    { id: 'zhike', name: '知客僧', role: '少林寺', x: 11, y: 12, dir: 'down', look: { body: 'sengyi', hair: 'bald' }, talk: () => say('知客僧', ['阿弥陀佛。施主是来礼佛，还是来学武？', '方丈说，基础护体练到十级、筋骨结实的人，才能入少林。']) },
   ],
   emei: [
     { id: 'shitai', name: '静慧师太', role: '峨眉派', icon: '峨', x: 6, y: 6, dir: 'down', look: { body: 'nun', hair: 'hood' }, talk: () => sectTalk('静慧师太', 'emei') },
-    { id: 'nun2', name: '小师父', role: '峨眉派', x: 15, y: 6, dir: 'down', look: { body: 'nun', hair: 'hood' }, talk: () => say('小师父', ['我们峨眉弟子个个身轻如燕。', '草上飞练到十级，师太才肯收你。']) },
+    { id: 'nun2', name: '小师父', role: '峨眉派', x: 15, y: 6, dir: 'down', look: { body: 'nun', hair: 'hood' }, talk: () => say('小师父', ['我们峨眉弟子个个身轻如燕。', '基础步法练到十级，师太才肯收你。']) },
   ],
 };
 for (const id in GEN) if (GEN[id].npcDefs.length) NPCS[id] = (NPCS[id] || []).concat(GEN[id].npcDefs);
@@ -1799,10 +1799,10 @@ function campBlock(sect) {
 const SECT_JOIN = {
   riyue: { ok: () => S.xie >= 10, need: () => `邪气要到 10（现在 ${S.xie}）。去嵩山、峨眉杀几个正派弟子再来。`, pitch: ['日出东方，唯我不败。本教传黑血神针、吸星大法。', '入了神教，便不能再投别派。'] },
   taohua: { ok: () => S.zheng < 30 && S.xie < 30 && bestCraft() >= 15, need: () => `桃花岛只收不偏不倚、有一技之长的人：正气、邪气都在 30 以下，任一副职业 15 级（现在最高 ${bestCraft().toFixed(2)}）。`, pitch: ['岛主不问正邪，只看人才。本岛传落英神剑掌、奇门身法。', '入了桃花岛，便不能再投别派。'] },
-  shaolin: { ok: () => lv('tiebushan') >= 10, need: () => `铁布衫要练到 10 级（现在 ${lv('tiebushan').toFixed(2)}）。`, pitch: ['阿弥陀佛。少林传韦陀杵、易筋经。', '入了少林，便不能再投别派。'] },
-  emei: { ok: () => lv('caoshangfei') >= 10, need: () => `草上飞要练到 10 级（现在 ${lv('caoshangfei').toFixed(2)}）。`, pitch: ['峨眉传灭剑、踏雪无痕。', '入了峨眉，便不能再投别派。'] },
-  wudang: { ok: () => lv('quanzhen') >= 15, need: () => `内功要有根基：全真心法练到 15 级（现在 ${lv('quanzhen').toFixed(2)}）。`, pitch: ['（道长捋须微笑）太极之道，以柔克刚，后发先至。', '武当传太极剑、太极拳、梯云纵。入了武当，便不能再投别派。'] },
-  huashanpai: { ok: () => lv('huashan') >= 20, need: () => `华山剑法要练到 20 级（现在 ${lv('huashan').toFixed(2)}）。`, pitch: ['华山派以剑立派，剑法要有底子。', '本派传玉女十九剑、紫霞神功。入了华山，便不能再投别派。'] },
+  shaolin: { ok: () => lv('tiebushan') >= 10, need: () => `基础护体要练到 10 级（现在 ${lv('tiebushan').toFixed(2)}）。`, pitch: ['阿弥陀佛。少林传韦陀杵、易筋经。', '入了少林，便不能再投别派。'] },
+  emei: { ok: () => lv('caoshangfei') >= 10, need: () => `基础步法要练到 10 级（现在 ${lv('caoshangfei').toFixed(2)}）。`, pitch: ['峨眉传灭剑、踏雪无痕。', '入了峨眉，便不能再投别派。'] },
+  wudang: { ok: () => lv('quanzhen') >= 15, need: () => `内功要有根基：基础心法练到 15 级（现在 ${lv('quanzhen').toFixed(2)}）。`, pitch: ['（道长捋须微笑）太极之道，以柔克刚，后发先至。', '武当传太极剑、太极拳、梯云纵。入了武当，便不能再投别派。'] },
+  huashanpai: { ok: () => lv('huashan') >= 20, need: () => `基础剑法要练到 20 级（现在 ${lv('huashan').toFixed(2)}）。`, pitch: ['华山派以剑立派，剑法要有底子。', '本派传玉女十九剑、紫霞神功。入了华山，便不能再投别派。'] },
   tangmen: { ok: () => lv('lianyao') >= 10, need: () => `唐门用毒，先懂药性：炼药要到 10 级（现在 ${lv('lianyao').toFixed(2)}）。`, pitch: ['唐门暗器毒药，天下第一。', '本门传漫天花雨、百毒不侵功。入了唐门，便不能再投别派。'] },
   gumu: { ok: () => lv('caiji') >= 15, need: () => `墓里要养玉蜂、采花蜜：采集要到 15 级（现在 ${lv('caiji').toFixed(2)}）。`, pitch: ['（孙婆婆打量着你）古墓派从不收外人……', '你若真心，便传你玉女素心剑、天罗地网势、玉女心经。入了古墓，便不能再投别派。'] },
   xingxiu: { ok: () => S.xie >= 20, need: () => `星宿派只收心狠手辣的人：邪气要到 20（现在 ${S.xie}）。`, pitch: ['星宿老仙，法驾中原，神通广大，法力无边！', '本派传抽髓掌、化功大法。入了星宿，便不能再投别派。'] },
@@ -1813,18 +1813,18 @@ const SECT_JOIN = {
 const RUMORS = {
   quanzhen: '牛家村东头的清虚观住着全真教的清虚道长。他先教心法，心法练到 10 级才肯收徒。终南山重阳宫是全真总坛。',
   gaibang: '丐帮的鲁长老常在牛家村池塘边晒太阳，嘴馋得很，最爱吃兔肉。洛阳城里是丐帮总舵。',
-  shaolin: '少林寺在嵩山，从洛阳往西北上山。方丈只收筋骨结实的人——铁布衫要练到 10 级。',
-  emei: '峨眉派在峨眉山，从终南山往南走蜀道。师太只收身轻如燕的人——草上飞要 10 级。',
+  shaolin: '少林寺在嵩山，从洛阳往西北上山。方丈只收筋骨结实的人——基础护体要练到 10 级。',
+  emei: '峨眉派在峨眉山，从终南山往南走蜀道。师太只收身轻如燕的人——基础步法要 10 级。',
   mingjiao: '襄阳酒楼门口常有个戴斗笠的黑衣客，听说是明教的人，只看得上除掉过黑风寨主的好汉。明教总坛在西域光明顶。',
   riyue: '日月神教总坛在黑木崖，出山海关往北。他们只收手上沾过血的人（邪气 10）。',
   taohua: '杭州西湖边有船去桃花岛。岛主不问正邪，只收不偏不倚、身怀一技之长的人。',
-  wudang: '兔儿坡一直往南就是武当山。紫霄宫的冲虚道长讲究以柔克刚，只收内功有根基的人（全真心法 15 级）。',
-  huashanpai: '华山玉女峰上是华山派。岳先生只收剑法有底子的人（华山剑法 20 级）。',
+  wudang: '兔儿坡一直往南就是武当山。紫霄宫的冲虚道长讲究以柔克刚，只收内功有根基的人（基础心法 15 级）。',
+  huashanpai: '华山玉女峰上是华山派。岳先生只收剑法有底子的人（基础剑法 20 级）。',
   tangmen: '蜀道深处有座唐家堡，就是唐门。唐门用毒用暗器，入门先要懂药性（炼药 10 级）。',
   gumu: '终南山后山有座活死人墓，墓里的人从不出来。听说守墓的孙婆婆在找会采蜜的帮手（采集 15 级）。',
   xingxiu: '大漠深处的星宿海，有个自称“星宿老仙”的怪人，门下全是心狠手辣之辈（邪气 20）。',
   wudu: '蜀道往东南是苗疆，五毒教的蓝教主就住在那儿，只收敢碰毒物的人（炼药 15 级、邪气 10）。',
-  dugu: '华山之巅有个姓风的老头，听说剑法高得吓人。可他只跟剑法练到化境的人说话（华山剑法 60 级）。',
+  dugu: '华山之巅有个姓风的老头，听说剑法高得吓人。可他只跟剑法练到化境的人说话（基础剑法 60 级）。',
   yuanyue: '杭州有座听雨楼，楼主人从不露面。有人说他的刀法，叫“小楼一夜听春雨”。',
   feidao: '平定州快活楼前，有个整天咳嗽喝酒的落魄书生。有人见过他出手——一刀，例不虚发。',
   lingxi: '扬州望江楼前常有位留着四条眉毛的公子。别人的刀剑，他两根手指就夹住了。',
@@ -1841,15 +1841,15 @@ const RUMORS = {
 };
 /* 奇人：没有门派，找到人、够格了才肯传功 */
 const HERMITS = {
-  dugu: { npc: 'fenglao', name: '风老', where: '华山之巅', skill: 'dugu', ok: () => lv('huashan') >= 60, need: () => `（他看了你出剑）剑法还嫩，华山剑法练到 60 级再来（现在 ${lv('huashan').toFixed(2)}）。`,
+  dugu: { npc: 'fenglao', name: '风老', where: '华山之巅', skill: 'dugu', ok: () => lv('huashan') >= 60, need: () => `（他看了你出剑）剑法还嫩，基础剑法练到 60 级再来（现在 ${lv('huashan').toFixed(2)}）。`,
     talk: ['能爬上华山之巅的，都不是寻常人物。', '剑招是死的，人是活的。'], teach: ['你的剑，有点意思。', '老夫传你九剑：无招胜有招，以无招破有招。'] },
-  yuanyue: { npc: 'tingyu', name: '听雨楼主', where: '杭州听雨楼', skill: 'yuanyue', ok: () => lv('wuhu') >= 50, need: () => `（帘后传来一声冷笑）连五虎断门刀都没练到 50 级（现在 ${lv('wuhu').toFixed(2)}），也配看我的刀？`,
+  yuanyue: { npc: 'tingyu', name: '听雨楼主', where: '杭州听雨楼', skill: 'yuanyue', ok: () => lv('wuhu') >= 50, need: () => `（帘后传来一声冷笑）连基础刀法都没练到 50 级（现在 ${lv('wuhu').toFixed(2)}），也配看我的刀？`,
     talk: ['小楼一夜听春雨，深巷明朝卖杏花。'], teach: ['（帘子掀开，刀光如一弯新月）', '这一刀，叫“小楼一夜听春雨”。你看清了吗？'] },
-  feidao: { npc: 'shusheng', name: '落魄书生', where: '平定州快活楼', skill: 'feidao', ok: () => lv('wuhu') >= 40 && S.rep >= 30, need: () => `（他咳了几声）刀要练到心里去。五虎断门刀 40 级、江湖声望 30，再来陪我喝酒（现在 ${lv('wuhu').toFixed(2)}、${S.rep}）。`,
+  feidao: { npc: 'shusheng', name: '落魄书生', where: '平定州快活楼', skill: 'feidao', ok: () => lv('wuhu') >= 40 && S.rep >= 30, need: () => `（他咳了几声）刀要练到心里去。基础刀法 40 级、江湖声望 30，再来陪我喝酒（现在 ${lv('wuhu').toFixed(2)}、${S.rep}）。`,
     talk: ['（他咳嗽着，又灌了一口酒）'], teach: ['（他手中多了一柄三寸七分的小刀）', '出手要准，心要正。我的刀，从不虚发。'] },
-  lingxi: { npc: 'simei', name: '四眉公子', where: '扬州望江楼', skill: 'lingxi', ok: () => lv('changquan') >= 50, need: () => `（他笑着摸了摸胡子）你的拳头还不够快，太祖长拳 50 级再来（现在 ${lv('changquan').toFixed(2)}）。`,
+  lingxi: { npc: 'simei', name: '四眉公子', where: '扬州望江楼', skill: 'lingxi', ok: () => lv('changquan') >= 50, need: () => `（他笑着摸了摸胡子）你的拳头还不够快，基础拳法 50 级再来（现在 ${lv('changquan').toFixed(2)}）。`,
     talk: ['我这人没什么本事，就是朋友多、麻烦多。'], teach: ['看好了，两根手指，就这么一夹。', '这叫灵犀一指。心到，指到。'] },
-  anran: { npc: 'dubi', name: '独臂人', where: '绝情谷湖边', skill: 'anran', ok: () => lv('changquan') >= 60 && S.age >= 35, need: () => `（他望着湖水，没有回头）你还年轻，不懂相思。等你 35 岁、太祖长拳 60 级再来（现在 ${S.age} 岁、${lv('changquan').toFixed(2)}）。`,
+  anran: { npc: 'dubi', name: '独臂人', where: '绝情谷湖边', skill: 'anran', ok: () => lv('changquan') >= 60 && S.age >= 35, need: () => `（他望着湖水，没有回头）你还年轻，不懂相思。等你 35 岁、基础拳法 60 级再来（现在 ${S.age} 岁、${lv('changquan').toFixed(2)}）。`,
     talk: ['十六年……就快十六年了。'], teach: ['（他转过身，袖管空空荡荡）', '这套掌法，是我在相思最苦的时候创的。', '心中越是黯然，掌力越强。'] },
 };
 function hear(id) { if (S && RUMORS[id] && !S.heard.includes(id)) { S.heard.push(id); toast('记入门派见闻'); } }
@@ -1923,7 +1923,7 @@ function storyTalk(camp) {
 const CAMP_CITY = { 正: '襄阳的正派接引使', 邪: '平定州的邪派接引使', 中: '扬州的中立接引使' };
 const CAMP_NAME = { 正: '正派', 邪: '邪派', 中: '中立' };
 const SPECIAL_JOIN = {
-  quanzhen: { ok: () => lv('quanzhen') >= 10, need: () => `全真心法练到 10 级（现在 ${lv('quanzhen').toFixed(2)}）。心法由清虚道长先教：随便哪门武功练到 5 级去找他。`, where: '牛家村清虚观的清虚道长' },
+  quanzhen: { ok: () => lv('quanzhen') >= 10, need: () => `基础心法练到 10 级（现在 ${lv('quanzhen').toFixed(2)}）。心法由清虚道长先教：随便哪门武功练到 5 级去找他。`, where: '牛家村清虚观的清虚道长' },
   gaibang: { ok: () => (S.side.gaibang || 0) >= 1 && (S.items.tourou || 0) >= 5, need: () => '给鲁长老送 5 块兔肉，兔儿坡的野兔就有。', where: '牛家村池塘边的鲁长老' },
 };
 const sectOrder = camp => Object.keys(SECTS).sort((a, b) => (SECTS[a].camp !== camp) - (SECTS[b].camp !== camp));
@@ -2478,7 +2478,7 @@ function masterMenu(who, sect) {
 function taoTalk() {
   const who = '清虚道长';
   if (S.skills.quanzhen == null) {
-    if (bestAtk() >= 5) return say(who, ['你的功夫已有些火候，可惜空有招式，没有内劲。', '贫道传你全真心法。四下无人时按 B 打坐，便会运转心法。', '心法越深，内功越足，元气也越旺。'], () => { learn('quanzhen'); S.passive['心法'] = 'quanzhen'; save(); });
+    if (bestAtk() >= 5) return say(who, ['你的功夫已有些火候，可惜空有招式，没有内劲。', '贫道传你基础心法。四下无人时按 B 打坐，便会运转心法。', '心法越深，内功越足，元气也越旺。'], () => { learn('quanzhen'); S.passive['心法'] = 'quanzhen'; save(); });
     return say(who, ['年轻人，武功是一招一式练出来的。', `随便哪门拳脚兵器练到 5 级再来找我（现在最高 ${bestAtk().toFixed(2)}）。`]);
   }
   if (S.sect === 'quanzhen') return masterMenu(who, 'quanzhen');
@@ -2500,7 +2500,7 @@ function luTalk() {
 const KID_TIPS = [
   '打架时按一下 A 就行，会自己追着最近的敌人打！',
   '拿什么兵器就练什么武功：拳、剑、刀、枪、锤，五样都能练。',
-  '挨打能练铁布衫，走路能练草上飞，打坐能练心法！',
+  '挨打能练基础护体，走路能练基础步法，打坐能练心法！',
   '头、手臂、腿是分开受伤的。腿伤了跑不动，手伤了打不疼，头伤重了会昏过去！',
   '木人桩不会还手，可练到三十级就没用了，得去野外。',
   '鲁长老是丐帮的，他好像很爱吃兔肉。',
@@ -3317,7 +3317,7 @@ function killEnemy(e) {
     const gotBook = S.skills.shenxing == null && !S.items.book_shenxing;
     if (gotBook) S.items.book_shenxing = 1;
     sfx('level'); save();
-    say('黑风寨主', ['好……好身手……', gotBook ? '（他怀中掉出一本薄册子）' : '（他倒了下去）'], () => say(null, [gotBook ? '你得到了神行百变秘籍！草上飞练到 20 级就能在行囊里研读。' : '黑风寨主伏诛。', '另得银两六十两。快回村告诉王村长吧。']));
+    say('黑风寨主', ['好……好身手……', gotBook ? '（他怀中掉出一本薄册子）' : '（他倒了下去）'], () => say(null, [gotBook ? '你得到了神行百变秘籍！基础步法练到 20 级就能在行囊里研读。' : '黑风寨主伏诛。', '另得银两六十两。快回村告诉王村长吧。']));
   }
   floatText(e.px + 8, e.py - 6, '败');
 }
@@ -3700,7 +3700,7 @@ function beginGame(o, nm, data) {
     mode = 'play'; dlg = null; menu = null; toasts = []; depleted = {}; mapState = {}; map = null;
     enterMap(S.map, S.x, S.y, S.dir);
     sfx('level');
-    if (o === '新的江湖') say(null, ['牛家村，一个普通的早晨。', `你叫${S.name}，今年十六岁，只会一套太祖长拳。`, '武功都是越用越强：出拳练拳法，挨打练铁布衫，走路练草上飞。', '遇敌按一下 A，会自动锁定最近的敌人连续出招；按方向键就能脱离。', '四下无人时按 B 打坐，回复活力、内功和伤势。', '村长家门口的王村长头上有个“!”，先去找他吧。']);
+    if (o === '新的江湖') say(null, ['牛家村，一个普通的早晨。', `你叫${S.name}，今年十六岁，只会一套基础拳法。`, '武功都是越用越强：出拳练拳法，挨打练基础护体，走路练基础步法。', '遇敌按一下 A，会自动锁定最近的敌人连续出招；按方向键就能脱离。', '四下无人时按 B 打坐，回复活力、内功和伤势。', '村长家门口的王村长头上有个“!”，先去找他吧。']);
   }
 }
 function renderTitle() {
@@ -3730,7 +3730,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v40 加速' : 'v40', 156, 0, 2, 'right');
+  txt(FAST ? 'v41 加速' : 'v41', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;

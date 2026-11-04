@@ -418,7 +418,7 @@ function killEnemy(e) {
     const gotBook = S.skills.shenxing == null && !S.items.book_shenxing;
     if (gotBook) S.items.book_shenxing = 1;
     sfx('level'); save();
-    say('黑风寨主', ['好……好身手……', gotBook ? '（他怀中掉出一本薄册子）' : '（他倒了下去）'], () => say(null, [gotBook ? '你得到了神行百变秘籍！草上飞练到 20 级就能在行囊里研读。' : '黑风寨主伏诛。', '另得银两六十两。快回村告诉王村长吧。']));
+    say('黑风寨主', ['好……好身手……', gotBook ? '（他怀中掉出一本薄册子）' : '（他倒了下去）'], () => say(null, [gotBook ? '你得到了神行百变秘籍！基础步法练到 20 级就能在行囊里研读。' : '黑风寨主伏诛。', '另得银两六十两。快回村告诉王村长吧。']));
   }
   floatText(e.px + 8, e.py - 6, '败');
 }

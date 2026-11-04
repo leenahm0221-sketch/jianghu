@@ -26,7 +26,7 @@ function beginGame(o, nm, data) {
     mode = 'play'; dlg = null; menu = null; toasts = []; depleted = {}; mapState = {}; map = null;
     enterMap(S.map, S.x, S.y, S.dir);
     sfx('level');
-    if (o === '新的江湖') say(null, ['牛家村，一个普通的早晨。', `你叫${S.name}，今年十六岁，只会一套太祖长拳。`, '武功都是越用越强：出拳练拳法，挨打练铁布衫，走路练草上飞。', '遇敌按一下 A，会自动锁定最近的敌人连续出招；按方向键就能脱离。', '四下无人时按 B 打坐，回复活力、内功和伤势。', '村长家门口的王村长头上有个“!”，先去找他吧。']);
+    if (o === '新的江湖') say(null, ['牛家村，一个普通的早晨。', `你叫${S.name}，今年十六岁，只会一套基础拳法。`, '武功都是越用越强：出拳练拳法，挨打练基础护体，走路练基础步法。', '遇敌按一下 A，会自动锁定最近的敌人连续出招；按方向键就能脱离。', '四下无人时按 B 打坐，回复活力、内功和伤势。', '村长家门口的王村长头上有个“!”，先去找他吧。']);
   }
 }
 function renderTitle() {
@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v40 加速' : 'v40', 156, 0, 2, 'right');
+  txt(FAST ? 'v41 加速' : 'v41', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
