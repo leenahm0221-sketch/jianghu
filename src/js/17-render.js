@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v33', 156, 0, 2, 'right');
+  txt('v34', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1065,7 +1065,7 @@ function renderSkillDetail(k) {
   const sk = SK[k], v = lv(k), atk = ATK_CATS.includes(sk.cat);
   const kd = skKind(k);
   txt(sk.name, 8, 33, 3);
-  txt(kd === '门派' ? `门派·${SECTS[sk.sect].short}` : kd === '生产' ? '副职业' : `${kd}武功`, 8 + tw(sk.name) + 6, 33, 2);
+  txt(kd === '门派' ? `门派·${SECTS[sk.sect].short}` : kd === '生产' ? '副职业' : sk.villain ? `特殊·打${EN[sk.villain].name}得` : `${kd}武功`, 8 + tw(sk.name) + 6, 33, 2);
   txt(v.toFixed(2), MW - 8, 33, 2, 'right');
   txt(useLabel(sk), 8, 45, 2);
   const row = (y, x, label, r) => { txt(label, x, y, 2); txt(RT[r], x + 22, y, 3); pips(x + 44, y, r); };
@@ -1100,7 +1100,9 @@ function renderSkillDetail(k) {
   txt(sk.cat === '生产' ? 'B返回' : 'A运用此功　B返回', MW / 2, 129, 2, 'center');
 }
 /* 门派见闻：打听来的门派和奇人 */
+const VILLAIN_WHERE = { yuebuqun: '华山思过崖山洞', dongfang: '黑木崖成德殿密道', zuolengchan: '蜀道剑冢上层', ouyangfeng: '大漠沙城地宫上层', limochou: '绝情谷', gongsun: '绝情谷', jiumozhi: '苗疆', jinlun: '雁门关外', xuedao: '黑松林' };
 function heardInfo(k) {
+  if (k.startsWith('v_')) { const v = k.slice(2), sk = Object.keys(SK).find(x => SK[x].villain === v); return { name: `反派·${EN[v].name}`, tag: sk && S.skills[sk] != null ? '已得' : SK[sk] ? SK[sk].short || SK[sk].name : '反派', where: VILLAIN_WHERE[v] }; }
   if (SECTS[k]) return { name: SECTS[k].name, tag: { 正: '正派', 邪: '邪派', 中: '中立' }[SECTS[k].camp] + (S.sect === k ? '·本门' : ''), where: SECTS[k].where };
   const h = HERMITS[k]; return { name: `奇人·${h.name}`, tag: S.skills[h.skill] != null ? '已拜见' : '奇人', where: h.where };
 }

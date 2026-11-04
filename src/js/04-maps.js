@@ -161,11 +161,11 @@ const LINKS = [
   ['shudao', 'S', 'emei', 'E'], ['emei', 'W', 'jueqing', 'E'],
   ['meadow', 'S', 'wudang', 'N'], ['shudao', 'E', 'miaojiang', 'N'],
   /* 地下图：U 开头的是山里的洞口 */
-  ['wild', 'U', 'kuangdong', 'S'], ['caoyuan', 'U', 'langxue', 'S'], ['forest', 'U', 'heifeng', 'S'], ['huashan', 'U', 'siguo', 'S'],
+  ['heimuya', 'U', 'chengde', 'S'], ['wild', 'U', 'kuangdong', 'S'], ['caoyuan', 'U', 'langxue', 'S'], ['forest', 'U', 'heifeng', 'S'], ['huashan', 'U', 'siguo', 'S'],
   ['shudao', 'U', 'jianzhong', 'S'], ['jianzhong', 'N', 'jianzhong2', 'S'], ['damo', 'U', 'digong', 'S'], ['digong', 'N', 'digong2', 'S'],
 ];
 /* 洞口在山里的位置 */
-const CAVE_AT = { wild: { U: [12, 30] }, caoyuan: { U: [50, 30] }, forest: { U: [42, 30] }, huashan: { U: [34, 22] }, shudao: { U: [38, 34] }, damo: { U: [52, 10] } };
+const CAVE_AT = { heimuya: { U: [18, 3] }, wild: { U: [12, 30] }, caoyuan: { U: [50, 30] }, forest: { U: [42, 30] }, huashan: { U: [34, 22] }, shudao: { U: [38, 34] }, damo: { U: [52, 10] } };
 /* 手工画的地图，出口坐标固定 */
 const HAND_EXITS = { village: { N: [15, 0], E: [23, 6], S: [11, 17], W: [0, 6] }, xiangyang: { E: [31, 12], W: [0, 12] }, songshan: { S: [12, 29], W: [0, 20], N: [20, 0] }, emei: { E: [29, 12], W: [0, 10] }, heimuya: { N: [8, 0], W: [0, 5] }, taohua: {} };
 const HAND_SIZE = { village: [24, 18], xiangyang: [32, 24], songshan: [24, 30], emei: [30, 22], heimuya: [26, 22], taohua: [26, 20] };
@@ -351,7 +351,7 @@ function genTown(id, sp) {
 }
 
 /* ---------- 每张地图的设定 ---------- */
-const SPEC_NAME = { kuangdong: '伏牛矿洞', langxue: '狼穴', heifeng: '黑风洞', siguo: '思过崖山洞', jianzhong: '剑冢·上层', jianzhong2: '剑冢·下层', digong: '沙城地宫·上层', digong2: '沙城地宫·下层', wudang: '武当山', miaojiang: '苗疆', village: '牛家村', meadow: '兔儿坡', wild: '伏牛山脚', forest: '黑松林', xiangyang: '襄阳城', tongguan: '潼关', zhongnan: '终南山', huashan: '华山', songshan: '嵩山', luoyang: '洛阳', yangzhou: '扬州', hangzhou: '杭州', taohua: '桃花岛', shanhai: '山海关', heimuya: '黑木崖', pingding: '平定州', caoyuan: '塞外草原', yanmen: '雁门关', damo: '大漠', guangming: '光明顶', shudao: '蜀道', emei: '峨眉山', jueqing: '绝情谷' };
+const SPEC_NAME = { chengde: '成德殿密道', kuangdong: '伏牛矿洞', langxue: '狼穴', heifeng: '黑风洞', siguo: '思过崖山洞', jianzhong: '剑冢·上层', jianzhong2: '剑冢·下层', digong: '沙城地宫·上层', digong2: '沙城地宫·下层', wudang: '武当山', miaojiang: '苗疆', village: '牛家村', meadow: '兔儿坡', wild: '伏牛山脚', forest: '黑松林', xiangyang: '襄阳城', tongguan: '潼关', zhongnan: '终南山', huashan: '华山', songshan: '嵩山', luoyang: '洛阳', yangzhou: '扬州', hangzhou: '杭州', taohua: '桃花岛', shanhai: '山海关', heimuya: '黑木崖', pingding: '平定州', caoyuan: '塞外草原', yanmen: '雁门关', damo: '大漠', guangming: '光明顶', shudao: '蜀道', emei: '峨眉山', jueqing: '绝情谷' };
 const AREA_HINT = {
   meadow: '野兔、狐狸。新手练功的好去处。', wild: '野狼、山贼出没，河东有黑风寨。', forest: '熊、虎出没，功夫不到家别进去。',
   luoyang: '丐帮总舵就在城里。', yangzhou: '江南大城，往北是山海关，往南是杭州。', hangzhou: '西湖边有船去桃花岛。',
@@ -359,10 +359,13 @@ const AREA_HINT = {
   songshan: '少林寺。', yanmen: '出了雁门关就是塞外，邪派地盘。', shanhai: '出了山海关往北，就是黑木崖。',
   heimuya: '日月神教总坛。正派中人，擅入者死！', pingding: '邪派的地盘，正派人士小心。', caoyuan: '草原狼群、蒙古骑兵。',
   damo: '黄沙漫天，沙匪横行。', guangming: '明教总坛。', shudao: '蜀道难，山匪、豹子出没。', emei: '峨眉派。山上大雪，雪狼成群。',
-  jueqing: '情花遍谷，绝情谷主武功极高。', kuangdong: '废弃矿洞，矿匪盘踞，精铁多。', langxue: '草原狼的老巢，狼王在最深处。', heifeng: '黑漆漆的山洞，熊王在里面冬眠。出寒铁、老山参。', siguo: '前人面壁思过之处，石壁上刻满剑招。', jianzhong: '埋剑之地，剑气森森。寒铁、雪莲。', jianzhong2: '剑冢最深处，守灵人守着玄铁。', digong: '黄沙下的古城地宫。出乌金。', digong2: '地宫最深处，尸王守着前朝宝藏。', wudang: '武当山紫霄宫。山路长，猴子、野猪多。', miaojiang: '苗疆密林，毒虫猛兽遍地。', xiangyang: '天下重镇，各派都在这里招人。', village: '出生的小村子。',
+  jueqing: '情花遍谷，绝情谷主武功极高。', chengde: '黑木崖下的密道，通往东方不败的绣房。', kuangdong: '废弃矿洞，矿匪盘踞，精铁多。', langxue: '草原狼的老巢，狼王在最深处。', heifeng: '黑漆漆的山洞，熊王在里面冬眠。出寒铁、老山参。', siguo: '前人面壁思过之处，石壁上刻满剑招。', jianzhong: '埋剑之地，剑气森森。寒铁、雪莲。', jianzhong2: '剑冢最深处，守灵人守着玄铁。', digong: '黄沙下的古城地宫。出乌金。', digong2: '地宫最深处，尸王守着前朝宝藏。', wudang: '武当山紫霄宫。山路长，猴子、野猪多。', miaojiang: '苗疆密林，毒虫猛兽遍地。', xiangyang: '天下重镇，各派都在这里招人。', village: '出生的小村子。',
 };
 const CAVE = (o) => ({ edge: 'M', floor: '.', ground: 'cave', obst: [['c', 6], ['M', 4]], density: 0.42, steles: 1, chests: 2, ...o });
 const W_SPECS = {
+  chengde: CAVE({ W: 34, H: 30, seed: 353, res: { O: 4, '&': 3 }, hub: [17, 14], obst: [['c', 4], ['M', 3]], density: 0.3,
+    build(c) { c.spawn('dongfang', 17, 3); c.sign(20, 5, '绣房。屋里满是绣架和花线。'); },
+    zones: [{ kind: 'jiaozhong', n: 7, area: [0, 0.2, 1, 0.9] }] }),
   kuangdong: CAVE({ W: 40, H: 32, seed: 301, res: { O: 12, '&': 2 }, hub: [20, 14],
     build(c) { c.spawn('kuangba', 20, 3); c.sign(20, 6, '矿洞深处。\n“此矿归我矿霸所有，挖一块铁留一根指头！”'); },
     zones: [{ kind: 'kuangfei', n: 10, area: [0, 0, 1, 0.9] }] }),
@@ -373,14 +376,16 @@ const W_SPECS = {
     build(c) { c.spawn('xiongwang', 22, 3); c.sign(25, 5, '洞壁上满是爪痕。'); },
     zones: [{ kind: 'dongxiong', n: 9, area: [0, 0, 1, 0.9] }] }),
   siguo: CAVE({ W: 38, H: 32, seed: 313, res: { O: 6, '&': 3 }, hub: [19, 15], steles: 3,
-    build(c) { c.spawn('jianmo', 19, 3); c.sign(16, 4, '石壁上刻满了剑招，剑剑都是破解华山剑法的。'); },
+    build(c) { c.spawn('yuebuqun', 19, 3); c.sign(16, 4, '石壁上刻满了剑招，剑剑都是破解华山剑法的。'); },
     zones: [{ kind: 'hsjianke', n: 7, area: [0, 0, 1, 0.9] }] }),
   jianzhong: CAVE({ W: 44, H: 36, seed: 317, res: { O: 8, '&': 4 }, hub: [22, 18],
+    build(c) { c.spawn('zuolengchan', 8, 6); },
     zones: [{ kind: 'jianling', n: 10, area: [0, 0, 1, 0.9] }] }),
   jianzhong2: CAVE({ W: 40, H: 34, seed: 331, res: { O: 8, '&': 4 }, hub: [20, 16],
     build(c) { c.spawn('jianshou', 20, 4); c.sign(23, 6, '剑冢。\n“剑在人在，剑亡人亡。”'); },
     zones: [{ kind: 'jianling', n: 9, area: [0, 0, 1, 0.9] }] }),
   digong: CAVE({ W: 46, H: 36, seed: 337, ground: 'cave', res: { O: 10 }, hub: [23, 18],
+    build(c) { c.spawn('ouyangfeng', 38, 6); },
     zones: [{ kind: 'shiwei', n: 11, area: [0, 0, 1, 0.9] }] }),
   digong2: CAVE({ W: 40, H: 34, seed: 347, res: { O: 8, '&': 3 }, hub: [20, 16],
     build(c) { c.spawn('shiwang', 20, 4); c.sign(23, 6, '前朝宝库。\n“擅入者，与我等同眠。”'); },
@@ -402,6 +407,7 @@ const W_SPECS = {
       c.npc({ id: 'lanjz', name: '蓝教主', role: '五毒教', icon: '毒', x: dx + 1, y: dy, dir: 'down', look: { body: 'wduyi', hair: 'bun' }, talk: () => sectTalk('蓝教主', 'wudu') });
       c.npc({ id: 'wd_miao', name: '苗家阿妹', role: '五毒教', x: dx + 3, y: dy, dir: 'down', look: { body: 'wduyi', hair: 'bun' }, talk: () => say('苗家阿妹', ['阿哥，莫要乱摸路边的花，有毒哟。', '唐门的人跟我们五毒教抢生意，见了不用客气。']) });
       c.sign(dx - 3, dy, '五毒教。\n蛇、蝎、蜈蚣、蟾蜍、蜘蛛，皆是本教之宝。');
+      c.spawn('jiumozhi', 6, 8); c.path(6, 9, c.hub[0], c.hub[1], '^');
     },
     zones: [{ kind: 'wdjz', n: 7, area: [0, 0.4, 1, 1] }, { kind: 'baozi', n: 5, area: [0, 0, 1, 0.5] }] },
   meadow: { W: 44, H: 32, seed: 11, edge: 'T', floor: '.', patches: [[',', 7, 4]], obst: [['T', 5], ['f', 3], ['r', 1]], density: 0.12, fillOn: [','],
@@ -457,7 +463,7 @@ const W_SPECS = {
     },
     zones: [{ kind: 'hsjianke', n: 9, area: [0, 0.15, 1, 1] }, { kind: 'baozi', n: 3, area: [0, 0.6, 1, 1] }] },
   yanmen: { W: 40, H: 28, seed: 83, edge: 'M', floor: '.', road: '_', obst: [['c', 5], ['r', 2]], density: 0.22,res: { O: 4, '*': 3 }, 
-    build(c) { passWall(c, 'h', Math.round(c.H * 0.45), '雁门关'); },
+    build(c) { c.spawn('jinlun', 7, 4); c.path(7, 5, Math.round(c.W / 2), 2, '_'); passWall(c, 'h', Math.round(c.H * 0.45), '雁门关'); c.sign(9, 4, '关外。蒙古大军的营帐。\n“擅近国师营帐者，死。”'); },
     zones: [{ kind: 'mazei', n: 4, area: [0, 0, 1, 0.4] }, { kind: 'menggu', n: 2, area: [0, 0, 1, 0.35] }, { kind: 'wuseng', n: 2, area: [0, 0.55, 1, 1] }, { kind: 'jiaozhong', n: 2, area: [0, 0, 1, 0.4] }] },
   shanhai: { W: 40, H: 28, seed: 89, edge: 'M', floor: '.', road: '_', obst: [['c', 4], ['r', 2], ['T', 1]], density: 0.2,res: { O: 4 }, 
     build(c) { passWall(c, 'h', Math.round(c.H * 0.5), '山海关'); for (let y = 1; y < c.H - 1; y++) for (let x = c.W - 5; x < c.W - 1; x++) if (!c.keep.has(c.K(x, y))) c.set(x, y, '~'); },
@@ -483,6 +489,7 @@ const W_SPECS = {
       c.spawn('gongsun', 24, 8);
       for (let y = 24; y <= 28; y++) for (let x = 16; x <= 18; x++) { c.set(x, y, '.'); c.keep.add(c.K(x, y)); }
       c.path(17, 28, c.hub[0], c.hub[1], '.');
+      c.spawn('limochou', 38, 32); c.path(38, 33, c.hub[0], c.hub[1], '.');
       c.npc({ id: 'dubi', name: '独臂人', role: '湖边', x: 16, y: 26, dir: 'left', look: { body: 'heipao', hair: 'messy' }, talk: () => hermitTalk('anran') });
     },
     res: { '&': 6, '*': 6 }, chests: 1, zones: [{ kind: 'jqdizi', n: 9, area: [0, 0.2, 1, 1] }] },
@@ -588,7 +595,7 @@ const MAPS = {
     spawns: [['emeidizi', 9, 7], ['emeidizi', 20, 7], ['snowwolf', 8, 12], ['snowwolf', 21, 9], ['snowwolf', 12, 17], ['snowwolf', 26, 18], ['snowwolf', 4, 18], ['snowwolf', 18, 13]],
   },
   heimuya: {
-    name: '黑木崖', rows: carveRows(carveRows(genHeimuya(), line(1, 5, 7, 5), '^'), [[0, 5]], 'E'), buildings: HM_BUILDINGS, hfloor: '_',
+    name: '黑木崖', rows: carveRows(carveRows(carveRows(genHeimuya(), line(1, 5, 7, 5), '^'), [[0, 5]], 'E'), [[18, 3]], 'U'), buildings: HM_BUILDINGS, hfloor: '_',
     signs: { '9,2': '黑木崖。日月神教总坛。\n往北回山海关，往西是平定州。' },
     spawns: [['jiaozhong', 8, 18], ['jiaozhong', 18, 13], ['jiaozhong', 6, 19], ['jiaozhong', 20, 19], ['jiaozhong', 17, 19], ['jiaozhong', 4, 8]],
   },

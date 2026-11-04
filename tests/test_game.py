@@ -162,6 +162,21 @@ def 进出地下洞口(b):
     g.close()
 
 @case
+def 反派都在各自地点_掉独门秘籍(b):
+    g = Game(b); g.new_game()
+    where = {'yuebuqun': 'siguo', 'dongfang': 'chengde', 'zuolengchan': 'jianzhong', 'ouyangfeng': 'digong', 'limochou': 'jueqing', 'gongsun': 'jueqing', 'jiumozhi': 'miaojiang', 'jinlun': 'yanmen'}
+    for k, m in where.items():
+        assert g.ev(f'{G}.MAPS["{m}"].spawns.some(s => s[0] === "{k}")'), f'{k} 不在 {m}'
+        sk = g.ev(f'Object.keys({G}.SK).find(x => {G}.SK[x].villain === "{k}")')
+        assert sk, f'{k} 没有对应的特殊武功'
+        assert g.ev(f'{G}.DROPS["{k}"].some(([i]) => {G}.ITEMS[i] && {G}.ITEMS[i].book === "{sk}")'), f'{k} 不掉 {sk} 的秘籍'
+    assert g.ev(f'{G}.SK.bixie.villain === "yuebuqun" && !{G}.SK.bixie.sect'), '辟邪剑法还挂在门派下'
+    g.ev(f'{G}.warp("heimuya", 18, 4)'); g.pg.wait_for_timeout(2500); g.tap('up', 180); g.pg.wait_for_timeout(600)
+    assert g.ev(f'{G}.map.id') == 'chengde', '黑木崖进不了成德殿'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')
@@ -176,9 +191,9 @@ def 菜单各页能打开(b):
 @case
 def 同级战斗打得赢(b):
     g = Game(b); g.new_game(); g.pg.add_script_tag(path=os.path.join(ROOT, 'tests/sim.js'))
-    for L, m, k in [[15, 'wild', 'wolf'], [28, 'wild', 'boss'], [38, 'forest', 'tiger'], [45, 'huashan', 'hsjianke'], [65, 'digong', 'shiwei'], [88, 'jueqing', 'jqdizi']]:
-        wins = sum(1 for _ in range(3) if g.ev(f'simFight({L}, "{m}", "{k}")')['won'])
-        assert wins >= 2, f'{L} 级打 {m} 的 {k} 只赢了 {wins}/3'
+    for L, m, k in [[15, 'wild', 'wolf'], [30, 'wild', 'boss'], [38, 'forest', 'tiger'], [45, 'huashan', 'hsjianke'], [65, 'digong', 'shiwei'], [88, 'jueqing', 'jqdizi']]:
+        wins = sum(1 for _ in range(5) if g.ev(f'simFight({L}, "{m}", "{k}")')['won'])
+        assert wins >= 3, f'{L} 级打 {m} 的 {k} 只赢了 {wins}/5'
     assert not g.errs, g.errs
     g.close()
 

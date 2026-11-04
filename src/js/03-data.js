@@ -44,7 +44,8 @@ const SK = {
   diaoyu: { name: '钓鱼', cat: '生产', info: '钓鱼时修炼', desc: '越熟练越好上钩，稀有鱼越多' },
   fangzhi: { name: '纺织', cat: '生产', info: '缝制衣帽时修炼', desc: '熟练度越高，越少失败' },
   pengren: { name: '烹饪', cat: '生产', info: '做菜时修炼', desc: '熟练度越高，越少失败' },
-  bixie: { name: '辟邪剑法', short: '辟邪', cat: '剑', tier: 2, spd: 5, rec: 3, eva: 5, acc: 4, atk: [3, 5, 3, 3], move: '群邪辟易', sect: 'riyue', req: ['huashan', 30], qi: 20, desc: '快如鬼魅，以快打慢' },
+  bixie: { name: '辟邪剑法', short: '辟邪', cat: '剑', tier: 2, spd: 5, rec: 3, eva: 5, acc: 4, atk: [3, 5, 3, 3], move: '群邪辟易', req: ['huashan', 50], qi: 35, villain: 'yuebuqun', desc: '快如鬼魅，以快打慢' },
+  heixue: { name: '黑血神针', short: '神针', cat: '拳', tier: 2, spd: 5, rec: 3, eva: 3, acc: 5, atk: [3, 4, 3, 3], reach: 2, poison: 0.25, move: '万针齐发', sect: 'riyue', req: ['changquan', 30], qi: 20, desc: '日月神教暗器，针上淬毒，两格外伤人' },
   xixing: { name: '吸星大法', cat: '心法', tier: 2, mp: 5, hp: 3, yq: 4, sect: 'riyue', req: ['quanzhen', 30], qi: 30, info: '打坐时修炼', desc: '化人内力为己用' },
   luoying: { name: '落英神剑掌', short: '落英', cat: '拳', tier: 2, spd: 5, rec: 3, eva: 4, acc: 4, atk: [4, 4, 4, 3], move: '落英缤纷', sect: 'taohua', req: ['changquan', 30], qi: 20, desc: '掌影如桃花纷落' },
   qimen: { name: '奇门身法', cat: '步法', tier: 2, mv: 4, eva: 5, sect: 'taohua', req: ['caoshangfei', 30], info: '走路时修炼', desc: '暗合奇门五行，身形难测' },
@@ -71,6 +72,15 @@ const SK = {
   qianzhu: { name: '千蛛万毒手', short: '千蛛', cat: '拳', tier: 2, spd: 4, rec: 3, eva: 3, acc: 4, atk: [4, 4, 4, 3], poison: 0.35, move: '万毒噬心', sect: 'wudu', req: ['changquan', 30], qi: 20, desc: '以毒蛛练手，一抓剧毒入体' },
   wudushen: { name: '五毒神功', cat: '护体', tier: 2, def: [4, 4, 5, 4], sect: 'wudu', req: ['tiebushan', 30], qi: 25, info: '挨打时修炼', desc: '以五毒淬体，刀枪难入' },
   /* 奇人武功：没有门派，只能打听到高人所在，自己找上门去 */
+  /* 反派的特殊武功：打败那个反派，有机会掉秘籍 */
+  kuihua: { name: '葵花宝典', short: '葵花', cat: '剑', tier: 2, spd: 5, rec: 4, eva: 5, acc: 5, atk: [4, 5, 4, 3], move: '针落无声', req: ['huashan', 60], qi: 45, villain: 'dongfang', desc: '天下武功，唯快不破' },
+  hanbing: { name: '寒冰真气', cat: '心法', tier: 2, mp: 5, hp: 4, yq: 5, req: ['quanzhen', 50], qi: 40, villain: 'zuolengchan', info: '打坐时修炼', desc: '左冷禅独门内功，阴寒入骨' },
+  hama: { name: '蛤蟆功', short: '蛤蟆', cat: '拳', tier: 2, spd: 2, rec: 3, eva: 2, acc: 4, atk: [5, 5, 5, 4], stun: 0.2, move: '蛤蟆一跃', req: ['changquan', 50], qi: 40, villain: 'ouyangfeng', desc: '欧阳锋绝技，蓄势一击，势不可挡' },
+  chilian: { name: '赤练神掌', short: '赤练', cat: '拳', tier: 2, spd: 4, rec: 3, eva: 3, acc: 4, atk: [4, 4, 5, 3], poison: 0.35, move: '赤练封喉', req: ['changquan', 55], qi: 40, villain: 'limochou', desc: '李莫愁毒掌，中掌者全身赤红' },
+  yinyang: { name: '阴阳倒乱刃法', short: '阴阳', cat: '刀', tier: 2, spd: 4, rec: 4, eva: 3, acc: 4, atk: [5, 5, 5, 4], move: '刀剑倒乱', req: ['wuhu', 55], qi: 40, villain: 'gongsun', desc: '公孙止刀剑互换，虚实难测' },
+  huoyan: { name: '火焰刀', short: '火焰', cat: '刀', tier: 2, spd: 3, rec: 3, eva: 2, acc: 4, atk: [5, 4, 5, 4], reach: 2, move: '火焰燎原', req: ['wuhu', 50], qi: 40, villain: 'jiumozhi', desc: '鸠摩智以掌力化刀气，两格外伤人' },
+  xuedaofa: { name: '血刀刀法', short: '血刀', cat: '刀', tier: 2, spd: 4, rec: 3, eva: 3, acc: 4, atk: [5, 4, 5, 4], move: '血海翻腾', req: ['wuhu', 40], qi: 30, villain: 'xuedao', desc: '血刀老祖的邪门刀法，刀走偏锋' },
+  longxiang: { name: '龙象般若功', short: '龙象', cat: '槌', tier: 2, spd: 2, rec: 2, eva: 1, acc: 4, atk: [5, 5, 5, 5], stun: 0.3, move: '龙象之力', req: ['kaishan', 50], qi: 40, villain: 'jinlun', desc: '金轮法王的密宗神功，一击有龙象之力' },
   dugu: { name: '独孤九剑', short: '独孤', cat: '剑', tier: 2, spd: 5, rec: 5, eva: 4, acc: 5, atk: [5, 5, 4, 4], move: '破剑式', req: ['huashan', 60], qi: 40, desc: '无招胜有招，专破天下武功' },
   yuanyue: { name: '圆月弯刀', short: '弯刀', cat: '刀', tier: 2, spd: 4, rec: 3, eva: 3, acc: 4, atk: [5, 5, 5, 5], move: '小楼一夜听春雨', req: ['wuhu', 50], qi: 40, desc: '魔刀出鞘，刀光如一弯新月' },
   feidao: { name: '小李飞刀', short: '飞刀', cat: '刀', tier: 2, spd: 3, rec: 2, eva: 3, acc: 5, atk: [4, 5, 4, 3], reach: 3, move: '例不虚发', req: ['wuhu', 40], qi: 30, desc: '出手一刀，例不虚发，三格外取人' },
@@ -122,6 +132,14 @@ const EN = {
   kuangba: { name: '矿霸', lv: 45, hp: 900, atk: 18, dodge: 8, step: 22, mv: 1, sight: 5, cd: 66, dboss: true, look: { body: 'xiongpijia', hair: 'messy', beard: true, weapon: 'tiechui' }, resp: 60 * 60 * 6 },
   dongxiong: { name: '洞熊', lv: 50, hp: 650, atk: 20, dodge: 4, step: 28, mv: 0.9, sight: 4, cd: 80, beast: 'bear', resp: 2400 },
   xiongwang: { name: '熊王', lv: 65, hp: 2000, atk: 26, dodge: 6, step: 26, mv: 1, sight: 5, cd: 74, beast: 'bear', dboss: true, resp: 60 * 60 * 8 },
+  /* 武侠反派：地下图、深山里的头目，过一阵子会再出现，打败有机会掉他的独门秘籍 */
+  yuebuqun: { name: '岳不群', lv: 70, hp: 1800, atk: 24, dodge: 18, cd: 56, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['（他微微一笑）在下华山岳不群，江湖人称君子剑。', '阁下来思过崖，想必也是为了那本剑谱吧？'], look: { body: 'hsshan', hair: 'crown', beard: true, weapon: 'qinggang' } },
+  dongfang: { name: '东方不败', lv: 95, hp: 2700, atk: 30, dodge: 24, cd: 50, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['（他手里拈着一根绣花针，头也不抬）', '多少年没人能走进成德殿了。你倒是有点意思。'], look: { body: 'thshan', hair: 'bun' } },
+  zuolengchan: { name: '左冷禅', lv: 85, hp: 2400, atk: 27, dodge: 16, cd: 56, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['五岳并派，我左冷禅当盟主，天经地义！', '剑冢里的剑，也该归我嵩山派。'], look: { body: 'heipao', hair: 'crown', beard: true, weapon: 'qinggang' } },
+  ouyangfeng: { name: '欧阳锋', lv: 80, hp: 2200, atk: 26, dodge: 14, cd: 58, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['（他倒立着，咕咕怪叫）', '谁？我是谁？……管他的，先吃我一招！'], look: { body: 'heipao', hair: 'messy', beard: true } },
+  limochou: { name: '李莫愁', lv: 88, hp: 2500, atk: 28, dodge: 20, cd: 54, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['问世间，情是何物……', '（她拂尘一扬）你也是来送死的？'], look: { body: 'gmbai', hair: 'bun' } },
+  jiumozhi: { name: '鸠摩智', lv: 82, hp: 2250, atk: 26.5, dodge: 14, cd: 56, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['小僧吐蕃鸠摩智，来中原求武学典籍。', '施主身上的武功，小僧也想借来一观。'], look: { body: 'kasaya', hair: 'bald' } },
+  jinlun: { name: '金轮法王', lv: 75, hp: 2000, atk: 25, dodge: 10, cd: 60, dboss: true, villain: true, sight: 6, step: 18, mv: 1.2, resp: 60 * 60 * 8, intro: ['本座乃蒙古国师金轮法王。', '中原武林，不过如此！'], look: { body: 'kasaya', hair: 'bald', weapon: 'zijin' } },
   jianmo: { name: '剑魔残影', lv: 65, hp: 1600, atk: 25, dodge: 18, step: 18, mv: 1.2, sight: 6, cd: 56, dboss: true, look: { body: 'heipao', hair: 'messy', beard: true, weapon: 'qinggang' }, resp: 60 * 60 * 8 },
   jianling: { name: '剑冢游魂', lv: 75, hp: 900, atk: 26, dodge: 18, step: 18, mv: 1.2, sight: 6, cd: 58, look: { body: 'changpao', hair: 'messy', weapon: 'qinggang' }, resp: 2400 },
   jianshou: { name: '剑冢守灵', lv: 95, hp: 2700, atk: 30, dodge: 18, step: 18, mv: 1.2, sight: 7, cd: 54, dboss: true, look: { body: 'heipao', hair: 'crown', beard: true, weapon: 'xuantie' }, resp: 60 * 60 * 10 },
@@ -140,10 +158,19 @@ const EN = {
   langwang: { name: '狼王', lv: 74, hp: 1000, atk: 27, dodge: 14, step: 16, mv: 1.45, sight: 7, cd: 60, beast: 'snowwolf', resp: 3600 },
   hsjianke: { name: '华山剑客', lv: 82, hp: 1100, atk: 28, dodge: 16, step: 18, mv: 1.2, sight: 6, cd: 60, look: { body: 'changpao', hair: 'fangjin', weapon: 'qinggang' }, resp: 3000 },
   jqdizi: { name: '绝情谷弟子', lv: 86, hp: 1150, atk: 29, dodge: 14, step: 18, mv: 1.2, sight: 6, cd: 60, look: { body: 'thshan', hair: 'knot', weapon: 'tiejian' }, resp: 3000 },
-  gongsun: { name: '绝情谷主', lv: 95, hp: 2200, atk: 33, dodge: 16, step: 18, mv: 1.2, sight: 7, cd: 58, intro: ['擅闯绝情谷者，死。', '让你见识公孙家的阴阳倒乱刃法！'], look: { body: 'heipao', hair: 'crown', beard: true, weapon: 'xuantie' }, resp: 60 * 60 * 8 },
+  gongsun: { name: '公孙止', lv: 92, hp: 2600, atk: 29, dodge: 16, step: 18, mv: 1.2, sight: 7, cd: 58, dboss: true, villain: true, intro: ['擅闯绝情谷者，死。', '让你见识公孙家的阴阳倒乱刃法！'], look: { body: 'heipao', hair: 'crown', beard: true, weapon: 'xuantie' }, resp: 60 * 60 * 8 },
   dummy: { name: '木人桩', lv: 15, hp: 9999, atk: 0, dodge: 0, dummy: true, passive: true },
 };
 const DROPS = {
+  yuebuqun: [['book_bixie', 0.25], ['hantie', 0.8], ['hantiejian', 0.2], ['jingtie', 1]],
+  dongfang: [['book_kuihua', 0.2], ['xuantiekuang', 1], ['xuantie', 0.1], ['yulu', 0.5]],
+  zuolengchan: [['book_hanbing', 0.25], ['hantie', 1], ['xuantiekuang', 0.4]],
+  ouyangfeng: [['book_hama', 0.25], ['wujin', 1], ['baoming', 0.3]],
+  limochou: [['book_chilian', 0.25], ['xuelian', 1], ['duanxu', 0.3]],
+  gongsun: [['book_yinyang', 0.25], ['hantie', 1], ['hantiedao', 0.2], ['xuantiekuang', 0.4], ['lingzhi', 1], ['qidan', 1]],
+  jiumozhi: [['book_huoyan', 0.25], ['wujin', 0.8], ['renshen', 0.5]],
+  jinlun: [['book_longxiang', 0.25], ['wujin', 0.6], ['wujinchui', 0.2]],
+  xuedao: [['book_xuedao', 1]],
   kuangfei: [['shengtie', 0.6], ['jingtie', 0.25], ['yao', 0.3]],
   kuangba: [['jingtie', 1], ['jingtie', 0.8], ['guitou', 0.25], ['baleng', 0.25], ['book_hujia', 0.15]],
   dongxiong: [['xiongpi', 0.5], ['xiongdan', 0.25], ['renshen', 0.1]],
@@ -164,7 +191,7 @@ const DROPS = {
   snowwolf: [['xuelangpi', 0.6], ['shougu', 0.4]],
   shanfei: [['yao', 0.3], ['shengtie', 0.3]], baozi: [['hupi', 0.4], ['shougu', 0.5]], qzdizi: [['qidan', 0.3]], mjzhong: [['yao', 0.3], ['qidan', 0.15]],
   mazei: [['yao', 0.3], ['shengtie', 0.3]], shalang: [['langpi', 0.6], ['shougu', 0.4]], shafei: [['yao', 0.35], ['shengtie', 0.3]], cylang: [['langpi', 0.7], ['shougu', 0.4]],
-  menggu: [['yao', 0.4], ['qidan', 0.15]], langwang: [['xuelangpi', 0.8], ['hugu', 0.3]], hsjianke: [['qidan', 0.3], ['lingzhi', 0.1]], jqdizi: [['qidan', 0.3], ['lingzhi', 0.12]], gongsun: [['lingzhi', 1], ['qidan', 1]],
+  menggu: [['yao', 0.4], ['qidan', 0.15]], langwang: [['xuelangpi', 0.8], ['hugu', 0.3]], hsjianke: [['qidan', 0.3], ['lingzhi', 0.1]], jqdizi: [['qidan', 0.3], ['lingzhi', 0.12]], 
 };
 
 /* 物品：buyer 表示谁收购，buy 表示能在哪买 */
@@ -219,6 +246,15 @@ const ITEMS = {
   book_hujia: { name: '胡家刀法秘籍', info: '断门刀30级可研读', book: 'hujia' },
   book_yuejia: { name: '岳家枪法秘籍', info: '杨家枪30级可研读', buy: 300, book: 'yuejia' },
   book_shenxing: { name: '神行百变秘籍', info: '草上飞20级可研读', book: 'shenxing' },
+  book_bixie: { name: '辟邪剑谱', info: '华山剑法50级可研读', sell: 100, book: 'bixie' },
+  book_kuihua: { name: '葵花宝典', info: '华山剑法60级可研读', sell: 150, book: 'kuihua' },
+  book_hanbing: { name: '寒冰真气心法', info: '全真心法50级可研读', sell: 120, book: 'hanbing' },
+  book_hama: { name: '蛤蟆功秘籍', info: '太祖长拳50级可研读', sell: 120, book: 'hama' },
+  book_chilian: { name: '赤练神掌图谱', info: '太祖长拳55级可研读', sell: 120, book: 'chilian' },
+  book_yinyang: { name: '阴阳倒乱刃谱', info: '五虎断门刀55级可研读', sell: 120, book: 'yinyang' },
+  book_huoyan: { name: '火焰刀秘要', info: '五虎断门刀50级可研读', sell: 120, book: 'huoyan' },
+  book_xuedao: { name: '血刀经', info: '五虎断门刀40级可研读', sell: 100, book: 'xuedaofa' },
+  book_longxiang: { name: '龙象般若经', info: '开山锤法50级可研读', sell: 120, book: 'longxiang' },
 };
 
 /* 装备：每件都会画在人物身上，换了就看得出来 */

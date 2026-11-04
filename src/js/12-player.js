@@ -145,7 +145,7 @@ function actB() {
 const RES_BONUS = {
   '*': { shudao: ['sanqi', 0.35], miaojiang: ['sanqi', 0.4], zhongnan: ['fengmi', 0.3], wudang: ['fengmi', 0.3], forest: ['renshen', 0.15], caoyuan: ['renshen', 0.2], jueqing: ['sanqi', 0.25] },
   '&': { heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 0.35], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
-  'O': { kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.15], forest: ['jingtie', 0.15] },
+  'O': { chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.15], forest: ['jingtie', 0.15] },
 };
 /* 地方的“档次”：看这里的怪有多厉害 */
 function mapTier(id) {
