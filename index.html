@@ -3828,7 +3828,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v49 ' + FAST_NAME[FAST] : 'v49', 156, 0, 2, 'right');
+  txt(FAST ? 'v50 ' + FAST_NAME[FAST] : 'v50', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4836,19 +4836,27 @@ function renderHud() {
   if (B.parts && B.parts.t > 0) [0, 1, 2].forEach(i => glint(13 + i * slot, 14, pw));
 }
 /* 身边 5 格内能采的东西，头上都标着名字（三七、精铁矿……）；贴身那个多一个“A”，按 A 就采 */
+const MARK_NAME = {
+  J: (x, y) => lootable(x, y) ? '石刻' : '石刻·已读', X: (x, y) => lootable(x, y) ? '旧木箱' : '空木箱',
+  S: () => '告示牌', o: () => '水井', U: () => '洞口',
+};
+const markDone = (t, x, y) => (t === 'J' || t === 'X') && !lootable(x, y);
 function renderLootTag() {
   if (dlg || menu) return;
   const list = [];
-  for (let y = P.ty - 5; y <= P.ty + 5; y++) for (let x = P.tx - 6; x <= P.tx + 6; x++) {
-    if (!lootable(x, y)) continue;
-    list.push([Math.abs(x - P.tx) + Math.abs(y - P.ty), x, y]);
+  /* 能互动的东西（石刻、木箱、告示牌、水井、洞口）整屏都标；能采的东西只标身边 5 格内的，免得满屏是字 */
+  const x0 = Math.floor(cam.x / T), y0 = Math.floor(cam.y / T);
+  for (let y = y0; y <= y0 + Math.ceil(GH / T); y++) for (let x = x0; x <= x0 + Math.ceil(GW / T); x++) {
+    if (x < 0 || y < 0 || x >= map.w || y >= map.h) continue;
+    const t = map.rows[y][x], d = Math.abs(x - P.tx) + Math.abs(y - P.ty);
+    if (MARK_NAME[t]) list.push([d, x, y, MARK_NAME[t](x, y), MARK_NAME[t] && !markDone(t, x, y)]);
+    else if (RES_TILES[t] && lootable(x, y) && Math.abs(x - P.tx) <= 6 && Math.abs(y - P.ty) <= 5) list.push([d, x, y, resName(x, y, t), true]);
   }
-  list.sort((a, b) => b[0] - a[0]).slice(-8).forEach(([d, x, y]) => {
-    const t = map.rows[y][x], name = RES_TILES[t] ? resName(x, y, t) : LOOT_NAME[t];
-    const near = d === 1, label = near ? name + ' A' : name, w = tw(label) + 6;
+  list.sort((a, b) => b[0] - a[0]).slice(-14).forEach(([d, x, y, name, live]) => {
+    const near = d === 1 && live && name !== '洞口', label = near ? name + ' A' : name, w = tw(label) + 6;
     const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y - 12;
-    R(lx, ly, w, 12, 3); if (!near) R(lx + 1, ly + 1, w - 2, 10, 0);
-    txt(label, lx + 3, ly + 1, near ? 0 : 3);
+    R(lx, ly, w, 12, live ? 3 : 2); if (!near) R(lx + 1, ly + 1, w - 2, 10, 0);
+    txt(label, lx + 3, ly + 1, near ? 0 : live ? 3 : 2);   /* 看过、开过的变灰 */
   });
 }
 /* 点地上的东西后显示的名字牌，带个小箭头指着它 */
