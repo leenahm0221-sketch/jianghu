@@ -45,41 +45,39 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
 }
 .ctl > *{pointer-events:auto}
 .dpad{grid-column:1;grid-row:1;width:148px;height:148px;position:relative;touch-action:none;cursor:pointer}
-/* GB 风格十字键：黑色十字，中间一个凹点，按下的方向箭头变亮 */
-.dpad::before,.dpad::after{content:'';position:absolute;background:#2a2a2e;border-radius:7px;box-shadow:inset 0 2px 0 rgba(255,255,255,.16),inset 0 -3px 0 rgba(0,0,0,.4),0 3px 0 rgba(0,0,0,.45)}
-.dpad::before{left:8px;top:50px;width:132px;height:48px}
-.dpad::after{left:50px;top:8px;width:48px;height:132px}
-.dpad i{position:absolute;z-index:2;width:0;height:0;border:8px solid transparent;opacity:.85}
-.dpad i.u{left:66px;top:16px;border-bottom-color:#6a6a72;border-top:0}
-.dpad i.d{left:66px;bottom:16px;border-top-color:#6a6a72;border-bottom:0}
-.dpad i.l{top:66px;left:16px;border-right-color:#6a6a72;border-left:0}
-.dpad i.r{top:66px;right:16px;border-left-color:#6a6a72;border-right:0}
-.dpad i.u.on{border-bottom-color:#e8e8e0}.dpad i.d.on{border-top-color:#e8e8e0}.dpad i.l.on{border-right-color:#e8e8e0}.dpad i.r.on{border-left-color:#e8e8e0}
-.knob{position:absolute;z-index:2;left:62px;top:62px;width:24px;height:24px;border-radius:50%;background:#1e1e22;box-shadow:inset 0 2px 3px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.12);pointer-events:none;transform:none!important}
+/* 十字键：和游戏一样只用调色板的四种颜色，硬边像素风（换调色板会跟着变） */
+.dpad::before,.dpad::after{content:'';position:absolute;inset:0;pointer-events:none}
+.dpad::before{background:var(--gb3);clip-path:polygon(50px 8px,98px 8px,98px 50px,140px 50px,140px 98px,98px 98px,98px 140px,50px 140px,50px 98px,8px 98px,8px 50px,50px 50px)}
+.dpad::after{background:var(--gb2);clip-path:polygon(54px 12px,94px 12px,94px 54px,136px 54px,136px 94px,94px 94px,94px 136px,54px 136px,54px 94px,12px 94px,12px 54px,54px 54px)}
+.dpad i{position:absolute;z-index:2;width:0;height:0;border:8px solid transparent}
+.dpad i.u{left:66px;top:18px;border-bottom-color:var(--gb1);border-top:0}
+.dpad i.d{left:66px;bottom:18px;border-top-color:var(--gb1);border-bottom:0}
+.dpad i.l{top:66px;left:18px;border-right-color:var(--gb1);border-left:0}
+.dpad i.r{top:66px;right:18px;border-left-color:var(--gb1);border-right:0}
+.dpad i.u.on{border-bottom-color:var(--gb0)}.dpad i.d.on{border-top-color:var(--gb0)}.dpad i.l.on{border-right-color:var(--gb0)}.dpad i.r.on{border-left-color:var(--gb0)}
+.knob{position:absolute;z-index:2;left:66px;top:66px;width:16px;height:16px;background:var(--gb3);pointer-events:none;transform:none!important}
 .ab{grid-column:3;grid-row:1;display:flex;gap:16px;padding:0 4px 4px 0;align-items:flex-start}
 .btn{display:flex;flex-direction:column;align-items:center;gap:6px}
-.btn button{width:64px;height:64px;border-radius:50%;border:0;background:#8e1f4f;color:#f3c9da;font:italic 900 24px/1 var(--sans);touch-action:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:inset 0 3px 0 rgba(255,255,255,.18),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 0 #4a0f29,0 6px 8px rgba(0,0,0,.35);transition:transform .05s}
-.btn button.on{transform:translateY(3px);box-shadow:inset 0 3px 0 rgba(255,255,255,.12),inset 0 -2px 0 rgba(0,0,0,.25),0 1px 0 #4a0f29}
+.btn button{width:64px;height:64px;border-radius:50%;border:3px solid var(--gb3);background:var(--gb2);color:var(--gb0);font:900 24px/1 var(--sans);touch-action:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 4px 0 var(--gb3)}
+.btn button.on{transform:translateY(3px);box-shadow:0 1px 0 var(--gb3);background:var(--gb1);color:var(--gb3)}
 .ab .btn:first-child{margin-top:28px}
 /* A 键上方的快捷药格：点一下服用，按住换下一种药 */
 .abtn{position:relative}
-.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);width:54px;height:44px;border-radius:6px;border:3px solid #2a2a2e;background:#c9c8c0;color:#1e1e22;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.45);font-style:normal}
+.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);width:54px;height:44px;border-radius:0;border:3px solid var(--gb3);background:var(--gb0);color:var(--gb3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 var(--gb2);font-style:normal}
 .btn button.quick b{font:800 15px/1 var(--sans);pointer-events:none}
 .btn button.quick i{font:700 11px/1 var(--sans);font-style:normal;opacity:.85;pointer-events:none}
 .btn button.quick.empty{opacity:.45}
-.btn button.quick.on{background:#9a9991}
+.btn button.quick.on{background:var(--gb1);transform:translateX(-50%) translateY(2px);box-shadow:0 1px 0 var(--gb2)}
 .btn > span{display:none}
-/* A 红、B 蓝，一眼分得开 */
-.btn button[data-k="a"]{background:#b3262e;color:#ffd7d7;box-shadow:inset 0 3px 0 rgba(255,255,255,.2),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 0 #5e1014,0 6px 8px rgba(0,0,0,.35)}
-.btn button[data-k="b"]{background:#2850a8;color:#d6e2ff;box-shadow:inset 0 3px 0 rgba(255,255,255,.2),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 0 #142a5e,0 6px 8px rgba(0,0,0,.35)}
-.btn button[data-k="a"].on{box-shadow:inset 0 3px 0 rgba(255,255,255,.12),0 1px 0 #5e1014}
-.btn button[data-k="b"].on{box-shadow:inset 0 3px 0 rgba(255,255,255,.12),0 1px 0 #142a5e}
+/* A 深、B 浅，一眼分得开 */
+.btn button[data-k="a"]{background:var(--gb3);color:var(--gb0);border-color:var(--gb3);box-shadow:0 4px 0 var(--gb2)}
+.btn button[data-k="a"].on{background:var(--gb2);color:var(--gb0);box-shadow:0 1px 0 var(--gb2)}
 .small span{display:none}
 .smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
 .sgrp{display:flex;gap:12px}
-.smalls .small button{width:46px;height:46px;position:relative;padding:0;border:0;border-radius:6px;background:#85858c;font:800 12px/1.15 var(--sans);color:#1e1e22;letter-spacing:0;touch-action:none;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.3),0 3px 0 rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;text-align:center}
+.smalls .small button{width:46px;height:46px;position:relative;padding:0;border:3px solid var(--gb3);border-radius:0;background:var(--gb1);font:800 12px/1.15 var(--sans);color:var(--gb3);letter-spacing:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 var(--gb2);display:flex;align-items:center;justify-content:center;text-align:center}
 .small{display:flex;flex-direction:column;align-items:center}
-.smalls .small button.on{background:#5b5b62;color:#e8e8e0;transform:translateY(2px);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),0 1px 0 rgba(0,0,0,.45)}
+.smalls .small button.on{background:var(--gb2);color:var(--gb0);transform:translateY(2px);box-shadow:0 1px 0 var(--gb2)}
 button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 .namebox[hidden]{display:none}
 .namebox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -3732,7 +3730,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v42 加速' : 'v42', 156, 0, 2, 'right');
+  txt(FAST ? 'v43 加速' : 'v43', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
