@@ -15,7 +15,8 @@ function cycleWeapon() {
   S.equip.weapon = nx; ensureActive();
   toast(nx ? `换上${EQ[nx].name}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu');
 }
-const moveSpeed = () => (1 + pv('步法', 'mv') / 100 * 1.1) * (injured('leg') ? 0.6 : 1) * FASTX(1.5);
+/* 轻功主要是提高闪躲；走路只快一点点：练到顶、最好的身法也只快 15%，测试加速也不加快走路 */
+const moveSpeed = () => (1 + Math.min(1.4, pv('步法', 'mv') / 100) / 1.4 * 0.15) * (injured('leg') ? 0.6 : 1);
 function updPlayer() {
   if (P.dead) return;
   if (P.fish) { if (pressed.start) { P.fish = null; } else return updFish(); }

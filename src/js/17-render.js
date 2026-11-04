@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v46 加速' : 'v46', 156, 0, 2, 'right');
+  txt(FAST ? 'v47 加速' : 'v47', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -72,19 +72,16 @@ function renderTitleUI() {
 function spr(rows, sx, sy) { rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const c = r.charCodeAt(x) - 48; if (c >= 0 && c <= 3) R(sx + x, sy + y, 1, 1, c); } }); }
 /* 可采的东西统一画法：黑描边、亮色块，个头小一圈，脚下一圈浅影，和树、石头这些挡路的东西分开 */
 const SPR_HERB = [
-  '       3        ',
-  '      303       ',
-  '  3   323   3   ',
-  ' 303  323  303  ',
-  ' 3223 323 3223  ',
-  '  3223323 3223  ',
-  '   32232332233  ',
-  '    322222223   ',
-  '     3222223    ',
-  '      32223     ',
-  '       323      ',
-  '       323      ',
-];
+  '    3    ',
+  '   303   ',
+  '3  323  3',
+  '30 323 03',
+  '323323323',
+  ' 3223223 ',
+  '  32223  ',
+  '   323   ',
+  '   333   ',
+]
 const SPR_COTTON_BALL = ['  33  ', ' 3003 ', '300003', '300013', ' 3113 ', '  33  '];
 function drawTile(t, sx, sy, mx, my) {
   const hs = hash(mx, my);
@@ -223,12 +220,12 @@ function drawTile(t, sx, sy, mx, my) {
       }
       if (hs % 3 === 0) {
         /* 另一种草药：细长的草茎，顶上结穗 */
-        for (const [x, h] of [[4, 10], [7, 13], [10, 9], [12, 11]]) { R(sx + x, sy + 16 - h, 1, h, 3); R(sx + x - 1, sy + 16 - h, 3, 3, 2); R(sx + x, sy + 16 - h, 1, 1, 0); }
+        for (const [x, h] of [[5, 6], [7, 8], [9, 5], [11, 7]]) { R(sx + x, sy + 16 - h, 1, h, 3); R(sx + x - 1, sy + 16 - h, 3, 3, 2); R(sx + x, sy + 16 - h, 1, 1, 0); }
         break;
       }
       /* 普通草药：三片尖叶的一小丛，叶尖发白 */
       R(sx + 4, sy + 15, 8, 1, 2);
-      spr(SPR_HERB, sx, sy + 3);
+      spr(SPR_HERB, sx + 3, sy + 6);
       break;
     }
     case '&':
@@ -241,13 +238,13 @@ function drawTile(t, sx, sy, mx, my) {
         break;
       }
       /* 灵芝：扇形菌盖，一圈圈年轮，下面一根短柄 */
-      R(sx + 3, sy + 15, 10, 1, 2);
-      R(sx + 7, sy + 10, 2, 5, 3); R(sx + 8, sy + 10, 1, 4, 2);
-      for (let y = 0; y < 8; y++) for (let x = 0; x < 16; x++) {
-        const dx = x - 7.5, dy = 8 - y, r = Math.sqrt(dx * dx / 60 + dy * dy / 64);
-        if (r < 1) R(sx + x, sy + 2 + y, 1, 1, r > 0.86 || y === 7 ? 3 : r > 0.66 ? 1 : r > 0.5 ? 2 : r > 0.3 ? 1 : 2);
+      R(sx + 4, sy + 15, 8, 1, 2);
+      R(sx + 7, sy + 11, 2, 4, 3); R(sx + 8, sy + 11, 1, 3, 2);
+      for (let y = 0; y < 6; y++) for (let x = 0; x < 12; x++) {
+        const dx = x - 5.5, dy = 6 - y, r = Math.sqrt(dx * dx / 36 + dy * dy / 36);
+        if (r < 1) R(sx + 2 + x, sy + 6 + y, 1, 1, r > 0.84 || y === 5 ? 3 : r > 0.6 ? 1 : r > 0.4 ? 2 : 1);
       }
-      R(sx + 4, sy + 4, 2, 1, 0);
+      R(sx + 5, sy + 7, 2, 1, 0);
       break;
     case 'O': {
       base();
@@ -268,8 +265,8 @@ function drawTile(t, sx, sy, mx, my) {
           }
         }
       };
-      chunk(1, 7, 8, 8); chunk(8, 8, 7, 7); chunk(4, 2, 8, 8);
-      if (ice) { R(sx + 6, sy, 1, 3, 0); R(sx + 5, sy + 1, 3, 1, 0); }
+      chunk(2, 9, 7, 6); chunk(8, 9, 6, 6); chunk(5, 4, 7, 7);
+      if (ice) { R(sx + 8, sy + 1, 1, 3, 3); R(sx + 7, sy + 2, 3, 1, 3); R(sx + 8, sy + 2, 1, 1, 0); }
       if ((frame + hs) % 90 < 10) { const px = sx + 4 + (hs % 8), py = sy + 6 + ((hs >> 3) % 5); R(px - 1, py, 3, 1, 0); R(px, py - 1, 1, 3, 0); }
       break;
     }
@@ -307,24 +304,27 @@ function drawTile(t, sx, sy, mx, my) {
         break;
       }
       const tv = hs % 5;
+      /* 树比别的东西都高一截：树冠往上伸出 4 像素，压到上一格 */
+      const sy0 = sy; sy -= 4;
+      const trunk = () => { R(sx + 7, sy0 + 8, 2, 8, 3); R(sx + 8, sy0 + 9, 1, 6, 2); };
       if (tv === 1) { /* 松树：一层层的尖顶 */
-        grass(); R(sx + 7, sy + 12, 2, 4, 3);
+        { const s0 = sy; sy = sy0; grass(); sy = s0; } trunk();
         for (let y = 0; y < 13; y++) { const w = Math.min(14, 2 + (y % 5) * 2 + Math.floor(y / 5) * 2), x0 = sx + 8 - w / 2; R(x0, sy + y, w, 1, y % 5 === 4 ? 3 : 2); R(x0, sy + y, 1, 1, 3); R(x0 + w - 1, sy + y, 1, 1, 3); }
         R(sx + 7, sy, 2, 1, 3); break;
       }
       if (tv === 2) { /* 柳树：树冠垂下一条条柳丝 */
-        grass(); R(sx + 7, sy + 9, 2, 7, 3);
+        { const s0 = sy; sy = sy0; grass(); sy = s0; } R(sx + 7, sy + 9, 2, 11, 3);
         for (let y = 0; y < 7; y++) for (let x = 0; x < 16; x++) { const dx = x - 7.5, dy = y - 3.5, r = dx * dx / 56 + dy * dy / 14; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.7 ? 3 : 2); }
         for (const [x, h] of [[1, 10], [3, 12], [5, 9], [10, 9], [12, 12], [14, 10]]) R(sx + x, sy + 4, 1, h, (x + my) % 2 ? 3 : 2);
         break;
       }
       if (tv === 3) { /* 果树：圆树冠上挂着果子 */
-        R(sx, sy, T, T, 0);
+        R(sx, sy0, T, T, 0); trunk();
         for (let y = 0; y < 12; y++) for (let x = 1; x < 15; x++) { const dx = x - 7.5, dy = y - 6, r = dx * dx / 50 + dy * dy / 36; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.75 ? 3 : 2); }
         for (const [fx, fy] of [[4, 4], [9, 3], [11, 7], [6, 8], [3, 8]]) { R(sx + fx, sy + fy, 2, 2, 0); R(sx + fx + 1, sy + fy + 1, 1, 1, 3); }
         R(sx + 6, sy + 11, 4, 5, 3); R(sx + 7, sy + 12, 1, 3, 2); break;
       }
-      R(sx, sy, T, T, 0);
+      R(sx, sy0, T, T, 0); trunk();
       for (let y = 0; y < 13; y++) for (let x = 0; x < 16; x++) {
         const dx = x - 7.5, dy = y - 6.5, r = dx * dx / 64 + dy * dy / 42;
         if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.78 ? 3 : (dx < -1 && dy < -1 && r < 0.45) ? 1 : 2);
@@ -978,11 +978,10 @@ function renderWorld() {
         drawPerson(sx - dx * 10, sy - dy * 10, P.dir, 0, { ...playerLook(), ghost: true });
         drawPerson(sx - dx * 5, sy - dy * 5, P.dir, 0, { ...playerLook(), ghost: true });
       }
-      const ms = moveSpeed() / FASTX(1.5);
-      if (P.moving && ms > 1.4) {
+      const ms = moveSpeed();
+      if (P.moving && ms > 1.09) {   /* 轻功练得好，走路时身后有一道淡淡的残影 */
         const [dx, dy] = DIRS[P.dir];
-        drawPerson(sx - dx * 6, sy - dy * 6, P.dir, 0, { ...playerLook(), ghost: true });
-        if (ms > 1.9) drawPerson(sx - dx * 12, sy - dy * 12, P.dir, 0, { ...playerLook(), ghost: true });
+        drawPerson(sx - dx * 5, sy - dy * 5, P.dir, 0, { ...playerLook(), ghost: true });
       }
       drawPerson(sx + ox, sy + oy, P.dir, step, playerLook(), P.hurtT > 0 && P.hurtT % 6 < 3);
     }
@@ -1161,10 +1160,22 @@ function renderDialog() {
   const last = dlg.i === dlg.pages.length - 1;
   if (done && dlg.choice && last) {
     const c = dlg.choice;
-    const w = Math.max(...c.options.map(o => tw(o))) + 22, h = c.options.length * 12 + 9;
+    /* 选项太多时只显示放得下的几行，跟着光标上下滚动，不会冒出屏幕 */
+    const top = HUD_H - (UB - 144) + 2, fit = Math.max(3, Math.floor((99 - top - 9) / 12));
+    const n = c.options.length, rows = Math.min(n, fit);
+    const first = clamp(c.sel - Math.floor(rows / 2), 0, n - rows);
+    const w = Math.min(DW, Math.max(...c.options.map(o => tw(o))) + 22 + (n > rows ? 8 : 0)), h = rows * 12 + 9;
     const x = x0 + DW - w, y = 99 - h;
     box(x, y, w, h);
-    c.options.forEach((o, i) => { if (i === c.sel) txt('▶', x + 4, y + 5 + i * 12, 3); txt(o, x + 15, y + 5 + i * 12, 3); });
+    for (let k = 0; k < rows; k++) { const i = first + k, o = c.options[i]; if (i === c.sel) txt('▶', x + 4, y + 5 + k * 12, 3); txt(o, x + 15, y + 5 + k * 12, 3); }
+    /* 右边一道滚动条：上下还有选项时显示小三角 */
+    if (n > rows) {
+      const ax = x + w - 9;
+      if (first > 0) for (let k = 0; k < 3; k++) R(ax + 2 - k, y + 5 + k, 1 + k * 2, 1, 3);
+      if (first + rows < n) for (let k = 0; k < 3; k++) R(ax + k, y + h - 8 + k, 5 - k * 2, 1, 3);
+      const trackY = y + 10, trackH = h - 20, bh = Math.max(3, Math.round(trackH * rows / n)), by = trackY + Math.round((trackH - bh) * first / (n - rows));
+      R(ax + 2, trackY, 1, trackH, 1); R(ax + 1, by, 3, bh, 3);
+    }
   } else if (done && frame % 40 < 26) txt('▼', x0 + DW - 12, 131, 3);
 }
 /* 武功详情：六档评级 + 小格条，和千年的武功说明一样直观 */

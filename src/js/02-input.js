@@ -32,24 +32,22 @@ function setPad(d) {
   if (d) { press(d); arrows[d].classList.add('on'); }
 }
 const knob = document.getElementById('knob');
-/* 摇杆：手指落下的地方当作中心（按在边上的方向箭头时仍以摇杆中心为准），
-   离中心 16 像素以内不走；换方向要明显偏过去才换，斜着推不会上下左右乱跳 */
-let padO = null;
+/* 十字键：永远以十字键正中为准，按哪个方向的臂就走哪个方向（和真 GB 一样，不再把手指落点当中心）。
+   正中一小块不算方向；已经在走的方向要明显偏过去才换，拇指压在斜角上不会上下左右乱跳 */
 function padPoint(e) {
   const r = localRect(dpad), cx = r.left + r.width / 2, cy = r.top + r.height / 2, pt = toLocal(e.clientX, e.clientY);
-  if (!padO) { const far = Math.hypot(pt.x - cx, pt.y - cy) > r.width * 0.28; padO = far ? { x: cx, y: cy } : { x: pt.x, y: pt.y }; }
-  const x = pt.x - padO.x, y = pt.y - padO.y;
-  const d = Math.hypot(x, y), max = r.width * 0.26, k = d > max ? max / d : 1;
+  const x = pt.x - cx, y = pt.y - cy;
+  const d = Math.hypot(x, y), max = r.width * 0.12, k = d > max ? max / d : 1;
   knob.style.transform = `translate(${x * k}px, ${y * k}px)`;
-  if (d < (padDir ? 12 : 16)) return setPad(null);
+  if (d < r.width * 0.09) return setPad(null);
   const ax = Math.abs(x), ay = Math.abs(y);
   let horiz = ax > ay;
-  if (padDir === 'left' || padDir === 'right') horiz = ax * 1.6 > ay;
-  else if (padDir === 'up' || padDir === 'down') horiz = ax > ay * 1.6;
+  if (padDir === 'left' || padDir === 'right') horiz = ax * 1.4 > ay;
+  else if (padDir === 'up' || padDir === 'down') horiz = ax > ay * 1.4;
   setPad(horiz ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up'));
 }
-function padEnd() { setPad(null); padO = null; knob.style.transform = ''; dpad.classList.remove('active'); }
-dpad.addEventListener('pointerdown', e => { e.preventDefault(); try { dpad.setPointerCapture(e.pointerId); } catch (_) {} dpad.classList.add('active'); padO = null; padPoint(e); });
+function padEnd() { setPad(null); knob.style.transform = ''; dpad.classList.remove('active'); }
+dpad.addEventListener('pointerdown', e => { e.preventDefault(); try { dpad.setPointerCapture(e.pointerId); } catch (_) {} dpad.classList.add('active'); padPoint(e); });
 dpad.addEventListener('pointermove', e => { if (dpad.classList.contains('active')) padPoint(e); });
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => dpad.addEventListener(n, padEnd));
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
