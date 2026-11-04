@@ -1,0 +1,153 @@
+<title>江湖少年 GB</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{
+  /* Layout: the game picture fills the whole screen; GB-style controls float over it */
+  --bg:var(--gb3);
+  --gb0:#e8e8e0;--gb1:#a8a8a0;--gb2:#58585a;--gb3:#18181a;
+  --pad:rgba(28,30,34,.62);
+  --pad-on:rgba(28,30,34,.88);
+  --btn:rgba(150,36,46,.9);
+  --btn-on:rgba(205,60,70,1);
+  --pill:rgba(18,18,20,.8);
+  --label:#fff;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color-scheme: dark;
+}
+html,body{height:100%}
+body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+.game{position:relative;width:100%;height:100%;overflow:hidden}
+#screen{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.ctl{
+  position:absolute;left:0;right:0;bottom:0;pointer-events:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 14px;
+  display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;align-items:end;row-gap:10px;
+}
+.ctl > *{pointer-events:auto}
+.dpad{grid-column:1;grid-row:1;width:148px;height:148px;position:relative;touch-action:none;cursor:pointer;border-radius:50%;background:var(--pad);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
+.dpad i{position:absolute;z-index:1;width:0;height:0;border:8px solid transparent;opacity:.9}
+.dpad i.u{left:66px;top:12px;border-bottom-color:#e6e6e6;border-top:0}
+.dpad i.d{left:66px;bottom:12px;border-top-color:#e6e6e6;border-bottom:0}
+.dpad i.l{top:66px;left:12px;border-right-color:#e6e6e6;border-left:0}
+.dpad i.r{top:66px;right:12px;border-left-color:#e6e6e6;border-right:0}
+.dpad i.on{opacity:1}
+.knob{position:absolute;left:46px;top:46px;width:56px;height:56px;border-radius:50%;background:rgba(70,72,78,.85);box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),0 0 0 2px rgba(255,255,255,.12);pointer-events:none;transition:transform .06s}
+.dpad.active .knob{transition:none}
+.ab{grid-column:3;grid-row:1;display:flex;gap:16px;padding:0 4px 4px 0;align-items:flex-start}
+.btn{display:flex;flex-direction:column;align-items:center;gap:5px}
+.btn button{width:66px;height:66px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:var(--btn);color:#fff;font:800 24px/1 var(--sans);touch-action:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.btn button small{font:700 11px/1 var(--sans);letter-spacing:0;pointer-events:none}
+.btn button.on{background:var(--btn-on)}
+.ab .btn:first-child{margin-top:28px}
+.btn span,.small span{display:none}
+.smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
+.sgrp{display:flex;gap:12px}
+.smalls .small button{width:62px;font:700 14px/1 var(--sans);color:var(--label);letter-spacing:.05em;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.small{display:flex;flex-direction:column;align-items:center;gap:5px}
+.small button{width:72px;height:30px;border-radius:15px;border:0;background:var(--pill);touch-action:none;cursor:pointer}
+.small button.on{background:var(--pad-on)}
+button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
+.namebox[hidden]{display:none}
+.namebox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.nb-card{background:var(--gb0);border:4px solid var(--gb3);box-shadow:0 0 0 3px var(--gb0),0 0 0 6px var(--gb3);padding:18px 16px;width:min(300px,100%);display:flex;flex-direction:column;gap:12px;font:700 15px/1.3 var(--sans);color:var(--gb3)}
+.nb-title{font-size:16px;letter-spacing:.06em}
+.nb-sub{font-weight:500;font-size:12px;color:var(--gb2)}
+#nameinput{font:700 20px/1.2 var(--sans);color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text;border-radius:0}
+.nbin{font:700 17px/1.2 var(--sans);color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text;border-radius:0}
+.nbin[hidden]{display:none}
+#nameinput:focus{outline:2px dashed var(--gb2);outline-offset:2px}
+.nb-row{display:flex;gap:10px}
+.nb-row button{flex:1;font:700 15px/1 var(--sans);padding:11px 0;border:3px solid var(--gb3);background:var(--gb1);color:var(--gb3);cursor:pointer;border-radius:0}
+.nb-row button.main{background:var(--gb3);color:var(--gb0)}
+.nb-err{min-height:14px;font-size:12px;color:var(--gb2)}
+.chatlog{position:absolute;z-index:3;left:max(12px,env(safe-area-inset-left,0px));top:62px;width:min(44%,330px);max-height:40%;overflow:hidden;font:500 12px/1.4 var(--sans);color:var(--gb0);background:rgba(0,0,0,.5);padding:5px 8px;pointer-events:none;opacity:0;transition:opacity .4s}
+.chatlog.show{opacity:1}
+.chatlog p{margin:0;word-break:break-all}
+.chatlog b{font-weight:700;color:var(--gb1);margin-right:3px}
+.chatlog .me{color:#fff}
+.chatbar[hidden]{display:none}
+.chatbar{position:absolute;z-index:7;top:max(6px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 24px));display:flex;gap:6px;padding:6px;background:var(--gb3);border:3px solid var(--gb0);box-sizing:border-box}
+.chatbar input{flex:1;min-width:0;font:600 16px/1.2 var(--sans);color:var(--gb3);background:var(--gb0);border:0;padding:7px 8px;border-radius:0;-webkit-user-select:text;user-select:text}
+.chatbar button{font:700 14px/1 var(--sans);padding:0 10px;border:2px solid var(--gb0);background:var(--gb2);color:var(--gb0);border-radius:0;cursor:pointer}
+.chatbar button.main{background:var(--gb0);color:var(--gb3)}
+#savecode{font:500 11px/1.35 ui-monospace,Menlo,monospace;color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:6px 8px;width:100%;height:120px;box-sizing:border-box;resize:none;word-break:break-all;-webkit-user-select:text;user-select:text;border-radius:0}
+/* 只有横屏布局 */
+.ctl{top:0;align-items:end;padding-block:0 max(8px,env(safe-area-inset-bottom,0px))}
+  .ab{padding-bottom:2px}
+  .dpad{grid-row:1/3}
+  .ab{grid-row:1/3}
+  .smalls{grid-column:auto;grid-row:auto;position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));justify-content:space-between;pointer-events:none}
+  .smalls .small{pointer-events:auto;flex-direction:row}
+  .sgrp{gap:10px;pointer-events:none}
+  .small button{width:66px;height:30px}
+.rotate{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--gb3);color:var(--gb0);font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
+@media (orientation:portrait){.rotate{display:flex}}
+.game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
+.rotate .ph{width:54px;height:90px;border:4px solid var(--gb0);border-radius:10px;animation:rot 2.4s ease-in-out infinite}
+@keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+.rotate small{font-weight:500;font-size:13px;color:var(--gb1)}
+</style>
+
+<div class="game" id="game">
+  <div class="namebox" id="namebox" hidden>
+    <form class="nb-card" id="nbform" autocomplete="off">
+      <div class="nb-title" id="nbtitle">少侠尊姓大名？</div>
+      <div class="nb-sub">名字会显示在人物头顶，一到六个字。</div>
+      <input id="nameinput" maxlength="6" placeholder="例如：张无忌" aria-label="角色名字">
+      <div class="nb-err" id="nberr"></div>
+      <div class="nb-row"><button type="button" id="nbrand">随机一个</button><button type="submit" class="main" id="nbok">行走江湖</button></div>
+    </form>
+  </div>
+  <div class="namebox" id="savebox" hidden>
+    <div class="nb-card">
+      <div class="nb-title" id="sbtitle">存档码</div>
+      <div class="nb-sub" id="sbsub"></div>
+      <textarea id="savecode" spellcheck="false" aria-label="存档码"></textarea>
+      <div class="nb-err" id="sberr"></div>
+      <div class="nb-row"><button type="button" id="sbclose">关闭</button><button type="button" class="main" id="sbok">复制</button></div>
+    </div>
+  </div>
+  <div class="rotate" id="rotate"><div class="ph"></div><div>请把手机横过来玩</div><small>本游戏只支持横屏。<br>iPhone 请先在控制中心关闭「竖排方向锁定」。</small></div>
+  <div class="namebox" id="authbox" hidden>
+    <form class="nb-card" id="authform" autocomplete="on">
+      <div class="nb-title" id="authtitle">登录江湖</div>
+      <div class="nb-sub" id="authsub">账号是英文字母或数字，角色名会显示在头顶。</div>
+      <input class="nbin" id="authuser" name="username" autocomplete="username" maxlength="16" placeholder="账号" aria-label="账号">
+      <input class="nbin" id="authpass" name="password" type="password" autocomplete="current-password" maxlength="64" placeholder="密码（至少 6 位）" aria-label="密码">
+      <input class="nbin" id="authname" maxlength="6" placeholder="角色名（一到六个字）" aria-label="角色名" hidden>
+      <div class="nb-err" id="autherr"></div>
+      <div class="nb-row"><button type="button" id="authswitch">没有账号？注册</button><button type="submit" class="main" id="authok">登录</button></div>
+      <div class="nb-row"><button type="button" id="authback">返回</button></div>
+    </form>
+  </div>
+  <div class="chatlog" id="chatlog" aria-live="polite"></div>
+  <form class="chatbar" id="chatbar" autocomplete="off" hidden>
+    <button type="button" id="chch" aria-label="切换频道">附近</button>
+    <input id="chatin" maxlength="40" placeholder="说点什么…（回车发送）" aria-label="聊天内容">
+    <button type="submit" class="main">发送</button>
+    <button type="button" id="chatx" aria-label="关闭聊天">×</button>
+  </form>
+  <canvas id="screen" aria-label="游戏画面"></canvas>
+  <div class="ctl" id="ctl">
+    <div class="dpad" id="dpad" aria-label="方向键"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i><span class="knob" id="knob"></span></div>
+    <div class="ab">
+      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B<small>打坐·返回</small></button><span>打坐·返回</span></div>
+      <div class="btn"><button data-k="a" aria-label="A 攻击或确定">A<small>攻击·确定</small></button><span>攻击·确定</span></div>
+    </div>
+    <div class="smalls">
+      <div class="sgrp">
+        <div class="small"><button data-k="select" aria-label="换武器">换武器</button></div>
+        <div class="small"><button data-k="map" aria-label="地图">地图</button></div>
+      </div>
+      <div class="sgrp">
+        <div class="small"><button data-k="chat" aria-label="聊天">聊天</button></div>
+        <div class="small"><button data-k="start" aria-label="菜单">菜单</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+<!--JS-->
+</script>

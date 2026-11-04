@@ -1,0 +1,27 @@
+name: 自动测试
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装 Playwright
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: 拼出单文件游戏
+        run: python tools/build.py
+      - name: 检查网站版和源码一致
+        run: |
+          python tools/build.py --site
+          git diff --exit-code -- index.html || (echo "index.html 和 src 不一致：改完源码要运行 python tools/build.py --site 再提交" && exit 1)
+      - name: 跑测试
+        run: python tests/test_game.py
+      - name: 检查服务器代码语法
+        run: node --check server/server.js

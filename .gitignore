@@ -1,2 +1,5 @@
 server/data/
 node_modules/
+build/
+tests/_page.html
+__pycache__/

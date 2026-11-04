@@ -1,0 +1,131 @@
+/* ---------------- dialog & menu ---------------- */
+function say(speaker, texts, onEnd) {
+  const arr = Array.isArray(texts) ? texts : [texts];
+  const pages = [];
+  for (const t of arr) { const lines = wrap(t, dlgW() - 16); for (let i = 0; i < lines.length; i += 3) pages.push({ speaker, lines: lines.slice(i, i + 3) }); }
+  dlg = { pages, i: 0, shown: 0, onEnd, choice: null };
+}
+function ask(speaker, text, options, cb) { say(speaker, text); dlg.choice = { options, sel: 0, cb }; }
+function updDialog() {
+  const pg = dlg.pages[dlg.i];
+  const total = pg.lines.join('').length;
+  if (dlg.shown < total) { dlg.shown += held.a ? 3 : 1; if (frame % 3 === 0) sfx('talk'); }
+  const last = dlg.i === dlg.pages.length - 1;
+  if (last && dlg.choice && dlg.shown >= total) {
+    const c = dlg.choice;
+    if (pressed.up) { c.sel = (c.sel + c.options.length - 1) % c.options.length; sfx('menu'); }
+    if (pressed.down) { c.sel = (c.sel + 1) % c.options.length; sfx('menu'); }
+    if (pressed.a || pressed.b) { const sel = pressed.b ? c.options.length - 1 : c.sel; dlg = null; sfx('menu'); c.cb(sel); }
+    return;
+  }
+  if (pressed.a || pressed.b) {
+    if (dlg.shown < total) dlg.shown = total;
+    else if (!last) { dlg.i++; dlg.shown = 0; }
+    else { const f = dlg.onEnd; dlg = null; if (f) f(); }
+  }
+}
+const TABS = ['状态', '武功', '装备', '行囊', '江湖', '地图', '系统'];
+/* 武功三层：基础武功（谁都能练）→ 门派武功（只有门派武功受门派约束，叛出后最多 49.99）→ 特殊武功（秘籍、奇人所传，不受门派约束） */
+const KIND_ORDER = ['基础', '门派', '特殊', '生产'];
+const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier === 2 ? '特殊' : '基础'; };
+function skillList() {
+  return Object.keys(S.skills).filter(k => SK[k]).sort((a, b) => KIND_ORDER.indexOf(skKind(a)) - KIND_ORDER.indexOf(skKind(b)) || CAT_ORDER.indexOf(SK[a].cat) - CAT_ORDER.indexOf(SK[b].cat));
+}
+function skillInfo(k) {
+  const sk = SK[k], up = sk.tier === 2 ? '上乘' : '';
+  if (ATK_CATS.includes(sk.cat)) return `${up}${sk.cat}法 速${RT[sk.spd]} ${sk.tier === 2 ? '耗内功' : '耗体力'}`;
+  return `${up}${sk.cat}　按A看详情`;
+}
+const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '空手可用' : `需装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${sk.cat}，同时只能运用一门`);
+function SK_FORMER(sk) { return !!(sk.sect && S.former.includes(sk.sect)); }
+function useSkill(k) {
+  const sk = SK[k];
+  if (ATK_CATS.includes(sk.cat)) {
+    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手才能用拳法' : `要先装备${sk.cat}`);
+    S.active = k; S.pref[sk.cat] = k; toast(`改用 ${sk.name}`); sfx('menu');
+  } else if (sk.cat === '生产') toast(sk.desc);
+  else { S.passive[sk.cat] = k; toast(`${sk.cat}改用 ${sk.name}`); sfx('menu'); }
+}
+function readBook(k) {
+  const id = ITEMS[k].book;
+  if (S.skills[id] != null) { S.items[k] = 0; return toast('这门武功已经会了'); }
+  const why = reqFail(id);
+  if (why) return toast(why.length > 15 ? `${SK[SK[id].req[0]].name}要${SK[id].req[1]}级` : why);
+  S.items[k]--; learn(id); save();
+}
+function menuItems() {
+  if (!menu) return [];
+  if (menu.tab === 1) return skillList().map(k => {
+    const sk = SK[k], atk = ATK_CATS.includes(sk.cat);
+    const using = atk ? S.active === k : S.passive[sk.cat] === k;
+    return { tag: { 基础: '基', 门派: '门', 特殊: '特', 生产: '艺' }[skKind(k)], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
+  });
+  if (menu.tab === 2) {
+    const cnt = {};
+    for (const id of S.gear) cnt[id] = (cnt[id] || 0) + 1;
+    return Object.keys(cnt).map(id => {
+      const it = EQ[id], on = S.equip[it.slot] === id;
+      return { label: it.name + (cnt[id] > 1 ? `×${cnt[id]}` : ''), right: on ? '装备中' : SLOT_NAME[it.slot], mark: on, info: `${SLOT_NAME[it.slot]}：${it.info}`, act: () => {
+        if (on) {
+          if (it.slot === 'body') return toast('总不能光着身子吧');
+          S.equip[it.slot] = null; ensureActive(); toast(`卸下 ${it.name}`); sfx('menu');
+        } else equipItem(id);
+      } };
+    });
+  }
+  if (menu.tab === 3) return Object.keys(ITEMS).filter(k => S.items[k] > 0).map(k => ({
+    label: ITEMS[k].name, right: `×${S.items[k]}`, info: ITEMS[k].info, act: () => {
+      const it = ITEMS[k];
+      if (it.use) { if (it.use()) S.items[k]--; }
+      else if (it.book) readBook(k);
+      else toast(it.info);
+    },
+  }));
+  if (menu.tab === 6) return [
+    { label: '保存进度', act: () => save(false) },
+    ...(NET.online ? [{ label: '退出登录', right: NET.status === 'up' ? '在线' : '断线', act: () => netLogout() }] : []),
+    ...(NET.online ? [] : [{ label: '修改名字', right: S.name, act: () => { const keep = menu; menu = null; askName('改个名字', S.name, nm => { S.name = nm; save(); toast(`以后江湖上叫你${nm}`); menu = keep; }); } }]),
+    { label: '导出存档码', act: () => openSaveBox('export') },
+    ...(NET.online ? [] : [{ label: '读取存档码', act: () => openSaveBox('import') }]),
+    ...(S.tut < TUT.length ? [{ label: '跳过新手教学', act: () => { S.tut = 99; toast('已跳过新手教学'); sfx('menu'); } }] : []),
+    { label: '任务指引', right: S.showGuide === false ? '关' : '开', act: () => { S.showGuide = S.showGuide === false; sfx('menu'); } },
+    { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
+    { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
+    { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
+    { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
+    { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
+      if (!menu.confirm) { menu.confirm = true; return; }
+      try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+      menu = null; mode = 'title'; titleSel = 0; S = null;
+    } },
+    { label: '返回游戏', act: () => { menu = null; } },
+  ];
+  return [];
+}
+function updMenu() {
+  if (menu.detail) {
+    if (pressed.a) { useSkill(menu.detail); }
+    if (pressed.b || pressed.start) { menu.detail = null; sfx('menu'); }
+    return;
+  }
+  if (menu.page) {
+    const n = S.heard.length;
+    if (n && pressed.up) { menu.sel = (menu.sel + n - 1) % n; sfx('menu'); }
+    if (n && pressed.down) { menu.sel = (menu.sel + 1) % n; sfx('menu'); }
+    if (pressed.b || pressed.start || pressed.a) { menu.page = null; menu.sel = 0; sfx('menu'); }
+    return;
+  }
+  if (menu.tab === 4 && pressed.a) { menu.page = 'heard'; menu.sel = 0; sfx('menu'); return; }
+  if (pressed.chat) { openChat(); return; }
+  if (pressed.start || pressed.b || pressed.map) { menu = null; sfx('menu'); return; }
+  if (pressed.left) { menu.tab = (menu.tab + TABS.length - 1) % TABS.length; menu.sel = 0; menu.confirm = false; sfx('menu'); }
+  if (pressed.right) { menu.tab = (menu.tab + 1) % TABS.length; menu.sel = 0; menu.confirm = false; sfx('menu'); }
+  const items = menuItems();
+  if (menu.sel >= items.length) menu.sel = Math.max(0, items.length - 1);
+  if (items.length) {
+    if (pressed.up) { menu.sel = (menu.sel + items.length - 1) % items.length; sfx('menu'); }
+    if (pressed.down) { menu.sel = (menu.sel + 1) % items.length; sfx('menu'); }
+    if (pressed.a) items[menu.sel].act();
+  }
+}
+
