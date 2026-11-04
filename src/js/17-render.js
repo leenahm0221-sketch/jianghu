@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v52 ' + FAST_NAME[FAST] : 'v52', 156, 0, 2, 'right');
+  txt(FAST ? 'v53 ' + FAST_NAME[FAST] : 'v53', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -412,7 +412,7 @@ function drawTile(t, sx, sy, mx, my) {
     }
     case 'X': {
       grass();
-      const open = S && S.flags['chest_' + (map && map.id) + `${mx},${my}`];
+      const open = map && chestLeft(mx, my) > 0;
       R(sx + 1, sy + 15, 14, 1, 2);
       R(sx + 1, sy + 7, 14, 8, 3); R(sx + 2, sy + 8, 12, 6, open ? 3 : 1);
       if (!open) {

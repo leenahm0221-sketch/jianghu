@@ -1676,7 +1676,7 @@ function peekName(x, y) {
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return null;
   const t = map.rows[y][x];
   if (t === 'J') return '石刻 走近按A看';
-  if (t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已打开）');
+  if (t === 'X') return lootable(x, y) ? '旧木箱 走近按A' : `空木箱（约${Math.ceil(chestLeft(x, y) / 60000)}分钟后再装满）`;
   if (RES_TILES[t]) {
     const nm = resName(x, y, t);
     return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm} 走近按A采`;
@@ -1686,10 +1686,16 @@ function peekName(x, y) {
   return TILE_NAME[t] || null;
 }
 function setPeek(x, y) { const name = peekName(x, y); peek = name ? { x, y, name, until: frame + 150 } : null; }
+/* 木箱：谁先开到算谁的，开过以后过一阵子重新装满。普通地方 5 分钟，越险的地方、开出秘籍的箱子刷新越久。
+   返回还要等多少毫秒（0 表示可以开）。旧存档里记的是 true，当作已经刷新 */
+function chestLeft(x, y) {
+  const v = S && S.flags['chest_' + map.id + `${x},${y}`];
+  return typeof v === 'number' ? Math.max(0, v - Date.now()) : 0;
+}
 function lootable(x, y) {
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return false;
   const t = map.rows[y][x];
-  if (t === 'X') return !(S && S.flags['chest_' + map.id + `${x},${y}`]);
+  if (t === 'X') return !chestLeft(x, y);
   if (t === 'J') return !(S && S.found && S.found.includes(map.id + ':' + x + ',' + y));
   return !!RES_TILES[t] && !isDepleted(x, y);
 }
@@ -3134,15 +3140,17 @@ function mapTier(id) {
 const localMats = id => ['*', '&', 'O'].map(t => (RES_BONUS[t] || {})[id]).filter(Boolean).map(b => b[0]);
 function openChest(key) {
   const f = 'chest_' + map.id + key;
-  if (S.flags[f]) return say(null, '箱子是空的。');
-  S.flags[f] = true;
+  const [cx, cy] = key.split(',').map(Number), left = chestLeft(cx, cy);
+  if (left > 0) return say(null, `箱子是空的，被人搜过了。约${Math.ceil(left / 60000)}分钟后会有人再放东西进来。`);
   const tier = mapTier(map.id), got = [];
+  let mins = [5, 10, 20, 30][tier];
   const silver = 20 + tier * 30 + rnd(0, 20); S.silver += silver; got.push(`碎银${silver}两`);
   const meds = [['yao', 3], ['qingxin', 2], ['baiyao', 2], ['yulu', 1]][tier]; S.items[meds[0]] = (S.items[meds[0]] || 0) + meds[1]; got.push(`${ITEMS[meds[0]].name}${meds[1]}份`);
   const mats = localMats(map.id); if (mats.length) { const m = mats[rnd(0, mats.length - 1)], n = rnd(1, 2); S.items[m] = (S.items[m] || 0) + n; got.push(`${ITEMS[m].name}${n}份`); }
   /* 野外木箱里可能有江湖散学的秘籍，越险的地方越容易有 */
   const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
-  if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); }
+  if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); mins *= 2; }
+  S.flags[f] = Date.now() + mins * 60000 / FASTX(4);   /* 开出好东西的箱子要等更久才再装满 */
   sfx('coin'); save();
   return say(null, ['你撬开了旧木箱……', `找到${got.join('、')}！`]);
 }
@@ -3832,7 +3840,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v52 ' + FAST_NAME[FAST] : 'v52', 156, 0, 2, 'right');
+  txt(FAST ? 'v53 ' + FAST_NAME[FAST] : 'v53', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4188,7 +4196,7 @@ function drawTile(t, sx, sy, mx, my) {
     }
     case 'X': {
       grass();
-      const open = S && S.flags['chest_' + (map && map.id) + `${mx},${my}`];
+      const open = map && chestLeft(mx, my) > 0;
       R(sx + 1, sy + 15, 14, 1, 2);
       R(sx + 1, sy + 7, 14, 8, 3); R(sx + 2, sy + 8, 12, 6, open ? 3 : 1);
       if (!open) {

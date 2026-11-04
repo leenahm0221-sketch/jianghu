@@ -156,15 +156,17 @@ function mapTier(id) {
 const localMats = id => ['*', '&', 'O'].map(t => (RES_BONUS[t] || {})[id]).filter(Boolean).map(b => b[0]);
 function openChest(key) {
   const f = 'chest_' + map.id + key;
-  if (S.flags[f]) return say(null, '箱子是空的。');
-  S.flags[f] = true;
+  const [cx, cy] = key.split(',').map(Number), left = chestLeft(cx, cy);
+  if (left > 0) return say(null, `箱子是空的，被人搜过了。约${Math.ceil(left / 60000)}分钟后会有人再放东西进来。`);
   const tier = mapTier(map.id), got = [];
+  let mins = [5, 10, 20, 30][tier];
   const silver = 20 + tier * 30 + rnd(0, 20); S.silver += silver; got.push(`碎银${silver}两`);
   const meds = [['yao', 3], ['qingxin', 2], ['baiyao', 2], ['yulu', 1]][tier]; S.items[meds[0]] = (S.items[meds[0]] || 0) + meds[1]; got.push(`${ITEMS[meds[0]].name}${meds[1]}份`);
   const mats = localMats(map.id); if (mats.length) { const m = mats[rnd(0, mats.length - 1)], n = rnd(1, 2); S.items[m] = (S.items[m] || 0) + n; got.push(`${ITEMS[m].name}${n}份`); }
   /* 野外木箱里可能有江湖散学的秘籍，越险的地方越容易有 */
   const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
-  if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); }
+  if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); mins *= 2; }
+  S.flags[f] = Date.now() + mins * 60000 / FASTX(4);   /* 开出好东西的箱子要等更久才再装满 */
   sfx('coin'); save();
   return say(null, ['你撬开了旧木箱……', `找到${got.join('、')}！`]);
 }

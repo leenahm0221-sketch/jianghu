@@ -14,7 +14,7 @@ function peekName(x, y) {
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return null;
   const t = map.rows[y][x];
   if (t === 'J') return '石刻 走近按A看';
-  if (t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已打开）');
+  if (t === 'X') return lootable(x, y) ? '旧木箱 走近按A' : `空木箱（约${Math.ceil(chestLeft(x, y) / 60000)}分钟后再装满）`;
   if (RES_TILES[t]) {
     const nm = resName(x, y, t);
     return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm} 走近按A采`;
@@ -24,10 +24,16 @@ function peekName(x, y) {
   return TILE_NAME[t] || null;
 }
 function setPeek(x, y) { const name = peekName(x, y); peek = name ? { x, y, name, until: frame + 150 } : null; }
+/* 木箱：谁先开到算谁的，开过以后过一阵子重新装满。普通地方 5 分钟，越险的地方、开出秘籍的箱子刷新越久。
+   返回还要等多少毫秒（0 表示可以开）。旧存档里记的是 true，当作已经刷新 */
+function chestLeft(x, y) {
+  const v = S && S.flags['chest_' + map.id + `${x},${y}`];
+  return typeof v === 'number' ? Math.max(0, v - Date.now()) : 0;
+}
 function lootable(x, y) {
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return false;
   const t = map.rows[y][x];
-  if (t === 'X') return !(S && S.flags['chest_' + map.id + `${x},${y}`]);
+  if (t === 'X') return !chestLeft(x, y);
   if (t === 'J') return !(S && S.found && S.found.includes(map.id + ':' + x + ',' + y));
   return !!RES_TILES[t] && !isDepleted(x, y);
 }
