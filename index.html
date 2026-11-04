@@ -1178,6 +1178,7 @@ const T_SPECS = {
       { id: 'bank_yz', name: '钱庄掌柜', role: '钱庄', icon: '钱', x: 17, y: 5, dir: 'down', look: { body: 'heipao', hair: 'fangjin' }, talk: bankTalk },
       { id: 'doctor_yz', name: '吴大夫', role: '药铺', icon: '药', x: 30, y: 5, dir: 'down', look: { body: 'changpao', hair: 'fangjin' }, talk: doctorTalk },
       { id: 'smith_yz', name: '赵铁匠', role: '兵器铺', icon: '兵', x: 5, y: 19, dir: 'down', look: { body: 'vest', hair: 'band' }, talk: smithTalk },
+      { id: 'envoy_zhong', name: '中立接引使', role: '门派接引', icon: '引', x: 12, y: 13, dir: 'down', look: { body: 'thshan', hair: 'knot', beard: true }, talk: () => envoyTalk('中') },
       { id: 'simei', name: '四眉公子', role: '望江楼', x: 25, y: 20, dir: 'down', look: { body: 'changpao', hair: 'knot', beard: true }, talk: () => hermitTalk('lingxi') }],
     wells: [[20, 9]] },
   hangzhou: { W: 36, H: 26, seed: 221, street: 10, rects: [['~', 20, 14, 13, 9]], buildings: [
@@ -1197,6 +1198,7 @@ const T_SPECS = {
       { id: 'inn_pd', name: '掌柜', role: '客栈', icon: '宿', x: 5, y: 5, dir: 'down', look: { body: 'apron', hair: 'cap' }, talk: innTalk },
       { id: 'smith_pd', name: '铁匠', role: '兵器铺', icon: '兵', x: 12, y: 5, dir: 'down', look: { body: 'vest', hair: 'band' }, talk: smithTalk },
       { id: 'shusheng', name: '落魄书生', role: '快活楼', x: 7, y: 14, dir: 'down', look: { body: 'changpao', hair: 'fangjin' }, talk: () => hermitTalk('feidao') },
+      { id: 'envoy_xie', name: '邪派接引使', role: '门派接引', icon: '引', x: 10, y: 12, dir: 'down', look: { body: 'ryrobe', hair: 'messy', beard: true }, talk: () => envoyTalk('邪') },
       { id: 'doctor_pd', name: '平一指', role: '药铺', icon: '药', x: 23, y: 5, dir: 'down', look: { body: 'heipao', hair: 'fangjin', beard: true }, talk: doctorTalk },
       { id: 'xieren', name: '日月教徒', role: '日月神教', x: 15, y: 15, dir: 'down', look: { body: 'ryrobe', hair: 'band' }, talk: () => say('日月教徒', ['平定州是神教的地盘。', '往东上黑木崖拜见长老；往西出城就是塞外草原。']) }] },
 };
@@ -1532,6 +1534,11 @@ function scaledDef(kind) {
   return { ...b, lv: nl, hp: Math.round(hpOf(nl) * b.hp / hpOf(b.lv)), atk: Math.round(atkOf(nl) * b.atk / atkOf(b.lv) * 10) / 10, dodge: Math.max(2, b.dodge + Math.round((nl - b.lv) / 12)) };
 }
 const ED = e => e.d || EN[e.kind];
+/* 山门清净地：门派掌门身边 5 格内，怪物不进来，也不在里面动手（被你先打了除外） */
+const SAFE_R = 5;
+let safeSpots = [];
+const isSafeNpc = id => Object.values(MASTER_IDS).includes(id) || ['qzzong', 'gbzong', 'mjzong'].includes(id);
+const inSafe = (x, y) => safeSpots.some(([sx, sy]) => Math.abs(sx - x) + Math.abs(sy - y) <= SAFE_R);
 function makeEnemy(kind, x, y) {
   const d = scaledDef(kind) || EN[kind];
   return { kind, tx: x, ty: y, px: x * T, py: y * T, dir: 'down', face: 'left', hp: d.hp, max: d.hp, moving: false, cd: 0, stepT: rnd(0, 30), hitT: 0, stunT: 0, dead: false, respawn: 0, home: { x, y }, adj: false, combo: 0 , d: d === EN[kind] ? null : d };
@@ -1544,6 +1551,7 @@ function enterMap(id, x, y, dir) {
   if (map && enemies) mapState[map.id] = { list: enemies, t: frame };
   map = MAPS[id]; S.map = id;
   npcs = (NPCS[id] || []).map(n => ({ ...n }));
+  safeSpots = npcs.filter(n => isSafeNpc(n.id)).map(n => [n.x, n.y]);
   P.tx = x; P.ty = y; P.px = x * T; P.py = y * T; P.dir = dir || 'down'; P.moving = false; P.sit = false; P.target = null;
   const st = mapState[id];
   if (st) {
@@ -1557,7 +1565,7 @@ function enterMap(id, x, y, dir) {
       if (!e.dead && e.tx === x && e.ty === y) { e.tx = e.home.x; e.ty = e.home.y; e.px = e.tx * T; e.py = e.ty * T; }
     }
     if (S.flags.boss) enemies = enemies.filter(e => e.kind !== 'boss');
-  } else enemies = map.spawns.filter(([k]) => !(k === 'boss' && S.flags.boss)).map(([k, ex, ey]) => makeEnemy(k, ex, ey));
+  } else enemies = map.spawns.filter(([k, ex, ey]) => !(k === 'boss' && S.flags.boss) && !(inSafe(ex, ey) && !EN[k].boss && !EN[k].dboss)).map(([k, ex, ey]) => makeEnemy(k, ex, ey));
   if (S.purge !== undefined) spawnSpecial();
   spawnMainBoss();
   fx = [];
@@ -1585,6 +1593,7 @@ const NPCS = {
     { id: 'jiaotou', name: '武馆教头', role: '武馆', icon: '武', x: 28, y: 11, dir: 'down', look: { body: 'jinzhuang', hair: 'band' }, talk: jiaotouTalk },
     { id: 'caifeng', name: '裁缝', role: '布庄', icon: '布', x: 14, y: 20, dir: 'down', look: { body: 'changpao', hair: 'bun' }, talk: tailorTalk },
     { id: 'biaotou', name: '总镖头', role: '镖局', icon: '镖', x: 7, y: 20, dir: 'down', look: { body: 'armor', hat: 'helmet' }, talk: biaotouTalk },
+    { id: 'envoy_zheng', name: '正派接引使', role: '门派接引', icon: '引', x: 20, y: 14, dir: 'down', look: { body: 'changpao', hair: 'crown', beard: true }, talk: () => envoyTalk('正') },
     { id: 'baixiao', name: '百晓生', role: '历练', icon: '历', x: 16, y: 14, dir: 'down', look: { body: 'changpao', hair: 'fangjin', beard: true }, talk: baixiaoTalk },
     { id: 'guard1', name: '守城兵', role: '襄阳守军', x: 29, y: 14, dir: 'left', look: { body: 'armor', hat: 'helmet' }, talk: () => say('守城兵', ['襄阳是天下重镇，城里规矩多，别惹事。', '钱存在钱庄，就算在外面昏倒也丢不了。']) },
     { id: 'guard2', name: '守城兵', role: '襄阳守军', x: 2, y: 14, dir: 'right', look: { body: 'armor', hat: 'helmet' }, talk: () => say('守城兵', ['出西门是潼关，边关要地，正邪两派常在那里交手。', '过了潼关往西是终南山，再往南走蜀道就到峨眉。']) },
@@ -1679,6 +1688,40 @@ function tellRumor(who, pref, back) {
   const k = pool[rnd(0, pool.length - 1)];
   hear(k); save();
   say(who, ['听说……', RUMORS[k]], back);
+}
+/* 门派接引人：各阵营主城都有一位。新人在这里就能拜入本阵营门派、学一门入门武功、交接门务；
+   高深武功、叛出师门、清理门户，还得亲自去总坛找掌门 */
+const ENVOY = {
+  正: { who: '正派接引使', sects: ['shaolin', 'emei', 'wudang', 'huashanpai'], note: '全真教、丐帮的师父就在牛家村，直接去找他们。' },
+  邪: { who: '邪派接引使', sects: ['riyue', 'mingjiao', 'xingxiu', 'wudu'], note: '明教在襄阳酒楼门口也有人招人。' },
+  中: { who: '中立接引使', sects: ['taohua', 'tangmen', 'gumu'], note: '' },
+};
+const introSkill = sect => Object.keys(SK).find(k => SK[k].sect === sect && ATK_CATS.includes(SK[k].cat));
+function envoyTalk(camp) {
+  const E = ENVOY[camp], who = E.who;
+  E.sects.forEach(hear);
+  if (S.sect && E.sects.includes(S.sect)) return envoyMember(who, S.sect);
+  if (S.sect) return say(who, `你已是${SECTS[S.sect].name}弟子，不归我管。`);
+  ask(who, ['各派总坛山高路远，新人先在我这里拜入门派，学一门入门功夫。', '高深武功，日后再亲自上总坛去学。' + (E.note ? ' ' + E.note : '')],
+    E.sects.map(k => `${SECTS[k].name}（${SECT_JOIN[k].ok() && !campBlock(k) ? '可入' : '未够格'}）`).concat(['离开']), i => {
+      const sect = E.sects[i]; if (!sect) return;
+      const blk = campBlock(sect); if (blk) return say(who, blk, () => envoyTalk(camp));
+      const j = SECT_JOIN[sect];
+      if (!j.ok()) return say(who, [`想入${SECTS[sect].name}？${j.need()}`, `总坛在${SECTS[sect].where}。`], () => envoyTalk(camp));
+      ask(who, j.pitch, [`拜入${SECTS[sect].name}`, '再想想'], k => { if (k === 0) { joinSect(sect, who); } });
+    });
+}
+function envoyMember(who, sect) {
+  const k = introSkill(sect), st = S.stask && S.stask.sect === sect ? S.stask : null;
+  ask(who, `${SECTS[sect].name}弟子，有什么事？`, [S.skills[k] != null ? `${SK[k].name}（已学）` : `学${SK[k].name}`, st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', '离开'], i => {
+    const back = () => envoyMember(who, sect);
+    if (i === 0) {
+      if (S.skills[k] != null) return say(who, `本门其余武功，去${SECTS[sect].where}找掌门学。`, back);
+      const why = reqFail(k); if (why) return say(who, `还不行。${why}`, back);
+      learn(k); save(); return say(who, [`好！这便传你${SK[k].name}。`, `本门其余武功，日后去${SECTS[sect].where}找掌门学。`]);
+    }
+    if (i === 1) return sectTaskMenu(who, sect, back);
+  });
 }
 function sectTalk(who, sect) {
   hear(sect);
@@ -1865,6 +1908,11 @@ function questMark(n) {
       return S.sect === sect && canLearnSect(sect) ? '!' : null;
     }
     case 'fisher': return !S.items.yugan ? '!' : null;
+    case 'envoy_zheng': case 'envoy_xie': case 'envoy_zhong': {
+      const E = ENVOY[{ envoy_zheng: '正', envoy_xie: '邪', envoy_zhong: '中' }[n.id]];
+      if (S.sect && E.sects.includes(S.sect)) { const st = S.stask; if (st && st.sect === S.sect && sectTaskDone(st)) return '?'; const k = introSkill(S.sect); return S.skills[k] == null && !reqFail(k) ? '!' : null; }
+      return !S.sect && E.sects.some(k => SECT_JOIN[k].ok() && !campBlock(k)) ? '!' : null;
+    }
     case 'fenglao': case 'tingyu': case 'shusheng': case 'simei': case 'dubi': { const h = HERMITS[Object.keys(HERMITS).find(k => HERMITS[k].npc === n.id)]; return S.skills[h.skill] == null && h.ok() && !reqFail(h.skill) ? '!' : null; }
     case 'caifeng': { const s2 = S.side.fangzhi || 0; return s2 === 0 ? '!' : (s2 === 1 && S.items.mianhua >= 3) ? '?' : null; }
     case 'inn': { const s2 = S.side.pengren || 0; return (s2 === 0 && S.items.yugan) ? '!' : (s2 === 1 && S.items.jiyu >= 3) ? '?' : null; }
@@ -2094,17 +2142,18 @@ function sectTaskDone(t) {
   if (t.type === 'letter') return t.done;
   return t.cnt >= t.n;
 }
-function sectTaskMenu(who, sect) {
+function sectTaskMenu(who, sect, back) {
+  back = back || (() => masterMenu(who, sect));
   const t = S.stask;
   if (t && t.sect === sect && sectTaskDone(t)) {
     if (t.type === 'collect') S.items[t.item] -= t.n;
     const gain = t.type === 'patrol' ? 8 : t.type === 'kill' ? 5 : 4, money = rnd(20, 40);
     S.stask = null; addSrep(gain); addRep(1); S.silver += money; sfx('coin'); save();
-    return say(who, [`“${t.text}”办得好。`, `（门派声望+${gain} 银两+${money}）`], () => masterMenu(who, sect));
+    return say(who, [`“${t.text}”办得好。`, `（门派声望+${gain} 银两+${money}）`], back);
   }
   if (t && t.sect === sect) return ask(who, `你的门务：${t.text}${t.cnt != null ? `（${t.cnt}/${t.n}）` : t.type === 'collect' ? `（有${S.items[t.item] || 0}/${t.n}）` : ''}`, ['继续', '放弃门务'], i => { if (i === 1) { S.stask = null; toast('放弃了门务'); } });
   const nt = newSectTask(sect); nt.sect = sect; S.stask = nt; toast(`门务：${nt.text}`); sfx('menu'); save();
-  say(who, [`门里正好有件事：${nt.text}。`, '办妥了回来找我。'], () => masterMenu(who, sect));
+  say(who, [`门里正好有件事：${nt.text}。`, '办妥了回来找我，或者交给主城的接引人也行。'], back);
 }
 function leaveSect(who, sect) {
   ask(who, [`真要离开${SECTS[sect].name}？`, '离开后，本派武功最多只能练到 49.99，第二式也会失去。以后回来，才能接着往上练。'], ['叛出师门', '算了'], i => {
@@ -2600,6 +2649,7 @@ function updPlayer() {
   }
 }
 function onArrive() {
+  if (safeSpots.length) { const sf = inSafe(P.tx, P.ty); if (sf && !P.inSafe) toast('到了山门，野兽不敢靠近'); P.inSafe = sf; }
   if (!injured('leg')) train(S.passive['步法'], 0.25);
   const ex = map.exits[`${P.tx},${P.ty}`];
   if (ex) { enterMap(ex.map, ex.x, ex.y, ex.dir); save(); }
@@ -3013,7 +3063,7 @@ function updEnemies() {
     if (e.stunT > 0) { e.stunT--; continue; }
     const dx = P.tx - e.tx, dy = P.ty - e.ty, dist = Math.abs(dx) + Math.abs(dy);
     if (dx) e.face = dx > 0 ? 'right' : 'left';
-    const calmCamp = d.camp && !campHostile(d.camp) && !e.provoked;
+    const calmCamp = (d.camp && !campHostile(d.camp) && !e.provoked) || (safeSpots.length && inSafe(P.tx, P.ty) && !e.adj && !d.hunter && e.kind !== 'hunter' && e.kind !== 'pantu');
     if (!d.passive && !calmCamp && dist === 1 && !P.dead && !P.moving) {
       e.dir = dx > 0 ? 'right' : dx < 0 ? 'left' : dy > 0 ? 'down' : 'up';
       if (!e.adj) { e.adj = true; e.cd = Math.max(e.cd, 28); }
@@ -3051,6 +3101,7 @@ function updEnemies() {
       if (hd > 3) tries = [[Math.sign(e.home.x - e.tx), 0], [0, Math.sign(e.home.y - e.ty)]].filter(([a, b]) => a || b);
       else if (Math.random() < 0.45) { const k = Object.keys(DIRS)[rnd(0, 3)]; tries = [DIRS[k]]; }
     }
+    if (safeSpots.length && !e.adj) tries = tries.filter(([a, b]) => !inSafe(e.tx + a, e.ty + b));
     for (const [mx, my] of tries) {
       if (canMove(e.tx + mx, e.ty + my, e)) {
         e.tx += mx; e.ty += my; e.moving = true;
@@ -3362,7 +3413,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v30', 156, 0, 2, 'right');
+  txt('v31', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4501,7 +4552,7 @@ addEventListener('pagehide', () => { if (mode === 'play') save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') save(); });
 window.claude?.hot?.snapshot?.(() => (mode === 'play' && S ? { S: { ...S, x: P.tx, y: P.ty, dir: P.dir } } : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__game = { mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
+window.__game = { envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
 })();
 </script>
 
