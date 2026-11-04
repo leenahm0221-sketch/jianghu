@@ -1675,7 +1675,8 @@ function peekName(x, y) {
   if (n) return n.name;
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return null;
   const t = map.rows[y][x];
-  if (t === 'J' || t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已看过）');
+  if (t === 'J') return '石刻 走近按A看';
+  if (t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已打开）');
   if (RES_TILES[t]) {
     const nm = resName(x, y, t);
     return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm} 走近按A采`;
@@ -3241,7 +3242,10 @@ function actA() {
   for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
     const ax = P.tx + ddx, ay = P.ty + ddy, tt = tileAt(ax, ay);
     if (RES_TILES[tt] && !isDepleted(ax, ay)) { P.dir = k; return gather(ax, ay, tt); }
-    if ((tt === 'X' || tt === 'J') && lootable(ax, ay)) { P.dir = k; return tt === 'X' ? openChest(`${ax},${ay}`) : readStele(ax, ay); }
+  }
+  for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
+    const ax = P.tx + ddx, ay = P.ty + ddy, tt = tileAt(ax, ay);
+    if ((tt === 'X' && lootable(ax, ay)) || tt === 'J') { P.dir = k; return tt === 'X' ? openChest(`${ax},${ay}`) : readStele(ax, ay); }
   }
   if ((t === '~' || t === 'i') && !nearestEnemy(4)) return startFish(fx_, fy);
   const front = enemyAt(fx_, fy);
@@ -3828,7 +3832,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v51 ' + FAST_NAME[FAST] : 'v51', 156, 0, 2, 'right');
+  txt(FAST ? 'v52 ' + FAST_NAME[FAST] : 'v52', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -3855,9 +3859,21 @@ const SPR_HERB = [
   '   333   ',
 ]
 const SPR_COTTON_BALL = ['  33  ', ' 3003 ', '300003', '300013', ' 3113 ', '  33  '];
+function floorOf(m) {
+  if (m._floor) return m._floor;
+  const c = {}; for (const r of m.rows) for (const ch of r) if (!SOLID.has(ch)) c[ch] = (c[ch] || 0) + 1;
+  return (m._floor = (Object.entries(c).sort((a, b) => b[1] - a[1])[0] || ['.'])[0]);
+}
+const rocky = () => map && !map.ground && floorOf(map) === 'v';
 function drawTile(t, sx, sy, mx, my) {
   const hs = hash(mx, my);
   const grass = () => {
+    if (rocky()) {   /* 华山、黑木崖这类石头山：地面是深灰碎石，树、草、石刻底下也铺碎石，不留白方块 */
+      R(sx, sy, T, T, 2);
+      R(sx + (hs % 13) + 1, sy + ((hs >> 5) % 13) + 1, 2, 1, 3); R(sx + ((hs >> 9) % 12) + 2, sy + ((hs >> 13) % 12) + 2, 1, 1, 1);
+      if (hs % 4 === 0) { R(sx + 3, sy + 10, 4, 1, 3); R(sx + 6, sy + 11, 3, 1, 3); }
+      return;
+    }
     if (map && map.ground === 'cave') { R(sx, sy, T, T, 2); if (hs % 3 === 0) R(sx + (hs % 12) + 2, sy + ((hs >> 4) % 12) + 2, 2, 1, 3); if (hs % 5 === 0) R(sx + ((hs >> 7) % 10) + 3, sy + ((hs >> 11) % 10) + 3, 1, 1, 1); return; }
     R(sx, sy, T, T, 0);
     const a = 2 + (hs % 9), b = 3 + ((hs >> 4) % 9), c = 3 + ((hs >> 8) % 9), d = 1 + ((hs >> 12) % 10);
@@ -3906,7 +3922,7 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 6, sy + 9, 4, 6, 3); R(sx + 7, sy + 10, 2, 4, 1);
       break;
     case 'P':
-      snow();
+      if (isSnow) snow(); else base();
       R(sx + 7, sy + 12, 2, 4, 3);
       for (let y = 0; y < 13; y++) {
         const w = Math.min(14, 2 + (y % 5) * 2 + Math.floor(y / 5) * 2), x0 = sx + 8 - w / 2;
@@ -4087,23 +4103,23 @@ function drawTile(t, sx, sy, mx, my) {
       const sy0 = sy; sy -= 4;
       const trunk = () => { R(sx + 7, sy0 + 8, 2, 8, 3); R(sx + 8, sy0 + 9, 1, 6, 2); };
       if (tv === 1) { /* 松树：一层层的尖顶 */
-        { const s0 = sy; sy = sy0; grass(); sy = s0; } trunk();
+        { const s0 = sy; sy = sy0; base(); sy = s0; } trunk();
         for (let y = 0; y < 13; y++) { const w = Math.min(14, 2 + (y % 5) * 2 + Math.floor(y / 5) * 2), x0 = sx + 8 - w / 2; R(x0, sy + y, w, 1, y % 5 === 4 ? 3 : 2); R(x0, sy + y, 1, 1, 3); R(x0 + w - 1, sy + y, 1, 1, 3); }
         R(sx + 7, sy, 2, 1, 3); break;
       }
       if (tv === 2) { /* 柳树：树冠垂下一条条柳丝 */
-        { const s0 = sy; sy = sy0; grass(); sy = s0; } R(sx + 7, sy + 9, 2, 11, 3);
+        { const s0 = sy; sy = sy0; base(); sy = s0; } R(sx + 7, sy + 9, 2, 11, 3);
         for (let y = 0; y < 7; y++) for (let x = 0; x < 16; x++) { const dx = x - 7.5, dy = y - 3.5, r = dx * dx / 56 + dy * dy / 14; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.7 ? 3 : 2); }
         for (const [x, h] of [[1, 10], [3, 12], [5, 9], [10, 9], [12, 12], [14, 10]]) R(sx + x, sy + 4, 1, h, (x + my) % 2 ? 3 : 2);
         break;
       }
       if (tv === 3) { /* 果树：圆树冠上挂着果子 */
-        R(sx, sy0, T, T, 0); trunk();
+        { const s0 = sy; sy = sy0; base(); sy = s0; } trunk();
         for (let y = 0; y < 12; y++) for (let x = 1; x < 15; x++) { const dx = x - 7.5, dy = y - 6, r = dx * dx / 50 + dy * dy / 36; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.75 ? 3 : 2); }
         for (const [fx, fy] of [[4, 4], [9, 3], [11, 7], [6, 8], [3, 8]]) { R(sx + fx, sy + fy, 2, 2, 0); R(sx + fx + 1, sy + fy + 1, 1, 1, 3); }
         R(sx + 6, sy + 11, 4, 5, 3); R(sx + 7, sy + 12, 1, 3, 2); break;
       }
-      R(sx, sy0, T, T, 0); trunk();
+      { const s0 = sy; sy = sy0; base(); sy = s0; } trunk();
       for (let y = 0; y < 13; y++) for (let x = 0; x < 16; x++) {
         const dx = x - 7.5, dy = y - 6.5, r = dx * dx / 64 + dy * dy / 42;
         if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.78 ? 3 : (dx < -1 && dy < -1 && r < 0.45) ? 1 : 2);
@@ -4165,8 +4181,7 @@ function drawTile(t, sx, sy, mx, my) {
       break;
     case 'J': {
       grass();
-      const seen = S && S.found && S.found.includes(map.id + ':' + mx + ',' + my);
-      R(sx + 2, sy + 13, 12, 3, 3); R(sx + 3, sy + 1, 10, 13, 3); R(sx + 4, sy + 2, 8, 11, seen ? 2 : 1);
+      R(sx + 2, sy + 13, 12, 3, 3); R(sx + 3, sy + 1, 10, 13, 3); R(sx + 4, sy + 2, 8, 11, 1);   /* 石刻一直立在那里，谁看过都一样，人人都能看 */
       R(sx + 5, sy + 1, 6, 1, 3);
       for (const cx of [6, 9]) for (let yy = 4; yy < 12; yy += 2) R(sx + cx, sy + yy, 1, 1, 3);
       break;
@@ -4840,10 +4855,10 @@ function renderHud() {
 }
 /* 身边 5 格内能采的东西，头上都标着名字（三七、精铁矿……）；贴身那个多一个“A”，按 A 就采 */
 const MARK_NAME = {
-  J: (x, y) => lootable(x, y) ? '石刻' : '石刻·已读', X: (x, y) => lootable(x, y) ? '旧木箱' : '空木箱',
+  J: () => '石刻', X: (x, y) => lootable(x, y) ? '旧木箱' : '空木箱',
   S: () => '告示牌', o: () => '水井', U: () => '洞口',
 };
-const markDone = (t, x, y) => (t === 'J' || t === 'X') && !lootable(x, y);
+const markDone = (t, x, y) => t === 'X' && !lootable(x, y);
 function renderLootTag() {
   if (dlg || menu) return;
   const list = [];

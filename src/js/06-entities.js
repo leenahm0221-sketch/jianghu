@@ -13,7 +13,8 @@ function peekName(x, y) {
   if (n) return n.name;
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return null;
   const t = map.rows[y][x];
-  if (t === 'J' || t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已看过）');
+  if (t === 'J') return '石刻 走近按A看';
+  if (t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已打开）');
   if (RES_TILES[t]) {
     const nm = resName(x, y, t);
     return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm} 走近按A采`;

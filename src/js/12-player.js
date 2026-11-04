@@ -264,7 +264,10 @@ function actA() {
   for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
     const ax = P.tx + ddx, ay = P.ty + ddy, tt = tileAt(ax, ay);
     if (RES_TILES[tt] && !isDepleted(ax, ay)) { P.dir = k; return gather(ax, ay, tt); }
-    if ((tt === 'X' || tt === 'J') && lootable(ax, ay)) { P.dir = k; return tt === 'X' ? openChest(`${ax},${ay}`) : readStele(ax, ay); }
+  }
+  for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
+    const ax = P.tx + ddx, ay = P.ty + ddy, tt = tileAt(ax, ay);
+    if ((tt === 'X' && lootable(ax, ay)) || tt === 'J') { P.dir = k; return tt === 'X' ? openChest(`${ax},${ay}`) : readStele(ax, ay); }
   }
   if ((t === '~' || t === 'i') && !nearestEnemy(4)) return startFish(fx_, fy);
   const front = enemyAt(fx_, fy);
