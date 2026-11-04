@@ -68,7 +68,7 @@ const maxedCount = () => Object.keys(S.skills).filter(k => S.skills[k] >= 99.99)
 const qi = () => Math.floor(ageQi(S.age) + pv('心法', 'yq') * 0.4 + maxedCount() * 10 + (S.lilian || 0) / 2);
 const maxHP = () => Math.floor(60 + qi() * 1.5 + pv('心法', 'hp') * 0.4);
 const maxMP = () => Math.floor(20 + pv('心法', 'mp') * 1.2 + gearSum('mp'));
-/* 体力：基础武功每招消耗，歇一歇或打坐就回来；上乘武功改耗内功 */
+/* 体力：每招都耗，歇一歇或打坐就回来；基础以外的武功还要再耗内功 */
 const maxST = () => Math.floor(50 + qi() * 0.6 + pv('心法', 'hp') * 0.3);
 const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3 };
 const maxPart = () => 40 + Math.floor(qi() / 2);
@@ -155,7 +155,7 @@ function train(id, amt) {
   if (!id || S.skills[id] == null || !(amt > 0)) return;
   const v = S.skills[id], cap = skillCap(id);
   if (v >= cap) return;
-  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
+  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTT(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
   const nv = Math.min(cap, v + gain);
   S.skills[id] = nv;
   if (nv >= 99.99 && cap === 99.99) { toast(`${SK[id].name}练至化境，元气 +10`); sfx('level'); }

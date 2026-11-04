@@ -15,9 +15,8 @@ function peekName(x, y) {
   const t = map.rows[y][x];
   if (t === 'J' || t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已看过）');
   if (RES_TILES[t]) {
-    const b = (typeof RES_BONUS !== 'undefined' && RES_BONUS[t] || {})[map.id], extra = b && ITEMS[b[0]] ? `，偶得${ITEMS[b[0]].name}` : '';
-    const nm = t === 'O' ? '矿石' : LOOT_NAME[t];
-    return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm}${extra} 走近按A采`;
+    const nm = resName(x, y, t);
+    return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm} 走近按A采`;
   }
   if (t === 'T') { const hs = hash(x, y), inF = map.ground === 'forest'; return inF ? (hs % 3 === 0 ? '柏树' : '松树') : ['树', '松树', '柳树', '果树', '树'][hs % 5]; }
   if (t === 'r' && map.ground === 'sand') return '大石头';
@@ -58,7 +57,7 @@ function renderInspect() {
   const sk = Object.entries(c.skills || {}).filter(([k]) => SK[k] && SK[k].cat !== '生产').sort((a, b) => b[1] - a[1]).slice(0, 5);
   sk.forEach(([k, v], i) => {
     const y = 72 + i * 11, kd = skKind(k);
-    R(7, y, 11, 11, 3); txt({ 基础: '基', 门派: '门', 特殊: '特' }[kd], 8, y, 0);
+    R(7, y, 11, 11, 3); txt({ 基础: '基', 门派: '门', 江湖: '江', 特殊: '特' }[kd], 8, y, 0);
     txt(SK[k].name + (k === c.active || Object.values(c.passive || {}).includes(k) ? '●' : ''), 21, y, 3);
     txt(Number(v).toFixed(2), MW - 8, y, 2, 'right');
   });

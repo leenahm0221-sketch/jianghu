@@ -29,9 +29,12 @@ const sfx = n => SFX[n] && SFX[n]();
    mel 是旋律（每格一个八分音符，数字是 MIDI 音高，0 是休止），bass 是每小节的根音 */
 let musicOn = true;
 /* 测试加速：约一小时能练到顶。走路×1.5、练功×15（护体步法心法×30）、年岁×8、回血×3、怪物复活和草药矿石长回来×4。测试阶段默认开，系统菜单里可关 */
-let FAST = true;
-try { FAST = localStorage.getItem('jianghu-fast') !== '0'; } catch (e) {}
+/* 测试加速三档：0 关、1 加速（约一小时练到顶）、2 极速（练功再快 50 倍，几分钟练到顶） */
+let FAST = 2;
+try { const v = localStorage.getItem('jianghu-fast'); if (v === '0' || v === '1') FAST = +v; } catch (e) {}
 const FASTX = n => (FAST ? n : 1);
+const FASTT = n => (FAST === 2 ? n * 50 : FAST ? n : 1);   /* 练功专用 */
+const FAST_NAME = ['关', '加速', '极速'];
 try { musicOn = localStorage.getItem('jianghu-music') !== '0'; } catch (e) {}
 const TRACKS = {
   town: { bpm: 92, wave: 'triangle', vol: 0.03, mel: [67, 69, 72, 0, 74, 72, 69, 0, 67, 64, 67, 69, 67, 0, 0, 0, 72, 74, 76, 0, 74, 72, 69, 72, 67, 0, 69, 67, 64, 0, 0, 0], bass: [48, 45, 43, 48] },

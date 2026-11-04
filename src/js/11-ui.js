@@ -28,14 +28,15 @@ const TABS = ['状态', '武功', '装备', '行囊', '江湖', '地图', '系�
 /* 菜单上显示的页：地图有自己的「地图」键，不放进菜单里左右翻 */
 const MENU_TABS = TABS.filter(t => t !== '地图');
 /* 武功三层：基础武功（谁都能练）→ 门派武功（只有门派武功受门派约束，叛出后最多 49.99）→ 特殊武功（秘籍、奇人所传，不受门派约束） */
-const KIND_ORDER = ['基础', '门派', '特殊', '生产'];
-const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier === 2 ? '特殊' : '基础'; };
+const KIND_ORDER = ['基础', '门派', '江湖', '特殊', '生产'];
+/* 江湖：不属门派的上层武功（武馆、野外得秘籍）；特殊：打反派或奇人传授 */
+const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier !== 2 ? '基础' : (sk.villain || Object.values(HERMITS).some(h => h.skill === k)) ? '特殊' : '江湖'; };
 function skillList() {
   return Object.keys(S.skills).filter(k => SK[k]).sort((a, b) => KIND_ORDER.indexOf(skKind(a)) - KIND_ORDER.indexOf(skKind(b)) || CAT_ORDER.indexOf(SK[a].cat) - CAT_ORDER.indexOf(SK[b].cat));
 }
 function skillInfo(k) {
   const sk = SK[k], up = sk.tier === 2 ? '上乘' : '';
-  if (ATK_CATS.includes(sk.cat)) return `${up}${sk.cat}法 速${RT[sk.spd]} ${sk.tier === 2 ? '耗内功' : '耗体力'}`;
+  if (ATK_CATS.includes(sk.cat)) return `${up}${sk.cat}法 速${RT[sk.spd]} ${sk.tier === 2 ? '耗体力内功' : '耗体力'}`;
   return `${up}${sk.cat}　按A看详情`;
 }
 const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '空手可用' : `需装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${sk.cat}，同时只能运用一门`);
@@ -60,7 +61,7 @@ function menuItems() {
   if (menu.tab === 1) return skillList().map(k => {
     const sk = SK[k], atk = ATK_CATS.includes(sk.cat);
     const using = atk ? S.active === k : S.passive[sk.cat] === k;
-    return { tag: { 基础: '基', 门派: '门', 特殊: '特', 生产: '艺' }[skKind(k)], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
+    return { tag: { 基础: '基', 门派: '门', 江湖: '江', 特殊: '特', 生产: '艺' }[skKind(k)], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
   });
   if (menu.tab === 2) {
     const cnt = {};
@@ -94,7 +95,7 @@ function menuItems() {
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
-    { label: '测试加速', right: FAST ? '开' : '关', act: () => { FAST = !FAST; try { localStorage.setItem('jianghu-fast', FAST ? '1' : '0'); } catch (e) {} toast(FAST ? '测试加速：约一小时练到顶（走路、练功、年岁、回血、复活都变快）' : '测试加速已关'); sfx('menu'); } },
+    { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快50倍，几分钟练到顶'][FAST]); sfx('menu'); } },
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }

@@ -162,8 +162,9 @@ function openChest(key) {
   const silver = 20 + tier * 30 + rnd(0, 20); S.silver += silver; got.push(`碎银${silver}两`);
   const meds = [['yao', 3], ['qingxin', 2], ['baiyao', 2], ['yulu', 1]][tier]; S.items[meds[0]] = (S.items[meds[0]] || 0) + meds[1]; got.push(`${ITEMS[meds[0]].name}${meds[1]}份`);
   const mats = localMats(map.id); if (mats.length) { const m = mats[rnd(0, mats.length - 1)], n = rnd(1, 2); S.items[m] = (S.items[m] || 0) + n; got.push(`${ITEMS[m].name}${n}份`); }
-  const books = ['book_hujia', 'book_shenxing'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
-  if (tier >= 2 && books.length && Math.random() < 0.25) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); }
+  /* 野外木箱里可能有江湖散学的秘籍，越险的地方越容易有 */
+  const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
+  if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); }
   sfx('coin'); save();
   return say(null, ['你撬开了旧木箱……', `找到${got.join('、')}！`]);
 }
@@ -186,6 +187,17 @@ function readStele(x, y) {
   say(null, lines);
 }
 let _stN = 0; const steleTotal = () => _stN || (_stN = Object.values(MAPS).reduce((a, m) => a + m.rows.join('').split('J').length - 1, 0));
+/* 每一株草药、每一块矿是什么，在地图上就定好了：某些地方有一部分是三七、精铁矿这类好东西，采了必得 */
+function resSpecial(x, y, t) {
+  const bo = (RES_BONUS[t] || {})[map.id];
+  return bo && (hash(x * 7 + 3, y * 13 + 5) % 1000) / 1000 < bo[1] ? bo[0] : null;
+}
+const ORE_NAME = { jingtie: '精铁矿', hantie: '寒铁矿', xuantiekuang: '玄铁矿', wujin: '乌金矿' };
+function resName(x, y, t) {
+  const sp = resSpecial(x, y, t);
+  if (sp) return ORE_NAME[sp] || ITEMS[sp].name;
+  return LOOT_NAME[t];
+}
 function gather(x, y, t) {
   const r = RES_TILES[t];
   if (isDepleted(x, y)) return toast(t === 'O' ? '矿石刚挖过，过阵子再来' : '刚采过，还没长出来');
@@ -195,9 +207,11 @@ function gather(x, y, t) {
   if (Math.random() * 100 < lv('caiji') * 0.6) n++;
   S.items[r.item] = (S.items[r.item] || 0) + n;
   train('caiji', 3);
-  toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin');
-  const bo = (RES_BONUS[t] || {})[map.id];
-  if (bo && Math.random() < bo[1] * (1 + lv('caiji') / 100)) { S.items[bo[0]] = (S.items[bo[0]] || 0) + 1; toast(`还找到了${ITEMS[bo[0]].name}！`); sfx('level'); }
+  const sp = resSpecial(x, y, t);
+  if (sp) {
+    const m = Math.random() * 100 < lv('caiji') * 0.5 ? 2 : 1;
+    S.items[sp] = (S.items[sp] || 0) + m; toast(`采到${ITEMS[sp].name}${m > 1 ? '×' + m : ''}！还有${ITEMS[r.item].name}${n > 1 ? '×' + n : ''}`); sfx('level');
+  } else { toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin'); }
 }
 /* 钓鱼：甩竿 → 等待 → 浮标一沉头上冒“!”，这时按 A 才钓得上。熟练度越高，咬钩窗口越宽、稀有鱼越多 */
 const FISH = { hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]], wild: [['jiyu', 40], ['liyu', 60]], emei: [['bingyu', 100]] };
@@ -269,20 +283,20 @@ function actA() {
   attack();
 }
 /* 出招：出手间隔看攻击速度；命中看命中评级；每一下随机打中身/头/手/脚，伤害看该部位的攻击评级加兵器该部位攻击
-   上乘武功每招耗 2 点内功，内功不够时威力打六折；武功到 50 级后，出招在两个动作之间交替 */
+   基础武功每招耗体力；其他武功每招同时耗体力和 2 点内功，不够时威力大减；武功到 50 级后，出招在两个动作之间交替 */
 const LOC_W = [0.4, 0.15, 0.25, 0.2];
 function attack() {
   if (P.atkCD > 0) return;
   ensureActive();
   const id = S.active, sk = SK[id], v = lv(id), wp = weapon();
   let weak = false;
+  /* 基础武功只耗体力；其他武功同时耗体力和内功，哪样不够威力都会大减 */
+  const c = ST_COST[sk.cat];
+  if (S.st >= c) { S.st -= c; P.stWarned = false; }
+  else { weak = true; S.st = 0; if (!P.stWarned) { toast('体力不支，出招无力'); P.stWarned = true; } }
   if (sk.tier === 2) {
     if (S.mp >= 2) { S.mp -= 2; P.mpWarned = false; }
     else { weak = true; if (!P.mpWarned) { toast('内功不足，上乘武功威力大减'); P.mpWarned = true; } }
-  } else {
-    const c = ST_COST[sk.cat];
-    if (S.st >= c) { S.st -= c; P.stWarned = false; }
-    else { weak = true; S.st = 0; if (!P.stWarned) { toast('体力不支，出招无力'); P.stWarned = true; } }
   }
   P.lastAtk = frame;
   P.sit = false;

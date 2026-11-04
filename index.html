@@ -304,9 +304,12 @@ const sfx = n => SFX[n] && SFX[n]();
    mel 是旋律（每格一个八分音符，数字是 MIDI 音高，0 是休止），bass 是每小节的根音 */
 let musicOn = true;
 /* 测试加速：约一小时能练到顶。走路×1.5、练功×15（护体步法心法×30）、年岁×8、回血×3、怪物复活和草药矿石长回来×4。测试阶段默认开，系统菜单里可关 */
-let FAST = true;
-try { FAST = localStorage.getItem('jianghu-fast') !== '0'; } catch (e) {}
+/* 测试加速三档：0 关、1 加速（约一小时练到顶）、2 极速（练功再快 50 倍，几分钟练到顶） */
+let FAST = 2;
+try { const v = localStorage.getItem('jianghu-fast'); if (v === '0' || v === '1') FAST = +v; } catch (e) {}
 const FASTX = n => (FAST ? n : 1);
+const FASTT = n => (FAST === 2 ? n * 50 : FAST ? n : 1);   /* 练功专用 */
+const FAST_NAME = ['关', '加速', '极速'];
 try { musicOn = localStorage.getItem('jianghu-music') !== '0'; } catch (e) {}
 const TRACKS = {
   town: { bpm: 92, wave: 'triangle', vol: 0.03, mel: [67, 69, 72, 0, 74, 72, 69, 0, 67, 64, 67, 69, 67, 0, 0, 0, 72, 74, 76, 0, 74, 72, 69, 72, 67, 0, 69, 67, 64, 0, 0, 0], bass: [48, 45, 43, 48] },
@@ -573,6 +576,15 @@ const SK = {
   diaoyu: { name: '钓鱼', cat: '生产', info: '钓鱼时修炼', desc: '越熟练越好上钩，稀有鱼越多' },
   fangzhi: { name: '纺织', cat: '生产', info: '缝制衣帽时修炼', desc: '熟练度越高，越少失败' },
   pengren: { name: '烹饪', cat: '生产', info: '做菜时修炼', desc: '熟练度越高，越少失败' },
+  /* 江湖散学：不属任何门派，和门派武功同一档。秘籍从武馆买，或在野外打怪、开箱子得到 */
+  tiesha: { name: '铁砂掌', short: '铁砂', cat: '拳', tier: 2, spd: 3, rec: 3, eva: 2, acc: 4, atk: [5, 4, 4, 3], move: '铁掌开碑', req: ['changquan', 30], qi: 20, desc: '江湖上流传最广的硬功掌法，掌力沉猛' },
+  yuenv: { name: '越女剑法', short: '越女', cat: '剑', tier: 2, spd: 5, rec: 4, eva: 4, acc: 4, atk: [3, 5, 3, 2], move: '白猿献果', req: ['huashan', 30], qi: 20, desc: '越国阿青所传，轻灵迅捷，专刺要害' },
+  kuangfeng: { name: '狂风刀法', short: '狂风', cat: '刀', tier: 2, spd: 4, rec: 2, eva: 2, acc: 3, atk: [5, 4, 5, 3], move: '狂风卷地', req: ['wuhu', 30], qi: 20, desc: '大漠马贼的刀，快得像风，砍完就走' },
+  bawang: { name: '霸王枪法', short: '霸王', cat: '枪', tier: 2, spd: 2, rec: 3, eva: 2, acc: 4, atk: [5, 3, 4, 5], reach: 2, move: '霸王卸甲', req: ['yangjia', 30], qi: 20, desc: '塞外骑兵的长枪，一往无前' },
+  leiting: { name: '雷霆锤法', short: '雷霆', cat: '槌', tier: 2, spd: 2, rec: 2, eva: 1, acc: 3, atk: [5, 5, 4, 4], stun: 0.22, move: '雷霆万钧', req: ['kaishan', 30], qi: 20, desc: '矿上传出来的锤法，一锤下去山石崩裂' },
+  jinzhong: { name: '金钟罩', cat: '护体', tier: 2, def: [5, 5, 4, 3], req: ['tiebushan', 30], qi: 25, info: '挨打时修炼', desc: '外门硬功，练成后刀枪难入，连头也护住' },
+  yanzi: { name: '燕子三抄水', cat: '步法', tier: 2, mv: 4, eva: 5, req: ['caoshangfei', 30], info: '走路时修炼', desc: '身轻如燕，三起三落，最善闪躲' },
+  guixi: { name: '龟息功', cat: '心法', tier: 2, mp: 4, hp: 5, yq: 4, req: ['quanzhen', 40], qi: 30, info: '打坐时修炼', desc: '闭气养神，内力深厚绵长' },
   bixie: { name: '辟邪剑法', short: '辟邪', cat: '剑', tier: 2, spd: 5, rec: 3, eva: 5, acc: 4, atk: [3, 5, 3, 3], move: '群邪辟易', req: ['huashan', 50], qi: 35, villain: 'yuebuqun', desc: '快如鬼魅，以快打慢' },
   heixue: { name: '黑血神针', short: '神针', cat: '拳', tier: 2, spd: 5, rec: 3, eva: 3, acc: 5, atk: [3, 4, 3, 3], reach: 2, poison: 0.25, move: '万针齐发', sect: 'riyue', req: ['changquan', 30], qi: 20, desc: '日月神教暗器，针上淬毒，两格外伤人' },
   xixing: { name: '吸星大法', cat: '心法', tier: 2, mp: 5, hp: 3, yq: 4, sect: 'riyue', req: ['quanzhen', 30], qi: 30, info: '打坐时修炼', desc: '化人内力为己用' },
@@ -701,8 +713,8 @@ const DROPS = {
   jinlun: [['book_longxiang', 0.25], ['wujin', 0.6], ['wujinchui', 0.2]],
   xuedao: [['book_xuedao', 1]],
   kuangfei: [['shengtie', 0.6], ['jingtie', 0.25], ['yao', 0.3]],
-  kuangba: [['jingtie', 1], ['jingtie', 0.8], ['guitou', 0.25], ['baleng', 0.25], ['book_hujia', 0.15]],
-  dongxiong: [['xiongpi', 0.5], ['xiongdan', 0.25], ['renshen', 0.1]],
+  kuangba: [['book_leiting', 0.12], ['jingtie', 1], ['jingtie', 0.8], ['guitou', 0.25], ['baleng', 0.25], ['book_hujia', 0.15]],
+  dongxiong: [['book_guixi', 0.1], ['xiongpi', 0.5], ['xiongdan', 0.25], ['renshen', 0.1]],
   xiongwang: [['xiongdan', 1], ['hantie', 0.8], ['renshen', 0.5], ['wujinchui', 0.2], ['xiongpi', 1]],
   jianmo: [['jingtie', 1], ['hantie', 0.5], ['hantiejian', 0.25], ['xuantie', 0.06], ['book_shenxing', 0.15]],
   jianling: [['hantie', 0.3], ['jingtie', 0.4], ['xuelian', 0.08]],
@@ -719,8 +731,8 @@ const DROPS = {
   wuseng: [['yao', 0.3]], emeidizi: [['qidan', 0.3]], jiaozhong: [['yao', 0.3]], taohuadizi: [['qidan', 0.3]],
   snowwolf: [['xuelangpi', 0.6], ['shougu', 0.4]],
   shanfei: [['yao', 0.3], ['shengtie', 0.3]], baozi: [['hupi', 0.4], ['shougu', 0.5]], qzdizi: [['qidan', 0.3]], mjzhong: [['yao', 0.3], ['qidan', 0.15]],
-  mazei: [['yao', 0.3], ['shengtie', 0.3]], shalang: [['langpi', 0.6], ['shougu', 0.4]], shafei: [['yao', 0.35], ['shengtie', 0.3]], cylang: [['langpi', 0.7], ['shougu', 0.4]],
-  menggu: [['yao', 0.4], ['qidan', 0.15]], langwang: [['xuelangpi', 0.8], ['hugu', 0.3]], hsjianke: [['qidan', 0.3], ['lingzhi', 0.1]], jqdizi: [['qidan', 0.3], ['lingzhi', 0.12]], 
+  mazei: [['book_kuangfeng', 0.08], ['yao', 0.3], ['shengtie', 0.3]], shalang: [['langpi', 0.6], ['shougu', 0.4]], shafei: [['book_yanzi', 0.08], ['yao', 0.35], ['shengtie', 0.3]], cylang: [['langpi', 0.7], ['shougu', 0.4]],
+  menggu: [['book_bawang', 0.08], ['yao', 0.4], ['qidan', 0.15]], langwang: [['xuelangpi', 0.8], ['hugu', 0.3]], hsjianke: [['book_yuenv', 0.1], ['qidan', 0.3], ['lingzhi', 0.1]], jqdizi: [['qidan', 0.3], ['lingzhi', 0.12]], 
 };
 
 /* 物品：buyer 表示谁收购，buy 表示能在哪买 */
@@ -775,6 +787,14 @@ const ITEMS = {
   book_hujia: { name: '胡家刀法秘籍', info: '基础刀法30级可研读', book: 'hujia' },
   book_yuejia: { name: '岳家枪法秘籍', info: '基础枪法30级可研读', buy: 300, book: 'yuejia' },
   book_shenxing: { name: '神行百变秘籍', info: '基础步法20级可研读', book: 'shenxing' },
+  book_tiesha: { name: '铁砂掌秘籍', info: '基础拳法30级可研读，武馆有卖', buy: 300, book: 'tiesha' },
+  book_jinzhong: { name: '金钟罩秘籍', info: '基础护体30级可研读，武馆有卖', buy: 400, book: 'jinzhong' },
+  book_yuenv: { name: '越女剑法秘籍', info: '基础剑法30级可研读，华山剑客身上、野外木箱里有', book: 'yuenv' },
+  book_kuangfeng: { name: '狂风刀法秘籍', info: '基础刀法30级可研读，大漠马贼身上、野外木箱里有', book: 'kuangfeng' },
+  book_bawang: { name: '霸王枪法秘籍', info: '基础枪法30级可研读，塞外蒙古骑兵身上、野外木箱里有', book: 'bawang' },
+  book_leiting: { name: '雷霆锤法秘籍', info: '基础槌法30级可研读，矿霸身上、野外木箱里有', book: 'leiting' },
+  book_yanzi: { name: '燕子三抄水秘籍', info: '基础步法30级可研读，大漠沙匪身上、野外木箱里有', book: 'yanzi' },
+  book_guixi: { name: '龟息功秘籍', info: '基础心法40级可研读，洞熊窝里、野外木箱里有', book: 'guixi' },
   book_bixie: { name: '辟邪剑谱', info: '基础剑法50级可研读', sell: 100, book: 'bixie' },
   book_kuihua: { name: '葵花宝典', info: '基础剑法60级可研读', sell: 150, book: 'kuihua' },
   book_hanbing: { name: '寒冰真气心法', info: '基础心法50级可研读', sell: 120, book: 'hanbing' },
@@ -1531,7 +1551,7 @@ const maxedCount = () => Object.keys(S.skills).filter(k => S.skills[k] >= 99.99)
 const qi = () => Math.floor(ageQi(S.age) + pv('心法', 'yq') * 0.4 + maxedCount() * 10 + (S.lilian || 0) / 2);
 const maxHP = () => Math.floor(60 + qi() * 1.5 + pv('心法', 'hp') * 0.4);
 const maxMP = () => Math.floor(20 + pv('心法', 'mp') * 1.2 + gearSum('mp'));
-/* 体力：基础武功每招消耗，歇一歇或打坐就回来；上乘武功改耗内功 */
+/* 体力：每招都耗，歇一歇或打坐就回来；基础以外的武功还要再耗内功 */
 const maxST = () => Math.floor(50 + qi() * 0.6 + pv('心法', 'hp') * 0.3);
 const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3 };
 const maxPart = () => 40 + Math.floor(qi() / 2);
@@ -1618,7 +1638,7 @@ function train(id, amt) {
   if (!id || S.skills[id] == null || !(amt > 0)) return;
   const v = S.skills[id], cap = skillCap(id);
   if (v >= cap) return;
-  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
+  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTT(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
   const nv = Math.min(cap, v + gain);
   S.skills[id] = nv;
   if (nv >= 99.99 && cap === 99.99) { toast(`${SK[id].name}练至化境，元气 +10`); sfx('level'); }
@@ -1657,9 +1677,8 @@ function peekName(x, y) {
   const t = map.rows[y][x];
   if (t === 'J' || t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已看过）');
   if (RES_TILES[t]) {
-    const b = (typeof RES_BONUS !== 'undefined' && RES_BONUS[t] || {})[map.id], extra = b && ITEMS[b[0]] ? `，偶得${ITEMS[b[0]].name}` : '';
-    const nm = t === 'O' ? '矿石' : LOOT_NAME[t];
-    return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm}${extra} 走近按A采`;
+    const nm = resName(x, y, t);
+    return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm} 走近按A采`;
   }
   if (t === 'T') { const hs = hash(x, y), inF = map.ground === 'forest'; return inF ? (hs % 3 === 0 ? '柏树' : '松树') : ['树', '松树', '柳树', '果树', '树'][hs % 5]; }
   if (t === 'r' && map.ground === 'sand') return '大石头';
@@ -1700,7 +1719,7 @@ function renderInspect() {
   const sk = Object.entries(c.skills || {}).filter(([k]) => SK[k] && SK[k].cat !== '生产').sort((a, b) => b[1] - a[1]).slice(0, 5);
   sk.forEach(([k, v], i) => {
     const y = 72 + i * 11, kd = skKind(k);
-    R(7, y, 11, 11, 3); txt({ 基础: '基', 门派: '门', 特殊: '特' }[kd], 8, y, 0);
+    R(7, y, 11, 11, 3); txt({ 基础: '基', 门派: '门', 江湖: '江', 特殊: '特' }[kd], 8, y, 0);
     txt(SK[k].name + (k === c.active || Object.values(c.passive || {}).includes(k) ? '●' : ''), 21, y, 3);
     txt(Number(v).toFixed(2), MW - 8, y, 2, 'right');
   });
@@ -2156,8 +2175,8 @@ function jiulouTalk() {
 }
 function jiaotouTalk() {
   ask('武馆教头', ['武馆收上层武功秘籍，也教你看武功的门道。'], ['买秘籍', '武功门道', '离开'], i => {
-    if (i === 0) buy('武馆教头', ['book_yuejia'], jiaotouTalk);
-    else if (i === 1) say('武馆教头', ['每门武功有攻速、回击、闪躲、命中，和身、头、手、脚四处攻击力，从特差到优分六档。', '攻速快出手勤；回击好挨打后还手快；闪躲高少挨打。', '基础武功每招耗体力，上乘武功每招耗内功。体力用完出招无力，歇一歇或打坐就回来。', '在菜单“武功”里选中武功按 A，能看详情。', '武功练到 50 级会练成第二式，练满 99.99 元气加 10。', '换兵器按 SELECT，同一种兵器的武功在菜单里选。', '武功分三层：基础武功谁都能练；门派武功要拜师，叛出师门最多练到 49.99；特殊武功靠秘籍或奇人传授，不受门派约束。']);
+    if (i === 0) buy('武馆教头', ['book_yuejia', 'book_tiesha', 'book_jinzhong'], jiaotouTalk);
+    else if (i === 1) say('武馆教头', ['每门武功有攻速、回击、闪躲、命中，和身、头、手、脚四处攻击力，从特差到优分六档。', '攻速快出手勤；回击好挨打后还手快；闪躲高少挨打。', '基础武功每招只耗体力，其他武功每招同时耗体力和内功。体力用完出招无力，歇一歇或打坐就回来。', '在菜单“武功”里选中武功按 A，能看详情。', '武功练到 50 级会练成第二式，练满 99.99 元气加 10。', '换兵器按 SELECT，同一种兵器的武功在菜单里选。', '武功分四层：基础武功谁都能练；门派武功要拜师，叛出师门最多练到 49.99；江湖武功和门派武功一样厉害，秘籍在我这儿买，或在野外打怪、开木箱得到；特殊武功要打败反派或奇人传授。']);
   });
 }
 const MAIN = [
@@ -2849,14 +2868,15 @@ const TABS = ['状态', '武功', '装备', '行囊', '江湖', '地图', '系�
 /* 菜单上显示的页：地图有自己的「地图」键，不放进菜单里左右翻 */
 const MENU_TABS = TABS.filter(t => t !== '地图');
 /* 武功三层：基础武功（谁都能练）→ 门派武功（只有门派武功受门派约束，叛出后最多 49.99）→ 特殊武功（秘籍、奇人所传，不受门派约束） */
-const KIND_ORDER = ['基础', '门派', '特殊', '生产'];
-const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier === 2 ? '特殊' : '基础'; };
+const KIND_ORDER = ['基础', '门派', '江湖', '特殊', '生产'];
+/* 江湖：不属门派的上层武功（武馆、野外得秘籍）；特殊：打反派或奇人传授 */
+const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier !== 2 ? '基础' : (sk.villain || Object.values(HERMITS).some(h => h.skill === k)) ? '特殊' : '江湖'; };
 function skillList() {
   return Object.keys(S.skills).filter(k => SK[k]).sort((a, b) => KIND_ORDER.indexOf(skKind(a)) - KIND_ORDER.indexOf(skKind(b)) || CAT_ORDER.indexOf(SK[a].cat) - CAT_ORDER.indexOf(SK[b].cat));
 }
 function skillInfo(k) {
   const sk = SK[k], up = sk.tier === 2 ? '上乘' : '';
-  if (ATK_CATS.includes(sk.cat)) return `${up}${sk.cat}法 速${RT[sk.spd]} ${sk.tier === 2 ? '耗内功' : '耗体力'}`;
+  if (ATK_CATS.includes(sk.cat)) return `${up}${sk.cat}法 速${RT[sk.spd]} ${sk.tier === 2 ? '耗体力内功' : '耗体力'}`;
   return `${up}${sk.cat}　按A看详情`;
 }
 const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '空手可用' : `需装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${sk.cat}，同时只能运用一门`);
@@ -2881,7 +2901,7 @@ function menuItems() {
   if (menu.tab === 1) return skillList().map(k => {
     const sk = SK[k], atk = ATK_CATS.includes(sk.cat);
     const using = atk ? S.active === k : S.passive[sk.cat] === k;
-    return { tag: { 基础: '基', 门派: '门', 特殊: '特', 生产: '艺' }[skKind(k)], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
+    return { tag: { 基础: '基', 门派: '门', 江湖: '江', 特殊: '特', 生产: '艺' }[skKind(k)], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
   });
   if (menu.tab === 2) {
     const cnt = {};
@@ -2915,7 +2935,7 @@ function menuItems() {
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
-    { label: '测试加速', right: FAST ? '开' : '关', act: () => { FAST = !FAST; try { localStorage.setItem('jianghu-fast', FAST ? '1' : '0'); } catch (e) {} toast(FAST ? '测试加速：约一小时练到顶（走路、练功、年岁、回血、复活都变快）' : '测试加速已关'); sfx('menu'); } },
+    { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快50倍，几分钟练到顶'][FAST]); sfx('menu'); } },
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }
@@ -3119,8 +3139,9 @@ function openChest(key) {
   const silver = 20 + tier * 30 + rnd(0, 20); S.silver += silver; got.push(`碎银${silver}两`);
   const meds = [['yao', 3], ['qingxin', 2], ['baiyao', 2], ['yulu', 1]][tier]; S.items[meds[0]] = (S.items[meds[0]] || 0) + meds[1]; got.push(`${ITEMS[meds[0]].name}${meds[1]}份`);
   const mats = localMats(map.id); if (mats.length) { const m = mats[rnd(0, mats.length - 1)], n = rnd(1, 2); S.items[m] = (S.items[m] || 0) + n; got.push(`${ITEMS[m].name}${n}份`); }
-  const books = ['book_hujia', 'book_shenxing'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
-  if (tier >= 2 && books.length && Math.random() < 0.25) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); }
+  /* 野外木箱里可能有江湖散学的秘籍，越险的地方越容易有 */
+  const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
+  if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); }
   sfx('coin'); save();
   return say(null, ['你撬开了旧木箱……', `找到${got.join('、')}！`]);
 }
@@ -3143,6 +3164,17 @@ function readStele(x, y) {
   say(null, lines);
 }
 let _stN = 0; const steleTotal = () => _stN || (_stN = Object.values(MAPS).reduce((a, m) => a + m.rows.join('').split('J').length - 1, 0));
+/* 每一株草药、每一块矿是什么，在地图上就定好了：某些地方有一部分是三七、精铁矿这类好东西，采了必得 */
+function resSpecial(x, y, t) {
+  const bo = (RES_BONUS[t] || {})[map.id];
+  return bo && (hash(x * 7 + 3, y * 13 + 5) % 1000) / 1000 < bo[1] ? bo[0] : null;
+}
+const ORE_NAME = { jingtie: '精铁矿', hantie: '寒铁矿', xuantiekuang: '玄铁矿', wujin: '乌金矿' };
+function resName(x, y, t) {
+  const sp = resSpecial(x, y, t);
+  if (sp) return ORE_NAME[sp] || ITEMS[sp].name;
+  return LOOT_NAME[t];
+}
 function gather(x, y, t) {
   const r = RES_TILES[t];
   if (isDepleted(x, y)) return toast(t === 'O' ? '矿石刚挖过，过阵子再来' : '刚采过，还没长出来');
@@ -3152,9 +3184,11 @@ function gather(x, y, t) {
   if (Math.random() * 100 < lv('caiji') * 0.6) n++;
   S.items[r.item] = (S.items[r.item] || 0) + n;
   train('caiji', 3);
-  toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin');
-  const bo = (RES_BONUS[t] || {})[map.id];
-  if (bo && Math.random() < bo[1] * (1 + lv('caiji') / 100)) { S.items[bo[0]] = (S.items[bo[0]] || 0) + 1; toast(`还找到了${ITEMS[bo[0]].name}！`); sfx('level'); }
+  const sp = resSpecial(x, y, t);
+  if (sp) {
+    const m = Math.random() * 100 < lv('caiji') * 0.5 ? 2 : 1;
+    S.items[sp] = (S.items[sp] || 0) + m; toast(`采到${ITEMS[sp].name}${m > 1 ? '×' + m : ''}！还有${ITEMS[r.item].name}${n > 1 ? '×' + n : ''}`); sfx('level');
+  } else { toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin'); }
 }
 /* 钓鱼：甩竿 → 等待 → 浮标一沉头上冒“!”，这时按 A 才钓得上。熟练度越高，咬钩窗口越宽、稀有鱼越多 */
 const FISH = { hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]], wild: [['jiyu', 40], ['liyu', 60]], emei: [['bingyu', 100]] };
@@ -3226,20 +3260,20 @@ function actA() {
   attack();
 }
 /* 出招：出手间隔看攻击速度；命中看命中评级；每一下随机打中身/头/手/脚，伤害看该部位的攻击评级加兵器该部位攻击
-   上乘武功每招耗 2 点内功，内功不够时威力打六折；武功到 50 级后，出招在两个动作之间交替 */
+   基础武功每招耗体力；其他武功每招同时耗体力和 2 点内功，不够时威力大减；武功到 50 级后，出招在两个动作之间交替 */
 const LOC_W = [0.4, 0.15, 0.25, 0.2];
 function attack() {
   if (P.atkCD > 0) return;
   ensureActive();
   const id = S.active, sk = SK[id], v = lv(id), wp = weapon();
   let weak = false;
+  /* 基础武功只耗体力；其他武功同时耗体力和内功，哪样不够威力都会大减 */
+  const c = ST_COST[sk.cat];
+  if (S.st >= c) { S.st -= c; P.stWarned = false; }
+  else { weak = true; S.st = 0; if (!P.stWarned) { toast('体力不支，出招无力'); P.stWarned = true; } }
   if (sk.tier === 2) {
     if (S.mp >= 2) { S.mp -= 2; P.mpWarned = false; }
     else { weak = true; if (!P.mpWarned) { toast('内功不足，上乘武功威力大减'); P.mpWarned = true; } }
-  } else {
-    const c = ST_COST[sk.cat];
-    if (S.st >= c) { S.st -= c; P.stWarned = false; }
-    else { weak = true; S.st = 0; if (!P.stWarned) { toast('体力不支，出招无力'); P.stWarned = true; } }
   }
   P.lastAtk = frame;
   P.sit = false;
@@ -3513,7 +3547,7 @@ function update() {
   if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
   if (menu) return updMenu();
   if (hitStop > 0) { hitStop--; return; }
-  if ((S.ageT += FASTX(8)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
+  if ((S.ageT += FAST === 2 ? 20 : FASTX(8)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
   updPlayer(); updEnemies(); updNpcs();
   if (!P.dead) {
     tickBuffs();
@@ -3794,7 +3828,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v48 加速' : 'v48', 156, 0, 2, 'right');
+  txt(FAST ? 'v49 ' + FAST_NAME[FAST] : 'v49', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -3941,7 +3975,7 @@ function drawTile(t, sx, sy, mx, my) {
     case '*': {
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); R(sx + 6, sy + 14, 4, 1, 2); break; }
-      const herb = ((RES_BONUS['*'] || {})[map && map.id] || [])[0];
+      const herb = map && resSpecial(mx, my, '*');
       if (herb === 'renshen' || herb === 'sanqi') {
         /* 人参、三七：一圈掌状叶，中间顶着一簇浆果 */
         R(sx + 7, sy + 8, 2, 8, 2);
@@ -3969,7 +4003,14 @@ function drawTile(t, sx, sy, mx, my) {
     case '&':
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); break; }
-      if ((((RES_BONUS['&'] || {})[map && map.id] || [])[0]) === 'xuelian') {
+      const sp = map && resSpecial(mx, my, '&');
+      if (sp === 'renshen') {   /* 老山参：一圈掌状叶，中间一簇红果 */
+        R(sx + 7, sy + 8, 2, 8, 2);
+        for (const [lx, ly, w] of [[1, 9, 6], [9, 9, 6], [3, 6, 4], [9, 6, 4]]) { R(sx + lx, sy + ly, w, 2, 2); R(sx + lx, sy + ly, w, 1, 3); }
+        for (const [bx, by] of [[6, 2], [8, 2], [7, 4], [5, 4], [9, 4], [7, 1]]) { R(sx + bx, sy + by, 2, 2, 3); R(sx + bx, sy + by, 1, 1, 1); }
+        break;
+      }
+      if (sp === 'xuelian') {
         /* 天山雪莲：白色重瓣，像一朵莲花 */
         for (const [px, py, w, h] of [[2, 8, 4, 5], [10, 8, 4, 5], [5, 5, 6, 8], [6, 3, 4, 4]]) { R(sx + px, sy + py, w, h, 3); R(sx + px + 1, sy + py + 1, w - 2, h - 2, 0); }
         R(sx + 7, sy + 7, 2, 2, 1); R(sx + 3, sy + 14, 10, 1, 2);
@@ -3986,7 +4027,7 @@ function drawTile(t, sx, sy, mx, my) {
       break;
     case 'O': {
       base();
-      const ore = ((RES_BONUS.O || {})[map && map.id] || [])[0], dep = isDepleted(mx, my);
+      const ore = map && resSpecial(mx, my, 'O'), dep = isDepleted(mx, my);
       if (dep) { R(sx + 3, sy + 12, 4, 3, 2); R(sx + 9, sy + 13, 3, 2, 2); R(sx + 3, sy + 12, 4, 1, 3); break; }
       const dark = ore === 'wujin' || ore === 'xuantiekuang', ice = ore === 'hantie';
       /* 矿：一堆棱角分明的矿块，每块左上一道白亮面，和圆滚滚的普通石头一眼分开 */
@@ -4794,19 +4835,21 @@ function renderHud() {
   if (B.mp && B.mp.t > 0) glint(119, 3, 39);
   if (B.parts && B.parts.t > 0) [0, 1, 2].forEach(i => glint(13 + i * slot, 14, pw));
 }
+/* 身边 5 格内能采的东西，头上都标着名字（三七、精铁矿……）；贴身那个多一个“A”，按 A 就采 */
 function renderLootTag() {
   if (dlg || menu) return;
-  let best = null, bd = 9;
-  for (let y = P.ty - 2; y <= P.ty + 2; y++) for (let x = P.tx - 2; x <= P.tx + 2; x++) {
+  const list = [];
+  for (let y = P.ty - 5; y <= P.ty + 5; y++) for (let x = P.tx - 6; x <= P.tx + 6; x++) {
     if (!lootable(x, y)) continue;
-    const d = Math.abs(x - P.tx) + Math.abs(y - P.ty);
-    if (d <= 2 && d < bd) { bd = d; best = [x, y]; }
+    list.push([Math.abs(x - P.tx) + Math.abs(y - P.ty), x, y]);
   }
-  if (!best) return;
-  const [x, y] = best, t = map.rows[y][x];
-  const label = `${LOOT_NAME[t]} ${bd === 1 ? '按A' + (t === 'X' ? '打开' : '采') : ''}`.trim(), w = tw(label) + 6;
-  const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y + 17;
-  R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
+  list.sort((a, b) => b[0] - a[0]).slice(-8).forEach(([d, x, y]) => {
+    const t = map.rows[y][x], name = RES_TILES[t] ? resName(x, y, t) : LOOT_NAME[t];
+    const near = d === 1, label = near ? name + ' A' : name, w = tw(label) + 6;
+    const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y - 12;
+    R(lx, ly, w, 12, 3); if (!near) R(lx + 1, ly + 1, w - 2, 10, 0);
+    txt(label, lx + 3, ly + 1, near ? 0 : 3);
+  });
 }
 /* 点地上的东西后显示的名字牌，带个小箭头指着它 */
 function renderPeek() {
@@ -4932,7 +4975,7 @@ function renderSkillDetail(k) {
     row(69, 6, '闪躲', sk.eva); row(69, MW / 2 + 2, '命中', sk.acc);
     txt('攻击', 6, 81, 2);
     sk.atk.forEach((r, i) => { txt(LOCS[i], 30 + i * 31, 81, 2); txt(RT[r], 41 + i * 31, 81, 3); });
-    const tags = [sk.reach ? `远及${'一两三'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? '每招耗内功2' : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
+    const tags = [sk.reach ? `远及${'一两三'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? `每招耗体力${ST_COST[sk.cat]}内功2` : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
     txt(tags.length ? tags.join(' ') : '无特殊效果', 6, 93, 2);
     txt(`50级第二式「${sk.move}」${v >= 50 ? '已成' : '未成'}`, 6, 105, v >= 50 ? 3 : 2);
   } else if (sk.cat === '护体') {

@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v48 加速' : 'v48', 156, 0, 2, 'right');
+  txt(FAST ? 'v49 ' + FAST_NAME[FAST] : 'v49', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -203,7 +203,7 @@ function drawTile(t, sx, sy, mx, my) {
     case '*': {
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); R(sx + 6, sy + 14, 4, 1, 2); break; }
-      const herb = ((RES_BONUS['*'] || {})[map && map.id] || [])[0];
+      const herb = map && resSpecial(mx, my, '*');
       if (herb === 'renshen' || herb === 'sanqi') {
         /* 人参、三七：一圈掌状叶，中间顶着一簇浆果 */
         R(sx + 7, sy + 8, 2, 8, 2);
@@ -231,7 +231,14 @@ function drawTile(t, sx, sy, mx, my) {
     case '&':
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); break; }
-      if ((((RES_BONUS['&'] || {})[map && map.id] || [])[0]) === 'xuelian') {
+      const sp = map && resSpecial(mx, my, '&');
+      if (sp === 'renshen') {   /* 老山参：一圈掌状叶，中间一簇红果 */
+        R(sx + 7, sy + 8, 2, 8, 2);
+        for (const [lx, ly, w] of [[1, 9, 6], [9, 9, 6], [3, 6, 4], [9, 6, 4]]) { R(sx + lx, sy + ly, w, 2, 2); R(sx + lx, sy + ly, w, 1, 3); }
+        for (const [bx, by] of [[6, 2], [8, 2], [7, 4], [5, 4], [9, 4], [7, 1]]) { R(sx + bx, sy + by, 2, 2, 3); R(sx + bx, sy + by, 1, 1, 1); }
+        break;
+      }
+      if (sp === 'xuelian') {
         /* 天山雪莲：白色重瓣，像一朵莲花 */
         for (const [px, py, w, h] of [[2, 8, 4, 5], [10, 8, 4, 5], [5, 5, 6, 8], [6, 3, 4, 4]]) { R(sx + px, sy + py, w, h, 3); R(sx + px + 1, sy + py + 1, w - 2, h - 2, 0); }
         R(sx + 7, sy + 7, 2, 2, 1); R(sx + 3, sy + 14, 10, 1, 2);
@@ -248,7 +255,7 @@ function drawTile(t, sx, sy, mx, my) {
       break;
     case 'O': {
       base();
-      const ore = ((RES_BONUS.O || {})[map && map.id] || [])[0], dep = isDepleted(mx, my);
+      const ore = map && resSpecial(mx, my, 'O'), dep = isDepleted(mx, my);
       if (dep) { R(sx + 3, sy + 12, 4, 3, 2); R(sx + 9, sy + 13, 3, 2, 2); R(sx + 3, sy + 12, 4, 1, 3); break; }
       const dark = ore === 'wujin' || ore === 'xuantiekuang', ice = ore === 'hantie';
       /* 矿：一堆棱角分明的矿块，每块左上一道白亮面，和圆滚滚的普通石头一眼分开 */
@@ -1056,19 +1063,21 @@ function renderHud() {
   if (B.mp && B.mp.t > 0) glint(119, 3, 39);
   if (B.parts && B.parts.t > 0) [0, 1, 2].forEach(i => glint(13 + i * slot, 14, pw));
 }
+/* 身边 5 格内能采的东西，头上都标着名字（三七、精铁矿……）；贴身那个多一个“A”，按 A 就采 */
 function renderLootTag() {
   if (dlg || menu) return;
-  let best = null, bd = 9;
-  for (let y = P.ty - 2; y <= P.ty + 2; y++) for (let x = P.tx - 2; x <= P.tx + 2; x++) {
+  const list = [];
+  for (let y = P.ty - 5; y <= P.ty + 5; y++) for (let x = P.tx - 6; x <= P.tx + 6; x++) {
     if (!lootable(x, y)) continue;
-    const d = Math.abs(x - P.tx) + Math.abs(y - P.ty);
-    if (d <= 2 && d < bd) { bd = d; best = [x, y]; }
+    list.push([Math.abs(x - P.tx) + Math.abs(y - P.ty), x, y]);
   }
-  if (!best) return;
-  const [x, y] = best, t = map.rows[y][x];
-  const label = `${LOOT_NAME[t]} ${bd === 1 ? '按A' + (t === 'X' ? '打开' : '采') : ''}`.trim(), w = tw(label) + 6;
-  const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y + 17;
-  R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
+  list.sort((a, b) => b[0] - a[0]).slice(-8).forEach(([d, x, y]) => {
+    const t = map.rows[y][x], name = RES_TILES[t] ? resName(x, y, t) : LOOT_NAME[t];
+    const near = d === 1, label = near ? name + ' A' : name, w = tw(label) + 6;
+    const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y - 12;
+    R(lx, ly, w, 12, 3); if (!near) R(lx + 1, ly + 1, w - 2, 10, 0);
+    txt(label, lx + 3, ly + 1, near ? 0 : 3);
+  });
 }
 /* 点地上的东西后显示的名字牌，带个小箭头指着它 */
 function renderPeek() {
@@ -1194,7 +1203,7 @@ function renderSkillDetail(k) {
     row(69, 6, '闪躲', sk.eva); row(69, MW / 2 + 2, '命中', sk.acc);
     txt('攻击', 6, 81, 2);
     sk.atk.forEach((r, i) => { txt(LOCS[i], 30 + i * 31, 81, 2); txt(RT[r], 41 + i * 31, 81, 3); });
-    const tags = [sk.reach ? `远及${'一两三'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? '每招耗内功2' : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
+    const tags = [sk.reach ? `远及${'一两三'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? `每招耗体力${ST_COST[sk.cat]}内功2` : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
     txt(tags.length ? tags.join(' ') : '无特殊效果', 6, 93, 2);
     txt(`50级第二式「${sk.move}」${v >= 50 ? '已成' : '未成'}`, 6, 105, v >= 50 ? 3 : 2);
   } else if (sk.cat === '护体') {
