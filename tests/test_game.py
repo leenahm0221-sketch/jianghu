@@ -50,9 +50,18 @@ def 开局无报错(b):
     g.close()
 
 @case
-def 竖屏只显示横过来的提示(b):
-    g = Game(b, 390, 844)
-    assert g.pg.is_visible('#rotate'), '竖屏没有提示'
+def 竖着拿手机也是横屏(b):
+    g = Game(b, 390, 844); g.new_game()
+    assert g.ev("document.getElementById('game').classList.contains('rot')"), '竖屏时画面没有转成横的'
+    gw, gh = g.ev(f'[{G}.cam && document.getElementById("screen").width, document.getElementById("screen").height]')
+    assert gw > gh, f'画面不是横的：{gw}×{gh}'
+    # 摇杆：手指在屏幕上往下推 = 游戏里往右走
+    g.ev(f'{G}.warp("village", 12, 13)'); g.pg.wait_for_timeout(2400)
+    x0 = g.ev(f'{G}.P.tx')
+    r = g.ev("(() => { const r = document.getElementById('dpad').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+    g.pg.mouse.move(r[0], r[1]); g.pg.mouse.down(); g.pg.mouse.move(r[0], r[1] + 45, steps=4); g.pg.wait_for_timeout(700); g.pg.mouse.up()
+    assert g.ev(f'{G}.P.tx') > x0, '竖屏时摇杆方向不对'
+    assert not g.errs, g.errs
     g.close()
 
 @case

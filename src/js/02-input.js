@@ -36,9 +36,9 @@ const knob = document.getElementById('knob');
    离中心 16 像素以内不走；换方向要明显偏过去才换，斜着推不会上下左右乱跳 */
 let padO = null;
 function padPoint(e) {
-  const r = dpad.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  if (!padO) { const far = Math.hypot(e.clientX - cx, e.clientY - cy) > r.width * 0.28; padO = far ? { x: cx, y: cy } : { x: e.clientX, y: e.clientY }; }
-  const x = e.clientX - padO.x, y = e.clientY - padO.y;
+  const r = localRect(dpad), cx = r.left + r.width / 2, cy = r.top + r.height / 2, pt = toLocal(e.clientX, e.clientY);
+  if (!padO) { const far = Math.hypot(pt.x - cx, pt.y - cy) > r.width * 0.28; padO = far ? { x: cx, y: cy } : { x: pt.x, y: pt.y }; }
+  const x = pt.x - padO.x, y = pt.y - padO.y;
   const d = Math.hypot(x, y), max = r.width * 0.26, k = d > max ? max / d : 1;
   knob.style.transform = `translate(${x * k}px, ${y * k}px)`;
   if (d < (padDir ? 12 : 16)) return setPad(null);
@@ -56,7 +56,21 @@ document.addEventListener('touchmove', e => e.preventDefault(), { passive: false
 
 /* Fit the game picture to the whole screen: 160 game pixels across the short side, the rest shows more of the world */
 const gameEl = document.getElementById('game'), ctlEl = document.getElementById('ctl');
+/* 竖屏时游戏整体转了 90 度：屏幕上的点、元素位置都要换算回游戏里的横向坐标 */
+let ROT = false;
+function toLocal(cx, cy) {
+  const gr = gameEl.getBoundingClientRect();
+  return ROT ? { x: cy - gr.top, y: gr.right - cx } : { x: cx - gr.left, y: cy - gr.top };
+}
+function localRect(el) {
+  const r = el.getBoundingClientRect(), a = toLocal(r.left, r.top), b = toLocal(r.right, r.bottom);
+  const left = Math.min(a.x, b.x), top = Math.min(a.y, b.y), right = Math.max(a.x, b.x), bottom = Math.max(a.y, b.y);
+  return { left, top, right, bottom, width: right - left, height: bottom - top };
+}
 function resize() {
+  ROT = innerHeight > innerWidth;
+  gameEl.classList.toggle('rot', ROT);
+  Object.assign(gameEl.style, ROT ? { width: innerHeight + 'px', height: innerWidth + 'px', left: innerWidth + 'px' } : { width: '', height: '', left: '' });
   const W = gameEl.clientWidth || innerWidth, H = gameEl.clientHeight || innerHeight;
   const sc0 = Math.min(W / 160, H / 144);
   GW = Math.max(160, Math.round(W / sc0)); GH = Math.max(144, Math.round(H / sc0));
@@ -65,8 +79,8 @@ function resize() {
   UX = Math.floor((GW - 160) / 2);
   UB = GH - 3;
   /* 菜单、对话框能用多宽：不压到两侧的摇杆和 AB 键 */
-  const gr = gameEl.getBoundingClientRect(), dr = ctlEl.querySelector('.dpad').getBoundingClientRect(), ar = ctlEl.querySelector('.ab').getBoundingClientRect();
-  const cx = UX + 80, l = (dr.right - gr.left) / sc0, r = (ar.left - gr.left) / sc0;
+  const dr = localRect(ctlEl.querySelector('.dpad')), ar = localRect(ctlEl.querySelector('.ab'));
+  const cx = UX + 80, l = dr.right / sc0, r = ar.left / sc0;
   SAFE_W = Math.max(160, Math.min(GW - 8, Math.floor(2 * Math.min(cx - l, r - cx)) - 4));
   buildGrid();
 }
@@ -74,7 +88,7 @@ addEventListener('resize', resize);
 /* 大地图打开时：点上方「←」「→」换页，点其他地方返回 */
 let fullMapOn = false;
 screen.addEventListener('pointerdown', e => {
-  const r = screen.getBoundingClientRect(), gx = (e.clientX - r.left) / r.width * GW, gy = (e.clientY - r.top) / r.height * GH;
+  const pt = toLocal(e.clientX, e.clientY), gx = pt.x / gameEl.clientWidth * GW, gy = pt.y / gameEl.clientHeight * GH;
   if (inspect) { inspect = null; sfx('menu'); return; }
   /* 联网时点一下别的玩家，查看他的装备和武功 */
   if (!fullMapOn && NET.online && S && map && !menu && !dlg) {
@@ -87,8 +101,6 @@ screen.addEventListener('pointerdown', e => {
   else menu = null;
   sfx('menu');
 });
-/* 只支持横屏：竖着拿手机时盖一层“请横过来”的提示 */
-const rotEl = document.getElementById('rotate');
 /* 安卓等支持的浏览器：全屏后锁定横屏 */
 function lockLandscape() { try { const o = window.screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) {} }
 lockLandscape(); window.addEventListener('pointerdown', lockLandscape, { once: true });

@@ -17,6 +17,10 @@
 html,body{height:100%}
 body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
 .game{position:relative;width:100%;height:100%;overflow:hidden}
+/* 竖着拿手机时，整个游戏转 90 度横着显示：永远是横屏 */
+.game.rot{position:fixed;top:0;transform-origin:0 0;transform:rotate(90deg)}
+.game.rot .ctl{padding-left:max(16px,env(safe-area-inset-top,0px));padding-right:max(16px,env(safe-area-inset-bottom,0px));padding-bottom:max(8px,env(safe-area-inset-left,0px))}
+.game.rot .smalls{left:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-bottom,0px))}
 #screen{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .ctl{
   position:absolute;left:0;right:0;bottom:0;pointer-events:none;
@@ -81,12 +85,7 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .smalls .small{pointer-events:auto;flex-direction:row}
   .sgrp{gap:10px;pointer-events:none}
   .small button{width:66px;height:30px}
-.rotate{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--gb3);color:var(--gb0);font:700 18px/1.4 var(--sans);text-align:center;padding:24px}
-@media (orientation:portrait){.rotate{display:flex}}
-.game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
-.rotate .ph{width:54px;height:90px;border:4px solid var(--gb0);border-radius:10px;animation:rot 2.4s ease-in-out infinite}
-@keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
-.rotate small{font-weight:500;font-size:13px;color:var(--gb1)}
+@media (orientation:portrait){.game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
 </style>
 
 <div class="game" id="game">
@@ -108,7 +107,6 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
       <div class="nb-row"><button type="button" id="sbclose">关闭</button><button type="button" class="main" id="sbok">复制</button></div>
     </div>
   </div>
-  <div class="rotate" id="rotate"><div class="ph"></div><div>请把手机横过来玩</div><small>本游戏只支持横屏。<br>iPhone 请先在控制中心关闭「竖排方向锁定」。</small></div>
   <div class="namebox" id="authbox" hidden>
     <form class="nb-card" id="authform" autocomplete="on">
       <div class="nb-title" id="authtitle">登录江湖</div>
