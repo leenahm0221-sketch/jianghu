@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw
 def main(src_path, out_dir):
   src = open(src_path, encoding='utf-8').read()
   body = src.replace('<title>江湖少年 GB</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n', '', 1)
-  ver = re.search(r"txt\('(v\d+)', 156", src).group(1)
+  ver = re.search(r"'(v\d+)', 156", src).group(1)
   head = f'''<!doctype html>
   <html lang="zh-CN">
   <head>

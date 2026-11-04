@@ -44,35 +44,38 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
   display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;align-items:end;row-gap:10px;
 }
 .ctl > *{pointer-events:auto}
-.dpad{grid-column:1;grid-row:1;width:148px;height:148px;position:relative;touch-action:none;cursor:pointer;border-radius:50%;background:var(--pad);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
-.dpad i{position:absolute;z-index:1;width:0;height:0;border:8px solid transparent;opacity:.9}
-.dpad i.u{left:66px;top:12px;border-bottom-color:#e6e6e6;border-top:0}
-.dpad i.d{left:66px;bottom:12px;border-top-color:#e6e6e6;border-bottom:0}
-.dpad i.l{top:66px;left:12px;border-right-color:#e6e6e6;border-left:0}
-.dpad i.r{top:66px;right:12px;border-left-color:#e6e6e6;border-right:0}
-.dpad i.on{opacity:1}
-.knob{position:absolute;left:46px;top:46px;width:56px;height:56px;border-radius:50%;background:rgba(70,72,78,.85);box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),0 0 0 2px rgba(255,255,255,.12);pointer-events:none;transition:transform .06s}
-.dpad.active .knob{transition:none}
+.dpad{grid-column:1;grid-row:1;width:148px;height:148px;position:relative;touch-action:none;cursor:pointer}
+/* GB 风格十字键：黑色十字，中间一个凹点，按下的方向箭头变亮 */
+.dpad::before,.dpad::after{content:'';position:absolute;background:#2a2a2e;border-radius:7px;box-shadow:inset 0 2px 0 rgba(255,255,255,.16),inset 0 -3px 0 rgba(0,0,0,.4),0 3px 0 rgba(0,0,0,.45)}
+.dpad::before{left:8px;top:50px;width:132px;height:48px}
+.dpad::after{left:50px;top:8px;width:48px;height:132px}
+.dpad i{position:absolute;z-index:2;width:0;height:0;border:8px solid transparent;opacity:.85}
+.dpad i.u{left:66px;top:16px;border-bottom-color:#6a6a72;border-top:0}
+.dpad i.d{left:66px;bottom:16px;border-top-color:#6a6a72;border-bottom:0}
+.dpad i.l{top:66px;left:16px;border-right-color:#6a6a72;border-left:0}
+.dpad i.r{top:66px;right:16px;border-left-color:#6a6a72;border-right:0}
+.dpad i.u.on{border-bottom-color:#e8e8e0}.dpad i.d.on{border-top-color:#e8e8e0}.dpad i.l.on{border-right-color:#e8e8e0}.dpad i.r.on{border-left-color:#e8e8e0}
+.knob{position:absolute;z-index:2;left:62px;top:62px;width:24px;height:24px;border-radius:50%;background:#1e1e22;box-shadow:inset 0 2px 3px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.12);pointer-events:none;transform:none!important}
 .ab{grid-column:3;grid-row:1;display:flex;gap:16px;padding:0 4px 4px 0;align-items:flex-start}
-.btn{display:flex;flex-direction:column;align-items:center;gap:5px}
-.btn button{width:66px;height:66px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:var(--btn);color:#fff;font:800 24px/1 var(--sans);touch-action:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.45)}
-.btn button small{font:700 11px/1 var(--sans);letter-spacing:0;pointer-events:none}
-.btn button.on{background:var(--btn-on)}
+.btn{display:flex;flex-direction:column;align-items:center;gap:6px}
+.btn button{width:64px;height:64px;border-radius:50%;border:0;background:#8e1f4f;color:#f3c9da;font:italic 900 24px/1 var(--sans);touch-action:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:inset 0 3px 0 rgba(255,255,255,.18),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 0 #4a0f29,0 6px 8px rgba(0,0,0,.35);transition:transform .05s}
+.btn button.on{transform:translateY(3px);box-shadow:inset 0 3px 0 rgba(255,255,255,.12),inset 0 -2px 0 rgba(0,0,0,.25),0 1px 0 #4a0f29}
 .ab .btn:first-child{margin-top:28px}
 /* A 键上方的快捷药格：点一下服用，按住换下一种药 */
 .abtn{position:relative}
-.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);width:54px;height:46px;border-radius:8px;border:2px solid rgba(255,255,255,.75);background:rgba(18,18,20,.82);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 26px);transform:translateX(-50%);width:54px;height:44px;border-radius:6px;border:3px solid #2a2a2e;background:#c9c8c0;color:#1e1e22;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.45);font-style:normal}
 .btn button.quick b{font:800 15px/1 var(--sans);pointer-events:none}
 .btn button.quick i{font:700 11px/1 var(--sans);font-style:normal;opacity:.85;pointer-events:none}
 .btn button.quick.empty{opacity:.45}
-.btn button.quick.on{background:rgba(70,72,78,.95)}
-.btn span,.small span{display:none}
+.btn button.quick.on{background:#9a9991}
+.btn > span{font:italic 800 12px/1 var(--sans);color:#2b2f6e;letter-spacing:.06em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 3px #fff}
+.small span{display:none}
 .smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
 .sgrp{display:flex;gap:12px}
-.smalls .small button{width:62px;font:700 14px/1 var(--sans);color:var(--label);letter-spacing:.05em;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 1px 4px rgba(0,0,0,.5)}
-.small{display:flex;flex-direction:column;align-items:center;gap:5px}
-.small button{width:72px;height:30px;border-radius:15px;border:0;background:var(--pill);touch-action:none;cursor:pointer}
-.small button.on{background:var(--pad-on)}
+.smalls .small button{width:68px;height:40px;position:relative;padding:22px 0 0;border:0;border-radius:0;background:transparent;font:700 12px/1 var(--sans);color:#e8e8e0;letter-spacing:.06em;text-shadow:0 1px 2px #000,0 0 2px #000;touch-action:none;cursor:pointer}
+.small{display:flex;flex-direction:column;align-items:center}
+.smalls .small button::before{content:'';position:absolute;left:50%;top:5px;width:44px;height:13px;margin-left:-22px;border-radius:7px;background:#85858c;transform:rotate(-22deg);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.35),0 2px 3px rgba(0,0,0,.45)}
+.smalls .small button.on::before{background:#56565c}
 button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 .namebox[hidden]{display:none}
 .namebox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -152,8 +155,8 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   <div class="ctl" id="ctl">
     <div class="dpad" id="dpad" aria-label="方向键"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i><span class="knob" id="knob"></span></div>
     <div class="ab">
-      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B<small>打坐·返回</small></button><span>打坐·返回</span></div>
-      <div class="btn abtn"><button data-k="a" aria-label="A 攻击或确定">A<small>攻击·确定</small></button><span>攻击·确定</span>
+      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B</button><span>B 打坐·返回</span></div>
+      <div class="btn abtn"><button data-k="a" aria-label="A 攻击或确定">A</button><span>A 攻击·确定</span>
         <button class="quick" id="quick" aria-label="快捷药：点一下服用，按住换药"><b id="qname">药</b><i id="qcnt">—</i></button></div>
     </div>
     <div class="smalls">
@@ -292,6 +295,10 @@ const sfx = n => SFX[n] && SFX[n]();
 /* ---------- 背景音乐：五声音阶的 8 位小曲，城镇、野外、地下、邪派地盘各一首，循环播放 ----------
    mel 是旋律（每格一个八分音符，数字是 MIDI 音高，0 是休止），bass 是每小节的根音 */
 let musicOn = true;
+/* 测试加速：走路更快、练功×5、年岁×4、怪物复活和草药矿石长回来×4。测试阶段默认开，系统菜单里可关 */
+let FAST = true;
+try { FAST = localStorage.getItem('jianghu-fast') !== '0'; } catch (e) {}
+const FASTX = n => (FAST ? n : 1);
 try { musicOn = localStorage.getItem('jianghu-music') !== '0'; } catch (e) {}
 const TRACKS = {
   town: { bpm: 92, wave: 'triangle', vol: 0.03, mel: [67, 69, 72, 0, 74, 72, 69, 0, 67, 64, 67, 69, 67, 0, 0, 0, 72, 74, 76, 0, 74, 72, 69, 72, 67, 0, 69, 67, 64, 0, 0, 0], bass: [48, 45, 43, 48] },
@@ -1201,9 +1208,9 @@ const W_SPECS = {
     },
     zones: [{ kind: 'wdjz', n: 7, area: [0, 0.4, 1, 1] }, { kind: 'baozi', n: 5, area: [0, 0, 1, 0.5] }] },
   meadow: { W: 44, H: 32, seed: 11, edge: 'T', floor: '.', patches: [[',', 7, 4]], obst: [['T', 5], ['f', 3], ['r', 1]], density: 0.12, fillOn: [','],
-    res: { '*': 16, m: 9 }, chests: 1, zones: [{ kind: 'rabbit', n: 16, area: [0, 0, 1, 0.55] }, { kind: 'fox', n: 12, area: [0, 0.45, 1, 1] }] },
+    res: { '*': 16, m: 9, O: 4 }, chests: 1, zones: [{ kind: 'rabbit', n: 16, area: [0, 0, 1, 0.55] }, { kind: 'fox', n: 12, area: [0, 0.45, 1, 1] }] },
   wild: { W: 56, H: 40, seed: 23, peddler: true, edge: 'T', floor: '.', patches: [[',', 8, 4]], obst: [['T', 6], ['r', 2], ['f', 1]], density: 0.16, fillOn: [','], river: 0.55,
-    res: { '*': 8, O: 3 }, chests: 2, hub: [24, 22],
+    res: { '*': 8, O: 7 }, chests: 2, hub: [24, 22],
     build(c) {
       /* 黑风寨：河东北角，木栅栏围起来，南边开寨门 */
       const x0 = c.W - 16, y0 = 2, w = 13, h = 10;
@@ -1555,7 +1562,7 @@ function train(id, amt) {
   if (!id || S.skills[id] == null || !(amt > 0)) return;
   const v = S.skills[id], cap = skillCap(id);
   if (v >= cap) return;
-  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5);
+  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(5);
   const nv = Math.min(cap, v + gain);
   S.skills[id] = nv;
   if (nv >= 99.99 && cap === 99.99) { toast(`${SK[id].name}练至化境，元气 +10`); sfx('level'); }
@@ -1676,6 +1683,9 @@ function scaledDef(kind) {
   return { ...b, lv: nl, hp: Math.round(hpOf(nl) * b.hp / hpOf(b.lv)), atk: Math.round(atkOf(nl) * b.atk / atkOf(b.lv) * 10) / 10, dodge: Math.max(2, b.dodge + Math.round((nl - b.lv) / 12)) };
 }
 const ED = e => e.d || EN[e.kind];
+/* 主动攻击：20 级以上的怪、头目、追兵会主动扑上来；20 级以下的只在挨打后还手 */
+const AGGRO_LV = 20;
+const isAggro = e => { const d = ED(e); return !d.passive && !d.dummy && (d.boss || d.dboss || d.hunter || e.kind === 'hunter' || e.kind === 'pantu' || d.camp || d.lv >= AGGRO_LV); };
 /* 山门清净地：门派掌门身边 5 格内，怪物不进来，也不在里面动手（被你先打了除外） */
 const SAFE_R = 5;
 let safeSpots = [];
@@ -2827,6 +2837,7 @@ function menuItems() {
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
+    { label: '测试加速', right: FAST ? '开' : '关', act: () => { FAST = !FAST; try { localStorage.setItem('jianghu-fast', FAST ? '1' : '0'); } catch (e) {} toast(FAST ? '测试加速：走路、练功、年岁、复活都变快' : '测试加速已关'); sfx('menu'); } },
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }
@@ -2881,7 +2892,7 @@ function cycleWeapon() {
   S.equip.weapon = nx; ensureActive();
   toast(nx ? `换上${EQ[nx].name}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu');
 }
-const moveSpeed = () => (1 + pv('步法', 'mv') / 100 * 0.6) * (injured('leg') ? 0.6 : 1);
+const moveSpeed = () => (1 + pv('步法', 'mv') / 100 * 1.1) * (injured('leg') ? 0.6 : 1) * FASTX(1.5);
 function updPlayer() {
   if (P.dead) return;
   if (P.fish) { if (pressed.start) { P.fish = null; } else return updFish(); }
@@ -2966,7 +2977,7 @@ function autoFight() {
   if (e && !e.dead && distTo(e) > CHASE) { P.target = null; P.waitT = 0; toast(`${e.name || ED(e).name}跑远了`); return; }
   if (!e || e.dead) { e = P.target = nearestEnemy(1, { passive: true }); P.waitT = 0; if (!e) return; }
   if (inReach(e)) { P.waitT = 0; faceTo(e); if (P.atkCD <= 0) attack(); return; }
-  const d0 = ED(e), comes = !d0.passive && !d0.dummy && (!d0.camp || campHostile(d0.camp) || foeOf(e.kind) || e.provoked) && distTo(e) <= 2;
+  const d0 = ED(e), comes = !d0.passive && !d0.dummy && (isAggro(e) || e.adj) && (!d0.camp || campHostile(d0.camp) || foeOf(e.kind) || e.provoked) && distTo(e) <= 2;
   if (comes && (P.waitT = (P.waitT || 0) + 1) < 45) { faceTo(e); return; }
   const st = pathStep(e);
   if (st) { P.dir = dirOf(st[0], st[1]); P.tx += st[0]; P.ty += st[1]; P.moving = true; return; }
@@ -2998,7 +3009,7 @@ function renderTut() {
   R(x, y, w, 15, 3); R(x + 1, y + 1, w - 2, 13, frame % 60 < 40 ? 0 : 1); txt(t, x + 6, y + 2, 3);
 }
 function startSit() {
-  if (nearestEnemy(3)) { toast('附近有敌人，静不下心'); return false; }
+  if (enemies.some(e => !e.dead && distTo(e) <= 3 && (isAggro(e) || e.adj) && !ED(e).camp)) { toast('附近有敌人，静不下心'); return false; }
   P.sit = true; P.target = null; tutNext(2);
   toast(S.passive['心法'] ? `盘膝打坐，运转${SK[S.passive['心法']].name}` : '盘膝打坐，调匀呼吸');
   return true;
@@ -3055,7 +3066,7 @@ function gather(x, y, t) {
   const r = RES_TILES[t];
   if (isDepleted(x, y)) return toast(t === 'O' ? '矿石刚挖过，过阵子再来' : '刚采过，还没长出来');
   if (S.skills.caiji == null) learn('caiji');
-  depleted[resKey(x, y)] = frame + r.regrow;
+  depleted[resKey(x, y)] = frame + Math.round(r.regrow / FASTX(4));
   let n = rnd(r.n[0], r.n[1]);
   if (Math.random() * 100 < lv('caiji') * 0.6) n++;
   S.items[r.item] = (S.items[r.item] || 0) + n;
@@ -3332,7 +3343,7 @@ function updEnemies() {
   for (const e of enemies) {
     const d = ED(e);
     if (e.dead) {
-      if (e.respawn !== Infinity && --e.respawn <= 0) {
+      if (e.respawn !== Infinity && (e.respawn -= FASTX(4)) <= 0) {
         if (!occupied(e.home.x, e.home.y, e) && Math.abs(P.tx - e.home.x) + Math.abs(P.ty - e.home.y) > 5) Object.assign(e, makeEnemy(e.kind, e.home.x, e.home.y));
         else e.respawn = 120;
       }
@@ -3346,7 +3357,7 @@ function updEnemies() {
     if (e.stunT > 0) { e.stunT--; continue; }
     const dx = P.tx - e.tx, dy = P.ty - e.ty, dist = Math.abs(dx) + Math.abs(dy);
     if (dx) e.face = dx > 0 ? 'right' : 'left';
-    const calmCamp = (d.camp && !campHostile(d.camp) && !foeOf(e.kind) && !e.provoked) || (safeSpots.length && inSafe(P.tx, P.ty) && !e.adj && !d.hunter && e.kind !== 'hunter' && e.kind !== 'pantu');
+    const calmCamp = (!isAggro(e) && !e.adj) || (d.camp && !campHostile(d.camp) && !foeOf(e.kind) && !e.provoked) || (safeSpots.length && inSafe(P.tx, P.ty) && !e.adj && !d.hunter && e.kind !== 'hunter' && e.kind !== 'pantu');
     if (!d.passive && !calmCamp && dist === 1 && !P.dead && !P.moving) {
       e.dir = dx > 0 ? 'right' : dx < 0 ? 'left' : dy > 0 ? 'down' : 'up';
       if (!e.adj) { e.adj = true; e.cd = Math.max(e.cd, 28); }
@@ -3416,7 +3427,7 @@ function update() {
   if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
   if (menu) return updMenu();
   if (hitStop > 0) { hitStop--; return; }
-  if (++S.ageT >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
+  if ((S.ageT += FASTX(4)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
   updPlayer(); updEnemies(); updNpcs();
   if (!P.dead) {
     tickBuffs();
@@ -3696,7 +3707,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v35', 156, 0, 2, 'right');
+  txt(FAST ? 'v36 加速' : 'v36', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -3822,9 +3833,29 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 6, sy + 12, 4, 4, 3); R(sx + 7, sy + 13, 1, 2, 2);
       break;
     }
-    case '*':
+    case '*': {
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); R(sx + 6, sy + 14, 4, 1, 2); break; }
+      const herb = ((RES_BONUS['*'] || {})[map && map.id] || [])[0];
+      if (herb === 'renshen' || herb === 'sanqi') {
+        /* 人参、三七：一圈掌状叶，中间顶着一簇浆果 */
+        R(sx + 7, sy + 8, 2, 8, 2);
+        for (const [lx, ly, w] of [[1, 9, 6], [9, 9, 6], [3, 6, 4], [9, 6, 4]]) { R(sx + lx, sy + ly, w, 2, 2); R(sx + lx, sy + ly, w, 1, 3); }
+        for (const [bx, by] of [[6, 2], [8, 2], [7, 4], [5, 4], [9, 4], [7, 1]]) { R(sx + bx, sy + by, 2, 2, 3); if (herb === 'renshen') R(sx + bx, sy + by, 1, 1, 1); }
+        break;
+      }
+      if (herb === 'fengmi') {
+        /* 玉蜂蜜：花丛上有一只玉蜂飞来飞去 */
+        for (const [bx, by] of [[4, 8], [10, 7], [7, 11]]) { R(sx + bx - 2, sy + by, 5, 3, 2); R(sx + bx - 1, sy + by - 1, 3, 5, 2); R(sx + bx, sy + by + 1, 1, 1, 0); }
+        const b = Math.floor(frame / 10) % 4, bx = sx + 5 + [0, 3, 4, 1][b], by = sy + 2 + [0, 1, 3, 2][b];
+        R(bx, by + 1, 3, 2, 3); R(bx, by, 1, 1, 0); R(bx + 2, by, 1, 1, 0);
+        break;
+      }
+      if (hs % 3 === 0) {
+        /* 另一种草药：细长的草茎，顶上结穗 */
+        for (const [x, h] of [[4, 10], [7, 13], [10, 9], [12, 11]]) { R(sx + x, sy + 16 - h, 1, h, 3); R(sx + x - 1, sy + 16 - h, 3, 3, 2); R(sx + x, sy + 16 - h, 1, 1, 0); }
+        break;
+      }
       // 一丛草药：深色叶丛，上面开三朵白花
       for (let y = 0; y < 8; y++) for (let x = 0; x < 14; x++) {
         const ddx = x - 6.5, ddy = y - 4, rr = ddx * ddx / 42 + ddy * ddy / 18;
@@ -3833,21 +3864,36 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 2, sy + 15, 12, 1, 2);
       for (const [bx, by] of [[4, 5], [8, 3], [12, 6]]) { R(sx + bx - 2, sy + by - 2, 5, 5, 3); R(sx + bx - 1, sy + by - 1, 3, 3, 0); R(sx + bx, sy + by, 1, 1, 2); }
       break;
+    }
     case '&':
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); break; }
+      if ((((RES_BONUS['&'] || {})[map && map.id] || [])[0]) === 'xuelian') {
+        /* 天山雪莲：白色重瓣，像一朵莲花 */
+        for (const [px, py, w, h] of [[2, 8, 4, 5], [10, 8, 4, 5], [5, 5, 6, 8], [6, 3, 4, 4]]) { R(sx + px, sy + py, w, h, 3); R(sx + px + 1, sy + py + 1, w - 2, h - 2, 0); }
+        R(sx + 7, sy + 7, 2, 2, 1); R(sx + 3, sy + 14, 10, 1, 2);
+        break;
+      }
       R(sx + 2, sy + 4, 12, 6, 3); R(sx + 4, sy + 3, 8, 1, 3); R(sx + 3, sy + 5, 10, 3, 2); R(sx + 4, sy + 5, 8, 1, 1);
       R(sx + 5, sy + 6, 1, 1, 0); R(sx + 9, sy + 6, 1, 1, 0); R(sx + 7, sy + 7, 1, 1, 0);
       R(sx + 6, sy + 10, 4, 5, 3); R(sx + 7, sy + 10, 2, 4, 0);
       break;
-    case 'O':
+    case 'O': {
       base();
-      for (let y = 0; y < 12; y++) for (let x = 0; x < 14; x++) {
-        const ddx = x - 6.5, ddy = y - 5.5, rr = ddx * ddx / 42 + ddy * ddy / 30;
-        if (rr < 1) R(sx + 1 + x, sy + 3 + y, 1, 1, rr > 0.75 ? 3 : (ddx < 0 && ddy < 0) ? 1 : 2);
-      }
-      if (!isDepleted(mx, my)) { R(sx + 5, sy + 7, 2, 1, 0); R(sx + 10, sy + 9, 1, 1, 0); R(sx + 8, sy + 6, 1, 1, 0); R(sx + 4, sy + 11, 1, 1, 0); R(sx + 11, sy + 6, 2, 1, 3); }
+      const ore = ((RES_BONUS.O || {})[map && map.id] || [])[0], dep = isDepleted(mx, my);
+      if (dep) { R(sx + 3, sy + 12, 4, 3, 2); R(sx + 9, sy + 13, 3, 2, 2); R(sx + 3, sy + 12, 4, 1, 3); break; }
+      const dark = ore === 'wujin' || ore === 'xuantiekuang', ice = ore === 'hantie';
+      /* 棱角矿块：一层层往上收的多边形 */
+      const rows = [[5, 6], [3, 10], [2, 12], [1, 14], [1, 14], [1, 14], [2, 12], [2, 12], [3, 11], [4, 9], [5, 7]];
+      rows.forEach(([x0, w], k) => { const y = sy + 4 + k; R(sx + x0, y, w, 1, dark ? 3 : 2); R(sx + x0, y, 1, 1, 3); R(sx + x0 + w - 1, y, 1, 1, 3); });
+      R(sx + 5, sy + 4, 6, 1, 3); R(sx + 5, sy + 14, 7, 1, 3);
+      if (ice) { /* 寒铁：冒出冰晶 */ for (const [cx, h] of [[4, 6], [8, 9], [12, 5]]) { R(sx + cx, sy + 11 - h, 2, h, 0); R(sx + cx - 1, sy + 11 - h + 1, 1, h - 1, 3); R(sx + cx + 2, sy + 11 - h + 1, 1, h - 1, 3); R(sx + cx, sy + 11 - h - 1, 2, 1, 3); } }
+      else { /* 矿脉：亮色斜纹 */ const c = dark ? 1 : 0; R(sx + 3, sy + 8, 3, 1, c); R(sx + 5, sy + 7, 2, 1, c); R(sx + 9, sy + 10, 3, 1, c); R(sx + 11, sy + 9, 1, 1, c); R(sx + 6, sy + 12, 2, 1, c); if (ore === 'jingtie') { R(sx + 4, sy + 6, 7, 1, 1); R(sx + 7, sy + 11, 5, 1, 1); }
+        /* 顶上冒出两三颗矿晶，一眼就和普通石头分开 */
+        for (const [cx, h] of [[4, 4], [9, 6], [12, 3]]) { R(sx + cx, sy + 5 - h, 2, h + 1, dark ? 1 : 0); R(sx + cx - 1, sy + 5 - h + 1, 1, h, 3); R(sx + cx + 2, sy + 5 - h + 1, 1, h, 3); R(sx + cx, sy + 4 - h, 2, 1, 3); } }
+      if ((frame + hs) % 90 < 10) { const px = sx + 4 + (hs % 8), py = sy + 6 + ((hs >> 3) % 5); R(px - 1, py, 3, 1, 0); R(px, py - 1, 1, 3, 0); }
       break;
+    }
     case '=': case 'E':
       R(sx, sy, T, T, 0);
       R(sx + (hs % 13) + 1, sy + ((hs >> 5) % 13) + 1, 1, 1, 1);
@@ -3866,6 +3912,11 @@ function drawTile(t, sx, sy, mx, my) {
       for (const [ox, oy] of [[4, 4], [10, 9]]) { R(sx + ox, sy + oy - 1, 1, 1, 2); R(sx + ox - 1, sy + oy, 3, 1, 2); R(sx + ox, sy + oy + 1, 1, 1, 2); R(sx + ox, sy + oy, 1, 1, 3); }
       break;
     case 'T': {
+      if (inForest && hs % 3 === 0) { /* 林中的柏树：细高 */
+        forest(); R(sx + 7, sy + 12, 2, 4, 3);
+        for (let y = 0; y < 13; y++) { const w = Math.min(10, 2 + Math.round(Math.sin(y / 13 * Math.PI) * 9)), x0 = sx + 8 - Math.round(w / 2); R(x0, sy + y, w, 1, y % 3 === 2 ? 3 : 2); R(x0, sy + y, 1, 1, 3); R(x0 + w - 1, sy + y, 1, 1, 3); }
+        break;
+      }
       if (inForest) {
         forest();
         R(sx + 7, sy + 12, 2, 4, 3);
@@ -3875,6 +3926,24 @@ function drawTile(t, sx, sy, mx, my) {
         }
         R(sx + 7, sy, 2, 1, 3);
         break;
+      }
+      const tv = hs % 5;
+      if (tv === 1) { /* 松树：一层层的尖顶 */
+        grass(); R(sx + 7, sy + 12, 2, 4, 3);
+        for (let y = 0; y < 13; y++) { const w = Math.min(14, 2 + (y % 5) * 2 + Math.floor(y / 5) * 2), x0 = sx + 8 - w / 2; R(x0, sy + y, w, 1, y % 5 === 4 ? 3 : 2); R(x0, sy + y, 1, 1, 3); R(x0 + w - 1, sy + y, 1, 1, 3); }
+        R(sx + 7, sy, 2, 1, 3); break;
+      }
+      if (tv === 2) { /* 柳树：树冠垂下一条条柳丝 */
+        grass(); R(sx + 7, sy + 9, 2, 7, 3);
+        for (let y = 0; y < 7; y++) for (let x = 0; x < 16; x++) { const dx = x - 7.5, dy = y - 3.5, r = dx * dx / 56 + dy * dy / 14; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.7 ? 3 : 2); }
+        for (const [x, h] of [[1, 10], [3, 12], [5, 9], [10, 9], [12, 12], [14, 10]]) R(sx + x, sy + 4, 1, h, (x + my) % 2 ? 3 : 2);
+        break;
+      }
+      if (tv === 3) { /* 果树：圆树冠上挂着果子 */
+        R(sx, sy, T, T, 0);
+        for (let y = 0; y < 12; y++) for (let x = 1; x < 15; x++) { const dx = x - 7.5, dy = y - 6, r = dx * dx / 50 + dy * dy / 36; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.75 ? 3 : 2); }
+        for (const [fx, fy] of [[4, 4], [9, 3], [11, 7], [6, 8], [3, 8]]) { R(sx + fx, sy + fy, 2, 2, 0); R(sx + fx + 1, sy + fy + 1, 1, 1, 3); }
+        R(sx + 6, sy + 11, 4, 5, 3); R(sx + 7, sy + 12, 1, 3, 2); break;
       }
       R(sx, sy, T, T, 0);
       for (let y = 0; y < 13; y++) for (let x = 0; x < 16; x++) {
@@ -4528,6 +4597,12 @@ function renderWorld() {
         const [dx, dy] = DIRS[P.dir];
         drawPerson(sx - dx * 10, sy - dy * 10, P.dir, 0, { ...playerLook(), ghost: true });
         drawPerson(sx - dx * 5, sy - dy * 5, P.dir, 0, { ...playerLook(), ghost: true });
+      }
+      const ms = moveSpeed() / FASTX(1.5);
+      if (P.moving && ms > 1.4) {
+        const [dx, dy] = DIRS[P.dir];
+        drawPerson(sx - dx * 6, sy - dy * 6, P.dir, 0, { ...playerLook(), ghost: true });
+        if (ms > 1.9) drawPerson(sx - dx * 12, sy - dy * 12, P.dir, 0, { ...playerLook(), ghost: true });
       }
       drawPerson(sx + ox, sy + oy, P.dir, step, playerLook(), P.hurtT > 0 && P.hurtT % 6 < 3);
     }
