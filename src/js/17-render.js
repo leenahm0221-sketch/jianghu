@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v50 ' + FAST_NAME[FAST] : 'v50', 156, 0, 2, 'right');
+  txt(FAST ? 'v51 ' + FAST_NAME[FAST] : 'v51', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1011,7 +1011,7 @@ function renderWorld() {
   R(0, HUD_H - 1, GW, 1, 2);
 }
 
-/* NPC 头顶：职业图标，有任务时换成闪烁的 ! 或 ?；走近时脚下显示名字和身份 */
+/* NPC：头顶职业图标，有任务时换成闪烁的 ! 或 ?；脚下一直写着名字，走近时换成名字·身份 */
 function renderNpcTags() {
   for (const n of npcs) {
     const sx = n.x * T - cam.x, sy = n.y * T - cam.y;
@@ -1035,6 +1035,9 @@ function renderNpcTags() {
       const below = P.ty > n.y;
       const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
       R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
+    } else if (!dlg && !menu && S.showTag !== false && sy + 17 < UB - 2) {
+      /* 离得远时脚下也写着名字，一眼看清谁是谁；走近再显示身份 */
+      txtOutline(n.name, sx + 8, sy + 16, 'center');
     }
   }
 }
