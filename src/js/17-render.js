@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v37 加速' : 'v37', 156, 0, 2, 'right');
+  txt(FAST ? 'v38 加速' : 'v38', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1012,17 +1012,19 @@ function renderHud() {
   if (!tired || frame % 30 < 18) txt('体', 62, 1, tired ? 1 : 0);
   bar(73, 3, 32, 6, S.st / maxST(), 0);
   txt('内', 108, 1, 0); bar(119, 3, 39, 6, S.mp / maxMP(), 1);
+  /* 头臂腿三条伤势条铺满到右边的武功等级前面，中间不留空 */
+  const skl = P.sit ? '打坐中' : `${SK[S.active].short} ${lv(S.active).toFixed(2)}`, slot = Math.floor((158 - tw(skl) - 5 - 2) / 3), pw = slot - 14;
   ['head', 'arm', 'leg'].forEach((k, i) => {
-    const x = 2 + i * 26, hurt = injured(k);
+    const x = 2 + i * slot, hurt = injured(k);
     if (!hurt || frame % 30 < 18) txt(PART_NAME[k], x, 12, hurt ? 1 : 0);
-    bar(x + 11, 14, 14, 6, S.parts[k] / maxPart(), hurt ? 1 : 0);
+    bar(x + 11, 14, pw, 6, S.parts[k] / maxPart(), hurt ? 1 : 0);
   });
-  txt(P.sit ? '打坐中' : `${SK[S.active].short} ${lv(S.active).toFixed(2)}`, 158, 12, 0, 'right');
+  txt(skl, 158, 12, 0, 'right');
   const B = S.buffs || {}, glint = (x, y, w) => { const i = Math.floor(frame / 3) % (w + 6); if (i < w) R(x + i, y, 1, 6, 2); };
   if (B.hp && B.hp.t > 0) glint(13, 3, 46);
   if (B.st && B.st.t > 0) glint(73, 3, 32);
   if (B.mp && B.mp.t > 0) glint(119, 3, 39);
-  if (B.parts && B.parts.t > 0) [0, 1, 2].forEach(i => glint(13 + i * 26, 14, 14));
+  if (B.parts && B.parts.t > 0) [0, 1, 2].forEach(i => glint(13 + i * slot, 14, pw));
 }
 function renderLootTag() {
   if (dlg || menu) return;
