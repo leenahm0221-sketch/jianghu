@@ -13,7 +13,7 @@ jobs:
           python-version: '3.12'
       - name: 安装 Playwright
         run: |
-          pip install playwright
+          pip install playwright pillow
           python -m playwright install --with-deps chromium
       - name: 拼出单文件游戏
         run: python tools/build.py
