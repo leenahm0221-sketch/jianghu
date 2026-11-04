@@ -48,19 +48,23 @@ body{background:var(--bg);margin:0;overflow:hidden;-webkit-user-select:none;user
 .ab .btn:first-child{margin-top:28px}
 /* A 键上方的快捷药格：点一下服用，按住换下一种药 */
 .abtn{position:relative}
-.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 26px);transform:translateX(-50%);width:54px;height:44px;border-radius:6px;border:3px solid #2a2a2e;background:#c9c8c0;color:#1e1e22;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.45);font-style:normal}
+.btn button.quick{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);width:54px;height:44px;border-radius:6px;border:3px solid #2a2a2e;background:#c9c8c0;color:#1e1e22;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;touch-action:none;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.45);font-style:normal}
 .btn button.quick b{font:800 15px/1 var(--sans);pointer-events:none}
 .btn button.quick i{font:700 11px/1 var(--sans);font-style:normal;opacity:.85;pointer-events:none}
 .btn button.quick.empty{opacity:.45}
 .btn button.quick.on{background:#9a9991}
-.btn > span{font:italic 800 12px/1 var(--sans);color:#2b2f6e;letter-spacing:.06em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 3px #fff}
+.btn > span{display:none}
+/* A 红、B 蓝，一眼分得开 */
+.btn button[data-k="a"]{background:#b3262e;color:#ffd7d7;box-shadow:inset 0 3px 0 rgba(255,255,255,.2),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 0 #5e1014,0 6px 8px rgba(0,0,0,.35)}
+.btn button[data-k="b"]{background:#2850a8;color:#d6e2ff;box-shadow:inset 0 3px 0 rgba(255,255,255,.2),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 0 #142a5e,0 6px 8px rgba(0,0,0,.35)}
+.btn button[data-k="a"].on{box-shadow:inset 0 3px 0 rgba(255,255,255,.12),0 1px 0 #5e1014}
+.btn button[data-k="b"].on{box-shadow:inset 0 3px 0 rgba(255,255,255,.12),0 1px 0 #142a5e}
 .small span{display:none}
 .smalls{grid-column:1/4;grid-row:2;display:flex;justify-content:center;gap:22px}
 .sgrp{display:flex;gap:12px}
-.smalls .small button{width:68px;height:40px;position:relative;padding:22px 0 0;border:0;border-radius:0;background:transparent;font:700 12px/1 var(--sans);color:#e8e8e0;letter-spacing:.06em;text-shadow:0 1px 2px #000,0 0 2px #000;touch-action:none;cursor:pointer}
+.smalls .small button{width:46px;height:46px;position:relative;padding:0;border:0;border-radius:6px;background:#85858c;font:800 12px/1.15 var(--sans);color:#1e1e22;letter-spacing:0;touch-action:none;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.3),0 3px 0 rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;text-align:center}
 .small{display:flex;flex-direction:column;align-items:center}
-.smalls .small button::before{content:'';position:absolute;left:50%;top:5px;width:44px;height:13px;margin-left:-22px;border-radius:7px;background:#85858c;transform:rotate(-22deg);box-shadow:inset 0 -2px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.35),0 2px 3px rgba(0,0,0,.45)}
-.smalls .small button.on::before{background:#56565c}
+.smalls .small button.on{background:#5b5b62;color:#e8e8e0;transform:translateY(2px);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),0 1px 0 rgba(0,0,0,.45)}
 button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 .namebox[hidden]{display:none}
 .namebox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -94,14 +98,12 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .smalls{grid-column:auto;grid-row:auto;position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));justify-content:space-between;pointer-events:none}
   .smalls .small{pointer-events:auto;flex-direction:row}
   .sgrp{gap:10px;pointer-events:none}
-  .small button{width:66px;height:30px}
 .game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
 /* 画面窄（比如浏览器竖着拿、地址栏占了地方）时，两侧的小键改成上下两个一排，不压到状态栏 */
 .game.narrow .smalls{left:8px;right:8px}
 .game.narrow.rot .smalls{left:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-bottom,0px))}
 .game.narrow .sgrp{gap:4px}
-.game.narrow .smalls .small button{width:50px;font-size:11px;letter-spacing:0}
-.game.narrow .smalls .small button::before{width:34px;margin-left:-17px}
+.game.narrow .smalls .small button{width:42px;height:42px;font-size:11px}
 </style>
 
 <div class="game" id="game">
