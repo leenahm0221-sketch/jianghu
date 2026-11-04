@@ -101,6 +101,37 @@ addEventListener('orientationchange', () => { resize(); setTimeout(resize, 300);
 if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 /* 保险：每半秒核对一次，屏幕尺寸变了就重新排版 */
 setInterval(() => { const [w, h] = viewSize(); if (w + 'x' + h !== lastView) resize(); }, 500);
+/* 防止手机把画面放大。
+   苹果手机上，左手按方向键、右手按 A 键同时按住，会被当成“双指缩放”；连点两下按键会被当成“双击放大”。
+   这里把这两种手势在游戏画面和按键上拦掉；万一已经放大了，自动弹回原大小。 */
+const VIEWPORT = 'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+function viewportMeta() {
+  let m = document.querySelector('meta[name=viewport]');
+  if (!m) { m = document.createElement('meta'); m.name = 'viewport'; document.head.appendChild(m); }
+  return m;
+}
+viewportMeta().content = VIEWPORT;
+const inPlay = t => t && t.closest && t.closest('.dpad,.btn,.smalls,canvas');
+const typing = () => { const a = document.activeElement; return a && /^(INPUT|TEXTAREA)$/.test(a.tagName); };
+['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1 && !typing()) e.preventDefault(); }, { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (inPlay(e.target) && now - lastTouchEnd < 400) e.preventDefault();   /* 按键上连点不放大 */
+  lastTouchEnd = now;
+}, { passive: false });
+document.addEventListener('dblclick', e => { if (inPlay(e.target)) e.preventDefault(); }, { passive: false });
+function unzoom() {
+  const v = window.visualViewport;
+  if (!v || v.scale <= 1.01 || typing()) return;
+  const m = viewportMeta();   /* 改一下再改回来，手机会重新按原大小排版 */
+  m.content = VIEWPORT.replace('initial-scale=1', 'initial-scale=0.99');
+  setTimeout(() => { m.content = VIEWPORT; resize(); }, 60);
+}
+setInterval(unzoom, 700);
+document.addEventListener('focusout', () => setTimeout(unzoom, 300));
+
 /* 大地图打开时：点屏幕任意处返回 */
 let fullMapOn = false;
 screen.addEventListener('pointerdown', e => {

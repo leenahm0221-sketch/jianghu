@@ -102,7 +102,7 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
 .chatbar input{flex:1;min-width:0;font:600 16px/1.2 var(--sans);color:var(--gb3);background:var(--gb0);border:0;padding:7px 8px;border-radius:0;-webkit-user-select:text;user-select:text}
 .chatbar button{font:700 14px/1 var(--sans);padding:0 10px;border:2px solid var(--gb0);background:var(--gb2);color:var(--gb0);border-radius:0;cursor:pointer}
 .chatbar button.main{background:var(--gb0);color:var(--gb3)}
-#savecode{font:500 11px/1.35 ui-monospace,Menlo,monospace;color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:6px 8px;width:100%;height:120px;box-sizing:border-box;resize:none;word-break:break-all;-webkit-user-select:text;user-select:text;border-radius:0}
+#savecode{font:500 16px/1.35 ui-monospace,Menlo,monospace;color:var(--gb3);background:var(--gb1);border:3px solid var(--gb3);padding:6px 8px;width:100%;height:120px;box-sizing:border-box;resize:none;word-break:break-all;-webkit-user-select:text;user-select:text;border-radius:0}
 /* 只有横屏布局 */
 .ctl{top:0;align-items:end;padding-block:0 max(8px,env(safe-area-inset-bottom,0px))}
   .ab{padding-bottom:2px}
@@ -441,6 +441,37 @@ addEventListener('orientationchange', () => { resize(); setTimeout(resize, 300);
 if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 /* 保险：每半秒核对一次，屏幕尺寸变了就重新排版 */
 setInterval(() => { const [w, h] = viewSize(); if (w + 'x' + h !== lastView) resize(); }, 500);
+/* 防止手机把画面放大。
+   苹果手机上，左手按方向键、右手按 A 键同时按住，会被当成“双指缩放”；连点两下按键会被当成“双击放大”。
+   这里把这两种手势在游戏画面和按键上拦掉；万一已经放大了，自动弹回原大小。 */
+const VIEWPORT = 'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+function viewportMeta() {
+  let m = document.querySelector('meta[name=viewport]');
+  if (!m) { m = document.createElement('meta'); m.name = 'viewport'; document.head.appendChild(m); }
+  return m;
+}
+viewportMeta().content = VIEWPORT;
+const inPlay = t => t && t.closest && t.closest('.dpad,.btn,.smalls,canvas');
+const typing = () => { const a = document.activeElement; return a && /^(INPUT|TEXTAREA)$/.test(a.tagName); };
+['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1 && !typing()) e.preventDefault(); }, { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (inPlay(e.target) && now - lastTouchEnd < 400) e.preventDefault();   /* 按键上连点不放大 */
+  lastTouchEnd = now;
+}, { passive: false });
+document.addEventListener('dblclick', e => { if (inPlay(e.target)) e.preventDefault(); }, { passive: false });
+function unzoom() {
+  const v = window.visualViewport;
+  if (!v || v.scale <= 1.01 || typing()) return;
+  const m = viewportMeta();   /* 改一下再改回来，手机会重新按原大小排版 */
+  m.content = VIEWPORT.replace('initial-scale=1', 'initial-scale=0.99');
+  setTimeout(() => { m.content = VIEWPORT; resize(); }, 60);
+}
+setInterval(unzoom, 700);
+document.addEventListener('focusout', () => setTimeout(unzoom, 300));
+
 /* 大地图打开时：点屏幕任意处返回 */
 let fullMapOn = false;
 screen.addEventListener('pointerdown', e => {
@@ -3734,7 +3765,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v44 加速' : 'v44', 156, 0, 2, 'right');
+  txt(FAST ? 'v45 加速' : 'v45', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
