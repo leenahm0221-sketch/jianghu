@@ -155,7 +155,7 @@ function train(id, amt) {
   if (!id || S.skills[id] == null || !(amt > 0)) return;
   const v = S.skills[id], cap = skillCap(id);
   if (v >= cap) return;
-  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(5);
+  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
   const nv = Math.min(cap, v + gain);
   S.skills[id] = nv;
   if (nv >= 99.99 && cap === 99.99) { toast(`${SK[id].name}练至化境，元气 +10`); sfx('level'); }

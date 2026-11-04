@@ -301,7 +301,7 @@ const sfx = n => SFX[n] && SFX[n]();
 /* ---------- 背景音乐：五声音阶的 8 位小曲，城镇、野外、地下、邪派地盘各一首，循环播放 ----------
    mel 是旋律（每格一个八分音符，数字是 MIDI 音高，0 是休止），bass 是每小节的根音 */
 let musicOn = true;
-/* 测试加速：走路更快、练功×5、年岁×4、怪物复活和草药矿石长回来×4。测试阶段默认开，系统菜单里可关 */
+/* 测试加速：约一小时能练到顶。走路×1.5、练功×15（护体步法心法×30）、年岁×8、回血×3、怪物复活和草药矿石长回来×4。测试阶段默认开，系统菜单里可关 */
 let FAST = true;
 try { FAST = localStorage.getItem('jianghu-fast') !== '0'; } catch (e) {}
 const FASTX = n => (FAST ? n : 1);
@@ -1570,7 +1570,7 @@ function train(id, amt) {
   if (!id || S.skills[id] == null || !(amt > 0)) return;
   const v = S.skills[id], cap = skillCap(id);
   if (v >= cap) return;
-  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(5);
+  const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTX(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
   const nv = Math.min(cap, v + gain);
   S.skills[id] = nv;
   if (nv >= 99.99 && cap === 99.99) { toast(`${SK[id].name}练至化境，元气 +10`); sfx('level'); }
@@ -2845,7 +2845,7 @@ function menuItems() {
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
-    { label: '测试加速', right: FAST ? '开' : '关', act: () => { FAST = !FAST; try { localStorage.setItem('jianghu-fast', FAST ? '1' : '0'); } catch (e) {} toast(FAST ? '测试加速：走路、练功、年岁、复活都变快' : '测试加速已关'); sfx('menu'); } },
+    { label: '测试加速', right: FAST ? '开' : '关', act: () => { FAST = !FAST; try { localStorage.setItem('jianghu-fast', FAST ? '1' : '0'); } catch (e) {} toast(FAST ? '测试加速：约一小时练到顶（走路、练功、年岁、回血、复活都变快）' : '测试加速已关'); sfx('menu'); } },
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }
@@ -3435,16 +3435,17 @@ function update() {
   if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
   if (menu) return updMenu();
   if (hitStop > 0) { hitStop--; return; }
-  if ((S.ageT += FASTX(4)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
+  if ((S.ageT += FASTX(8)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
   updPlayer(); updEnemies(); updNpcs();
   if (!P.dead) {
     tickBuffs();
     const xf = pv('心法', 'mp'), calm = frame - lastFight > 300, q = qi();
     const sm = S.passive['心法'] ? 1 + xf / 25 : 0.6;
     const wasFull = allFull();
-    S.mp = Math.min(maxMP(), S.mp + (P.sit ? 0.05 * sm : 0.01 * (1 + xf / 25)));
-    S.hp = Math.min(maxHP(), S.hp + (P.sit ? 0.07 * sm : calm ? 0.012 * (1 + q / 40) : 0));
-    const pr = P.sit ? 0.04 * sm : calm ? 0.006 * (1 + q / 40) : 0.002;
+    const rg = FASTX(3);
+    S.mp = Math.min(maxMP(), S.mp + (P.sit ? 0.05 * sm : 0.01 * (1 + xf / 25)) * rg);
+    S.hp = Math.min(maxHP(), S.hp + (P.sit ? 0.07 * sm : calm ? 0.012 * (1 + q / 40) : 0) * rg);
+    const pr = (P.sit ? 0.04 * sm : calm ? 0.006 * (1 + q / 40) : 0.002) * rg;
     const resting = frame - (P.lastAtk || -999) > 45;
     S.st = Math.min(maxST(), S.st + (P.sit ? 0.35 : resting ? 0.12 : 0.06));
     for (const k of ['head', 'arm', 'leg']) S.parts[k] = Math.min(maxPart(), S.parts[k] + pr);
@@ -3715,7 +3716,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v38 加速' : 'v38', 156, 0, 2, 'right');
+  txt(FAST ? 'v39 加速' : 'v39', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4926,7 +4927,7 @@ addEventListener('pagehide', () => { if (mode === 'play') save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') save(); });
 window.claude?.hot?.snapshot?.(() => (mode === 'play' && S ? { S: { ...S, x: P.tx, y: P.ty, dir: P.dir } } : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__game = { SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
+window.__game = { get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
 })();
 </script>
 

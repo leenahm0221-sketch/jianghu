@@ -15,16 +15,17 @@ function update() {
   if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
   if (menu) return updMenu();
   if (hitStop > 0) { hitStop--; return; }
-  if ((S.ageT += FASTX(4)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
+  if ((S.ageT += FASTX(8)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
   updPlayer(); updEnemies(); updNpcs();
   if (!P.dead) {
     tickBuffs();
     const xf = pv('心法', 'mp'), calm = frame - lastFight > 300, q = qi();
     const sm = S.passive['心法'] ? 1 + xf / 25 : 0.6;
     const wasFull = allFull();
-    S.mp = Math.min(maxMP(), S.mp + (P.sit ? 0.05 * sm : 0.01 * (1 + xf / 25)));
-    S.hp = Math.min(maxHP(), S.hp + (P.sit ? 0.07 * sm : calm ? 0.012 * (1 + q / 40) : 0));
-    const pr = P.sit ? 0.04 * sm : calm ? 0.006 * (1 + q / 40) : 0.002;
+    const rg = FASTX(3);
+    S.mp = Math.min(maxMP(), S.mp + (P.sit ? 0.05 * sm : 0.01 * (1 + xf / 25)) * rg);
+    S.hp = Math.min(maxHP(), S.hp + (P.sit ? 0.07 * sm : calm ? 0.012 * (1 + q / 40) : 0) * rg);
+    const pr = (P.sit ? 0.04 * sm : calm ? 0.006 * (1 + q / 40) : 0.002) * rg;
     const resting = frame - (P.lastAtk || -999) > 45;
     S.st = Math.min(maxST(), S.st + (P.sit ? 0.35 : resting ? 0.12 : 0.06));
     for (const k of ['head', 'arm', 'leg']) S.parts[k] = Math.min(maxPart(), S.parts[k] + pr);
