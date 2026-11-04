@@ -92,11 +92,28 @@ def 主城接引人拜师学入门武功(b):
     g = Game(b); g.new_game()
     g.ev(f'{G}.S.skills.caoshangfei = 12; {G}.S.skills.huashan = 31; {G}.S.age = 40')
     g.ev(f'{G}.envoyTalk("正")'); opts = g.talk()
+    for _ in range(4):
+        if '峨眉派（可入）' in opts: break
+        g.choose(opts.index(next(o for o in opts if o.startswith('下一页')))); opts = g.talk()
     assert opts and '峨眉派（可入）' in opts, opts
     g.choose(opts.index('峨眉派（可入）')); g.talk(); g.choose(0); g.talk()
     assert g.ev(f'{G}.S.sect') == 'emei', '没拜成峨眉'
     g.ev(f'{G}.envoyTalk("正")'); g.talk(); g.choose(0); g.talk()
     assert g.ev(f'{G}.S.skills.miejian') is not None, '没学到入门武功'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
+def 接引使介绍全部门派(b):
+    g = Game(b); g.new_game()
+    seen = set()
+    g.ev(f'{G}.envoyTalk("邪")'); opts = g.talk()
+    for _ in range(5):
+        seen |= {o.split('（')[0] for o in opts if not o.startswith(('下一页', '离开'))}
+        g.choose(opts.index(next(o for o in opts if o.startswith('下一页')))); opts = g.talk()
+    assert len(seen) == 13, f'只介绍了 {len(seen)} 个门派：{seen}'
+    g.ev(f'{G}.envoyTalk("邪", 0, true)'); g.talk(); g.choose(0); txt = g.ev(f'{G}.dlg.pages.map(p => p.lines.join("")).join("")')
+    assert '总坛' in txt and '传授' in txt and '入门' in txt, txt
     assert not g.errs, g.errs
     g.close()
 

@@ -1787,24 +1787,44 @@ function storyTalk(camp) {
   }
   return false;
 }
-function envoyTalk(camp) {
-  if (storyTalk(camp)) return;
-  const E = ENVOY[camp], who = E.who;
-  E.sects.forEach(hear);
-  if (S.sect && E.sects.includes(S.sect)) return envoyMember(who, S.sect);
-  if (S.sect) return say(who, `你已是${SECTS[S.sect].name}弟子，不归我管。`);
-  ask(who, ['各派总坛山高路远，新人先在我这里拜入门派，学一门入门功夫。', '高深武功，日后再亲自上总坛去学。' + (E.note ? ' ' + E.note : '')],
-    E.sects.map(k => `${SECTS[k].name}（${SECT_JOIN[k].ok() && !campBlock(k) ? '可入' : '未够格'}）`).concat(['离开']), i => {
-      const sect = E.sects[i]; if (!sect) return;
-      const blk = campBlock(sect); if (blk) return say(who, blk, () => envoyTalk(camp));
-      const j = SECT_JOIN[sect];
-      if (!j.ok()) return say(who, [`想入${SECTS[sect].name}？${j.need()}`, `总坛在${SECTS[sect].where}。`], () => envoyTalk(camp));
-      ask(who, j.pitch, [`拜入${SECTS[sect].name}`, '再想想'], k => { if (k === 0) { joinSect(sect, who); } });
+/* 门派介绍：任何一位接引使都能讲全部门派；本阵营的门派当场就能拜，别的阵营指明去哪拜 */
+const CAMP_CITY = { 正: '襄阳的正派接引使', 邪: '平定州的邪派接引使', 中: '扬州的中立接引使' };
+const CAMP_NAME = { 正: '正派', 邪: '邪派', 中: '中立' };
+const SPECIAL_JOIN = {
+  quanzhen: { ok: () => lv('quanzhen') >= 10, need: () => `全真心法练到 10 级（现在 ${lv('quanzhen').toFixed(2)}）。心法由清虚道长先教：随便哪门武功练到 5 级去找他。`, where: '牛家村清虚观的清虚道长' },
+  gaibang: { ok: () => (S.side.gaibang || 0) >= 1 && (S.items.tourou || 0) >= 5, need: () => '给鲁长老送 5 块兔肉，兔儿坡的野兔就有。', where: '牛家村池塘边的鲁长老' },
+};
+const sectOrder = camp => Object.keys(SECTS).sort((a, b) => (SECTS[a].camp !== camp) - (SECTS[b].camp !== camp));
+function sectFits(k) { const j = SECT_JOIN[k] || SPECIAL_JOIN[k]; return j.ok() && !campBlock(k); }
+function sectBrief(k) {
+  const sc = SECTS[k], j = SECT_JOIN[k] || SPECIAL_JOIN[k];
+  const skills = Object.keys(SK).filter(x => SK[x].sect === k).map(x => SK[x].name).join('、');
+  const foe = SECT_FOE[k] ? `宿敌：${SECT_FOE[k].map(f => SECTS[f].name).join('、')}。` : '';
+  const at = SPECIAL_JOIN[k] ? SPECIAL_JOIN[k].where : CAMP_CITY[sc.camp];
+  return [`${sc.name}，${CAMP_NAME[sc.camp]}门派，总坛在${sc.where}。`, `传授：${skills}。${foe}`, `入门：${j.need()}`, `拜师找${at}，或直接去总坛找掌门。`];
+}
+function envoyTalk(camp, page = 0, browse = false) {
+  if (!browse && storyTalk(camp)) return;
+  const E = ENVOY[camp], who = E.who, all = sectOrder(camp), PER = 4, pages = Math.ceil(all.length / PER), pg = page % pages;
+  all.forEach(hear);
+  if (!browse && S.sect && E.sects.includes(S.sect)) return envoyMember(who, S.sect);
+  const list = all.slice(pg * PER, pg * PER + PER);
+  const tag = k => S.sect === k ? '本门' : E.sects.includes(k) ? (sectFits(k) ? '可入' : '未够格') : `${SPECIAL_JOIN[k] ? '牛家村' : CAMP_NAME[SECTS[k].camp]}·${sectFits(k) ? '可入' : '未够格'}`;
+  ask(who, pg ? `江湖门派（${pg + 1}/${pages}）` : ['江湖十三门派，我都能给你讲讲。本阵营的门派，在我这里就能拜师。', '高深武功，日后再亲自上总坛去学。'],
+    list.map(k => `${SECTS[k].name}（${tag(k)}）`).concat([`下一页（${pg + 1}/${pages}）`, '离开']), i => {
+      if (i === list.length) return envoyTalk(camp, pg + 1, true);
+      const sect = list[i]; if (!sect) return;
+      const back = () => envoyTalk(camp, pg, true);
+      const brief = sectBrief(sect);
+      if (S.sect || !E.sects.includes(sect)) return say(who, S.sect && S.sect !== sect ? [...brief, `你已是${SECTS[S.sect].name}弟子，要改投先回总坛叛出师门。`] : brief, back);
+      const blk = campBlock(sect); if (blk) return say(who, [...brief, blk], back);
+      if (!SECT_JOIN[sect].ok()) return say(who, brief, back);
+      ask(who, [...brief, ...SECT_JOIN[sect].pitch], [`拜入${SECTS[sect].name}`, '再想想'], k => { if (k === 0) joinSect(sect, who); else back(); });
     });
 }
 function envoyMember(who, sect) {
   const k = introSkill(sect), st = S.stask && S.stask.sect === sect ? S.stask : null;
-  ask(who, `${SECTS[sect].name}弟子，有什么事？`, [S.skills[k] != null ? `${SK[k].name}（已学）` : `学${SK[k].name}`, st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', '离开'], i => {
+  ask(who, `${SECTS[sect].name}弟子，有什么事？`, [S.skills[k] != null ? `${SK[k].name}（已学）` : `学${SK[k].name}`, st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', '江湖门派', '离开'], i => {
     const back = () => envoyMember(who, sect);
     if (i === 0) {
       if (S.skills[k] != null) return say(who, `本门其余武功，去${SECTS[sect].where}找掌门学。`, back);
@@ -1812,6 +1832,7 @@ function envoyMember(who, sect) {
       learn(k); save(); return say(who, [`好！这便传你${SK[k].name}。`, `本门其余武功，日后去${SECTS[sect].where}找掌门学。`]);
     }
     if (i === 1) return sectTaskMenu(who, sect, back);
+    if (i === 2) return envoyTalk(SECTS[sect].camp, 0, true);
   });
 }
 function sectTalk(who, sect) {
