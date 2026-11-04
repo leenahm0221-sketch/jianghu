@@ -173,7 +173,7 @@ function renderGuide() {
   /* 目标栏 */
   const where = pt && pt.hop ? `往${pt.hop}` : null;
   const lbl = `目标 ${g.text}${where ? ` · ${where}` : ''}${steps ? ` · ${steps}步` : steps === 0 ? ' · 就在旁边' : ''}`;
-  const w = Math.min(GW - 8, tw(lbl) + 8), x = Math.round((GW - w) / 2), y = UB - 15;
+  const w = Math.min(SAFE_W - 4, tw(lbl) + 8), x = Math.round(UX + 80 - w / 2), y = UB - 15;  // 只占两侧按键中间，不伸到按键底下
   R(x, y, w, 13, 3); R(x + 1, y + 1, w - 2, 11, 0);
   g_clip(x + 2, y, w - 4, 13, () => txt(lbl, x + 4, y + 1, 3));
 }

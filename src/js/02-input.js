@@ -82,6 +82,8 @@ function resize() {
   const dr = localRect(ctlEl.querySelector('.dpad')), ar = localRect(ctlEl.querySelector('.ab'));
   const cx = UX + 80, l = dr.right / sc0, r = ar.left / sc0;
   SAFE_W = Math.max(160, Math.min(GW - 8, Math.floor(2 * Math.min(cx - l, r - cx)) - 4));
+  /* 状态栏两侧的空位不够并排放两个小键时，改成竖着排 */
+  gameEl.classList.toggle('narrow', UX * sc0 < 175);
   buildGrid();
 }
 addEventListener('resize', resize);

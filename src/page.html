@@ -95,7 +95,13 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   .smalls .small{pointer-events:auto;flex-direction:row}
   .sgrp{gap:10px;pointer-events:none}
   .small button{width:66px;height:30px}
-@media (orientation:portrait){.game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
+.game.fullmap .dpad,.game.fullmap .ab{visibility:hidden}
+/* 画面窄（比如浏览器竖着拿、地址栏占了地方）时，两侧的小键改成上下两个一排，不压到状态栏 */
+.game.narrow .smalls{left:8px;right:8px}
+.game.narrow.rot .smalls{left:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-bottom,0px))}
+.game.narrow .sgrp{gap:4px}
+.game.narrow .smalls .small button{width:50px;font-size:11px;letter-spacing:0}
+.game.narrow .smalls .small button::before{width:34px;margin-left:-17px}
 </style>
 
 <div class="game" id="game">
@@ -140,8 +146,8 @@ button:focus-visible{outline:2px solid #e0f8d0;outline-offset:3px}
   <div class="ctl" id="ctl">
     <div class="dpad" id="dpad" aria-label="方向键"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i><span class="knob" id="knob"></span></div>
     <div class="ab">
-      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B</button><span>B 打坐·返回</span></div>
-      <div class="btn abtn"><button data-k="a" aria-label="A 攻击或确定">A</button><span>A 攻击·确定</span>
+      <div class="btn"><button data-k="b" aria-label="B 打坐或返回">B</button><span>B 打坐</span></div>
+      <div class="btn abtn"><button data-k="a" aria-label="A 攻击或确定">A</button><span>A 攻击</span>
         <button class="quick" id="quick" aria-label="快捷药：点一下服用，按住换药"><b id="qname">药</b><i id="qcnt">—</i></button></div>
     </div>
     <div class="smalls">
