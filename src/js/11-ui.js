@@ -92,6 +92,7 @@ function menuItems() {
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
+    { label: '测试加速', right: FAST ? '开' : '关', act: () => { FAST = !FAST; try { localStorage.setItem('jianghu-fast', FAST ? '1' : '0'); } catch (e) {} toast(FAST ? '测试加速：走路、练功、年岁、复活都变快' : '测试加速已关'); sfx('menu'); } },
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }

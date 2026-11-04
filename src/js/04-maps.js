@@ -411,9 +411,9 @@ const W_SPECS = {
     },
     zones: [{ kind: 'wdjz', n: 7, area: [0, 0.4, 1, 1] }, { kind: 'baozi', n: 5, area: [0, 0, 1, 0.5] }] },
   meadow: { W: 44, H: 32, seed: 11, edge: 'T', floor: '.', patches: [[',', 7, 4]], obst: [['T', 5], ['f', 3], ['r', 1]], density: 0.12, fillOn: [','],
-    res: { '*': 16, m: 9 }, chests: 1, zones: [{ kind: 'rabbit', n: 16, area: [0, 0, 1, 0.55] }, { kind: 'fox', n: 12, area: [0, 0.45, 1, 1] }] },
+    res: { '*': 16, m: 9, O: 4 }, chests: 1, zones: [{ kind: 'rabbit', n: 16, area: [0, 0, 1, 0.55] }, { kind: 'fox', n: 12, area: [0, 0.45, 1, 1] }] },
   wild: { W: 56, H: 40, seed: 23, peddler: true, edge: 'T', floor: '.', patches: [[',', 8, 4]], obst: [['T', 6], ['r', 2], ['f', 1]], density: 0.16, fillOn: [','], river: 0.55,
-    res: { '*': 8, O: 3 }, chests: 2, hub: [24, 22],
+    res: { '*': 8, O: 7 }, chests: 2, hub: [24, 22],
     build(c) {
       /* 黑风寨：河东北角，木栅栏围起来，南边开寨门 */
       const x0 = c.W - 16, y0 = 2, w = 13, h = 10;

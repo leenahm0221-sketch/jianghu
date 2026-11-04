@@ -15,7 +15,7 @@ function cycleWeapon() {
   S.equip.weapon = nx; ensureActive();
   toast(nx ? `换上${EQ[nx].name}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu');
 }
-const moveSpeed = () => (1 + pv('步法', 'mv') / 100 * 0.6) * (injured('leg') ? 0.6 : 1);
+const moveSpeed = () => (1 + pv('步法', 'mv') / 100 * 1.1) * (injured('leg') ? 0.6 : 1) * FASTX(1.5);
 function updPlayer() {
   if (P.dead) return;
   if (P.fish) { if (pressed.start) { P.fish = null; } else return updFish(); }
@@ -100,7 +100,7 @@ function autoFight() {
   if (e && !e.dead && distTo(e) > CHASE) { P.target = null; P.waitT = 0; toast(`${e.name || ED(e).name}跑远了`); return; }
   if (!e || e.dead) { e = P.target = nearestEnemy(1, { passive: true }); P.waitT = 0; if (!e) return; }
   if (inReach(e)) { P.waitT = 0; faceTo(e); if (P.atkCD <= 0) attack(); return; }
-  const d0 = ED(e), comes = !d0.passive && !d0.dummy && (!d0.camp || campHostile(d0.camp) || foeOf(e.kind) || e.provoked) && distTo(e) <= 2;
+  const d0 = ED(e), comes = !d0.passive && !d0.dummy && (isAggro(e) || e.adj) && (!d0.camp || campHostile(d0.camp) || foeOf(e.kind) || e.provoked) && distTo(e) <= 2;
   if (comes && (P.waitT = (P.waitT || 0) + 1) < 45) { faceTo(e); return; }
   const st = pathStep(e);
   if (st) { P.dir = dirOf(st[0], st[1]); P.tx += st[0]; P.ty += st[1]; P.moving = true; return; }
@@ -132,7 +132,7 @@ function renderTut() {
   R(x, y, w, 15, 3); R(x + 1, y + 1, w - 2, 13, frame % 60 < 40 ? 0 : 1); txt(t, x + 6, y + 2, 3);
 }
 function startSit() {
-  if (nearestEnemy(3)) { toast('附近有敌人，静不下心'); return false; }
+  if (enemies.some(e => !e.dead && distTo(e) <= 3 && (isAggro(e) || e.adj) && !ED(e).camp)) { toast('附近有敌人，静不下心'); return false; }
   P.sit = true; P.target = null; tutNext(2);
   toast(S.passive['心法'] ? `盘膝打坐，运转${SK[S.passive['心法']].name}` : '盘膝打坐，调匀呼吸');
   return true;
@@ -189,7 +189,7 @@ function gather(x, y, t) {
   const r = RES_TILES[t];
   if (isDepleted(x, y)) return toast(t === 'O' ? '矿石刚挖过，过阵子再来' : '刚采过，还没长出来');
   if (S.skills.caiji == null) learn('caiji');
-  depleted[resKey(x, y)] = frame + r.regrow;
+  depleted[resKey(x, y)] = frame + Math.round(r.regrow / FASTX(4));
   let n = rnd(r.n[0], r.n[1]);
   if (Math.random() * 100 < lv('caiji') * 0.6) n++;
   S.items[r.item] = (S.items[r.item] || 0) + n;

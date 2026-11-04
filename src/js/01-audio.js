@@ -28,6 +28,10 @@ const sfx = n => SFX[n] && SFX[n]();
 /* ---------- 背景音乐：五声音阶的 8 位小曲，城镇、野外、地下、邪派地盘各一首，循环播放 ----------
    mel 是旋律（每格一个八分音符，数字是 MIDI 音高，0 是休止），bass 是每小节的根音 */
 let musicOn = true;
+/* 测试加速：走路更快、练功×5、年岁×4、怪物复活和草药矿石长回来×4。测试阶段默认开，系统菜单里可关 */
+let FAST = true;
+try { FAST = localStorage.getItem('jianghu-fast') !== '0'; } catch (e) {}
+const FASTX = n => (FAST ? n : 1);
 try { musicOn = localStorage.getItem('jianghu-music') !== '0'; } catch (e) {}
 const TRACKS = {
   town: { bpm: 92, wave: 'triangle', vol: 0.03, mel: [67, 69, 72, 0, 74, 72, 69, 0, 67, 64, 67, 69, 67, 0, 0, 0, 72, 74, 76, 0, 74, 72, 69, 72, 67, 0, 69, 67, 64, 0, 0, 0], bass: [48, 45, 43, 48] },

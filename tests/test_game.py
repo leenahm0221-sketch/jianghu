@@ -189,6 +189,20 @@ def A键上方快捷药格(b):
     g.close()
 
 @case
+def 低等级怪不主动打人(b):
+    g = Game(b); g.new_game()
+    def stand_by(kind):
+        g.ev(f'{G}.warp("wild", 24, 22)'); g.pg.wait_for_timeout(300)
+        return g.ev(f'''(() => {{ const G = {G}, es = G.enemies; es.length = 0; const x = G.P.tx, y = G.P.ty;
+          for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) if (!G.SOLID.has(G.map.rows[y + dy][x + dx])) {{ es.push(G.makeEnemy("{kind}", x + dx, y + dy)); return true; }} return false; }})()''')
+    full = g.ev(f'{G}.maxHP()')
+    g.ev(f'{G}.S.hp = {G}.maxHP()'); assert stand_by('wolf'); g.pg.wait_for_timeout(4000)
+    assert g.ev(f'{G}.S.hp') >= full, '18 级的野狼主动咬人了'
+    g.ev(f'{G}.S.hp = {G}.maxHP()'); assert stand_by('bandit'); g.pg.wait_for_timeout(4000)
+    assert g.ev(f'{G}.S.hp') < full, '25 级的山贼没有主动动手'
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

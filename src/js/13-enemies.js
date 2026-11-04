@@ -3,7 +3,7 @@ function updEnemies() {
   for (const e of enemies) {
     const d = ED(e);
     if (e.dead) {
-      if (e.respawn !== Infinity && --e.respawn <= 0) {
+      if (e.respawn !== Infinity && (e.respawn -= FASTX(4)) <= 0) {
         if (!occupied(e.home.x, e.home.y, e) && Math.abs(P.tx - e.home.x) + Math.abs(P.ty - e.home.y) > 5) Object.assign(e, makeEnemy(e.kind, e.home.x, e.home.y));
         else e.respawn = 120;
       }
@@ -17,7 +17,7 @@ function updEnemies() {
     if (e.stunT > 0) { e.stunT--; continue; }
     const dx = P.tx - e.tx, dy = P.ty - e.ty, dist = Math.abs(dx) + Math.abs(dy);
     if (dx) e.face = dx > 0 ? 'right' : 'left';
-    const calmCamp = (d.camp && !campHostile(d.camp) && !foeOf(e.kind) && !e.provoked) || (safeSpots.length && inSafe(P.tx, P.ty) && !e.adj && !d.hunter && e.kind !== 'hunter' && e.kind !== 'pantu');
+    const calmCamp = (!isAggro(e) && !e.adj) || (d.camp && !campHostile(d.camp) && !foeOf(e.kind) && !e.provoked) || (safeSpots.length && inSafe(P.tx, P.ty) && !e.adj && !d.hunter && e.kind !== 'hunter' && e.kind !== 'pantu');
     if (!d.passive && !calmCamp && dist === 1 && !P.dead && !P.moving) {
       e.dir = dx > 0 ? 'right' : dx < 0 ? 'left' : dy > 0 ? 'down' : 'up';
       if (!e.adj) { e.adj = true; e.cd = Math.max(e.cd, 28); }

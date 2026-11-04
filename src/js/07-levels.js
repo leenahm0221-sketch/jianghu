@@ -38,6 +38,9 @@ function scaledDef(kind) {
   return { ...b, lv: nl, hp: Math.round(hpOf(nl) * b.hp / hpOf(b.lv)), atk: Math.round(atkOf(nl) * b.atk / atkOf(b.lv) * 10) / 10, dodge: Math.max(2, b.dodge + Math.round((nl - b.lv) / 12)) };
 }
 const ED = e => e.d || EN[e.kind];
+/* 主动攻击：20 级以上的怪、头目、追兵会主动扑上来；20 级以下的只在挨打后还手 */
+const AGGRO_LV = 20;
+const isAggro = e => { const d = ED(e); return !d.passive && !d.dummy && (d.boss || d.dboss || d.hunter || e.kind === 'hunter' || e.kind === 'pantu' || d.camp || d.lv >= AGGRO_LV); };
 /* 山门清净地：门派掌门身边 5 格内，怪物不进来，也不在里面动手（被你先打了除外） */
 const SAFE_R = 5;
 let safeSpots = [];

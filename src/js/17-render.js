@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt('v35', 156, 0, 2, 'right');
+  txt(FAST ? 'v36 加速' : 'v36', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -182,9 +182,29 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 6, sy + 12, 4, 4, 3); R(sx + 7, sy + 13, 1, 2, 2);
       break;
     }
-    case '*':
+    case '*': {
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); R(sx + 6, sy + 14, 4, 1, 2); break; }
+      const herb = ((RES_BONUS['*'] || {})[map && map.id] || [])[0];
+      if (herb === 'renshen' || herb === 'sanqi') {
+        /* 人参、三七：一圈掌状叶，中间顶着一簇浆果 */
+        R(sx + 7, sy + 8, 2, 8, 2);
+        for (const [lx, ly, w] of [[1, 9, 6], [9, 9, 6], [3, 6, 4], [9, 6, 4]]) { R(sx + lx, sy + ly, w, 2, 2); R(sx + lx, sy + ly, w, 1, 3); }
+        for (const [bx, by] of [[6, 2], [8, 2], [7, 4], [5, 4], [9, 4], [7, 1]]) { R(sx + bx, sy + by, 2, 2, 3); if (herb === 'renshen') R(sx + bx, sy + by, 1, 1, 1); }
+        break;
+      }
+      if (herb === 'fengmi') {
+        /* 玉蜂蜜：花丛上有一只玉蜂飞来飞去 */
+        for (const [bx, by] of [[4, 8], [10, 7], [7, 11]]) { R(sx + bx - 2, sy + by, 5, 3, 2); R(sx + bx - 1, sy + by - 1, 3, 5, 2); R(sx + bx, sy + by + 1, 1, 1, 0); }
+        const b = Math.floor(frame / 10) % 4, bx = sx + 5 + [0, 3, 4, 1][b], by = sy + 2 + [0, 1, 3, 2][b];
+        R(bx, by + 1, 3, 2, 3); R(bx, by, 1, 1, 0); R(bx + 2, by, 1, 1, 0);
+        break;
+      }
+      if (hs % 3 === 0) {
+        /* 另一种草药：细长的草茎，顶上结穗 */
+        for (const [x, h] of [[4, 10], [7, 13], [10, 9], [12, 11]]) { R(sx + x, sy + 16 - h, 1, h, 3); R(sx + x - 1, sy + 16 - h, 3, 3, 2); R(sx + x, sy + 16 - h, 1, 1, 0); }
+        break;
+      }
       // 一丛草药：深色叶丛，上面开三朵白花
       for (let y = 0; y < 8; y++) for (let x = 0; x < 14; x++) {
         const ddx = x - 6.5, ddy = y - 4, rr = ddx * ddx / 42 + ddy * ddy / 18;
@@ -193,21 +213,36 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 2, sy + 15, 12, 1, 2);
       for (const [bx, by] of [[4, 5], [8, 3], [12, 6]]) { R(sx + bx - 2, sy + by - 2, 5, 5, 3); R(sx + bx - 1, sy + by - 1, 3, 3, 0); R(sx + bx, sy + by, 1, 1, 2); }
       break;
+    }
     case '&':
       base();
       if (isDepleted(mx, my)) { R(sx + 7, sy + 12, 2, 3, 2); break; }
+      if ((((RES_BONUS['&'] || {})[map && map.id] || [])[0]) === 'xuelian') {
+        /* 天山雪莲：白色重瓣，像一朵莲花 */
+        for (const [px, py, w, h] of [[2, 8, 4, 5], [10, 8, 4, 5], [5, 5, 6, 8], [6, 3, 4, 4]]) { R(sx + px, sy + py, w, h, 3); R(sx + px + 1, sy + py + 1, w - 2, h - 2, 0); }
+        R(sx + 7, sy + 7, 2, 2, 1); R(sx + 3, sy + 14, 10, 1, 2);
+        break;
+      }
       R(sx + 2, sy + 4, 12, 6, 3); R(sx + 4, sy + 3, 8, 1, 3); R(sx + 3, sy + 5, 10, 3, 2); R(sx + 4, sy + 5, 8, 1, 1);
       R(sx + 5, sy + 6, 1, 1, 0); R(sx + 9, sy + 6, 1, 1, 0); R(sx + 7, sy + 7, 1, 1, 0);
       R(sx + 6, sy + 10, 4, 5, 3); R(sx + 7, sy + 10, 2, 4, 0);
       break;
-    case 'O':
+    case 'O': {
       base();
-      for (let y = 0; y < 12; y++) for (let x = 0; x < 14; x++) {
-        const ddx = x - 6.5, ddy = y - 5.5, rr = ddx * ddx / 42 + ddy * ddy / 30;
-        if (rr < 1) R(sx + 1 + x, sy + 3 + y, 1, 1, rr > 0.75 ? 3 : (ddx < 0 && ddy < 0) ? 1 : 2);
-      }
-      if (!isDepleted(mx, my)) { R(sx + 5, sy + 7, 2, 1, 0); R(sx + 10, sy + 9, 1, 1, 0); R(sx + 8, sy + 6, 1, 1, 0); R(sx + 4, sy + 11, 1, 1, 0); R(sx + 11, sy + 6, 2, 1, 3); }
+      const ore = ((RES_BONUS.O || {})[map && map.id] || [])[0], dep = isDepleted(mx, my);
+      if (dep) { R(sx + 3, sy + 12, 4, 3, 2); R(sx + 9, sy + 13, 3, 2, 2); R(sx + 3, sy + 12, 4, 1, 3); break; }
+      const dark = ore === 'wujin' || ore === 'xuantiekuang', ice = ore === 'hantie';
+      /* 棱角矿块：一层层往上收的多边形 */
+      const rows = [[5, 6], [3, 10], [2, 12], [1, 14], [1, 14], [1, 14], [2, 12], [2, 12], [3, 11], [4, 9], [5, 7]];
+      rows.forEach(([x0, w], k) => { const y = sy + 4 + k; R(sx + x0, y, w, 1, dark ? 3 : 2); R(sx + x0, y, 1, 1, 3); R(sx + x0 + w - 1, y, 1, 1, 3); });
+      R(sx + 5, sy + 4, 6, 1, 3); R(sx + 5, sy + 14, 7, 1, 3);
+      if (ice) { /* 寒铁：冒出冰晶 */ for (const [cx, h] of [[4, 6], [8, 9], [12, 5]]) { R(sx + cx, sy + 11 - h, 2, h, 0); R(sx + cx - 1, sy + 11 - h + 1, 1, h - 1, 3); R(sx + cx + 2, sy + 11 - h + 1, 1, h - 1, 3); R(sx + cx, sy + 11 - h - 1, 2, 1, 3); } }
+      else { /* 矿脉：亮色斜纹 */ const c = dark ? 1 : 0; R(sx + 3, sy + 8, 3, 1, c); R(sx + 5, sy + 7, 2, 1, c); R(sx + 9, sy + 10, 3, 1, c); R(sx + 11, sy + 9, 1, 1, c); R(sx + 6, sy + 12, 2, 1, c); if (ore === 'jingtie') { R(sx + 4, sy + 6, 7, 1, 1); R(sx + 7, sy + 11, 5, 1, 1); }
+        /* 顶上冒出两三颗矿晶，一眼就和普通石头分开 */
+        for (const [cx, h] of [[4, 4], [9, 6], [12, 3]]) { R(sx + cx, sy + 5 - h, 2, h + 1, dark ? 1 : 0); R(sx + cx - 1, sy + 5 - h + 1, 1, h, 3); R(sx + cx + 2, sy + 5 - h + 1, 1, h, 3); R(sx + cx, sy + 4 - h, 2, 1, 3); } }
+      if ((frame + hs) % 90 < 10) { const px = sx + 4 + (hs % 8), py = sy + 6 + ((hs >> 3) % 5); R(px - 1, py, 3, 1, 0); R(px, py - 1, 1, 3, 0); }
       break;
+    }
     case '=': case 'E':
       R(sx, sy, T, T, 0);
       R(sx + (hs % 13) + 1, sy + ((hs >> 5) % 13) + 1, 1, 1, 1);
@@ -226,6 +261,11 @@ function drawTile(t, sx, sy, mx, my) {
       for (const [ox, oy] of [[4, 4], [10, 9]]) { R(sx + ox, sy + oy - 1, 1, 1, 2); R(sx + ox - 1, sy + oy, 3, 1, 2); R(sx + ox, sy + oy + 1, 1, 1, 2); R(sx + ox, sy + oy, 1, 1, 3); }
       break;
     case 'T': {
+      if (inForest && hs % 3 === 0) { /* 林中的柏树：细高 */
+        forest(); R(sx + 7, sy + 12, 2, 4, 3);
+        for (let y = 0; y < 13; y++) { const w = Math.min(10, 2 + Math.round(Math.sin(y / 13 * Math.PI) * 9)), x0 = sx + 8 - Math.round(w / 2); R(x0, sy + y, w, 1, y % 3 === 2 ? 3 : 2); R(x0, sy + y, 1, 1, 3); R(x0 + w - 1, sy + y, 1, 1, 3); }
+        break;
+      }
       if (inForest) {
         forest();
         R(sx + 7, sy + 12, 2, 4, 3);
@@ -235,6 +275,24 @@ function drawTile(t, sx, sy, mx, my) {
         }
         R(sx + 7, sy, 2, 1, 3);
         break;
+      }
+      const tv = hs % 5;
+      if (tv === 1) { /* 松树：一层层的尖顶 */
+        grass(); R(sx + 7, sy + 12, 2, 4, 3);
+        for (let y = 0; y < 13; y++) { const w = Math.min(14, 2 + (y % 5) * 2 + Math.floor(y / 5) * 2), x0 = sx + 8 - w / 2; R(x0, sy + y, w, 1, y % 5 === 4 ? 3 : 2); R(x0, sy + y, 1, 1, 3); R(x0 + w - 1, sy + y, 1, 1, 3); }
+        R(sx + 7, sy, 2, 1, 3); break;
+      }
+      if (tv === 2) { /* 柳树：树冠垂下一条条柳丝 */
+        grass(); R(sx + 7, sy + 9, 2, 7, 3);
+        for (let y = 0; y < 7; y++) for (let x = 0; x < 16; x++) { const dx = x - 7.5, dy = y - 3.5, r = dx * dx / 56 + dy * dy / 14; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.7 ? 3 : 2); }
+        for (const [x, h] of [[1, 10], [3, 12], [5, 9], [10, 9], [12, 12], [14, 10]]) R(sx + x, sy + 4, 1, h, (x + my) % 2 ? 3 : 2);
+        break;
+      }
+      if (tv === 3) { /* 果树：圆树冠上挂着果子 */
+        R(sx, sy, T, T, 0);
+        for (let y = 0; y < 12; y++) for (let x = 1; x < 15; x++) { const dx = x - 7.5, dy = y - 6, r = dx * dx / 50 + dy * dy / 36; if (r < 1) R(sx + x, sy + y, 1, 1, r > 0.75 ? 3 : 2); }
+        for (const [fx, fy] of [[4, 4], [9, 3], [11, 7], [6, 8], [3, 8]]) { R(sx + fx, sy + fy, 2, 2, 0); R(sx + fx + 1, sy + fy + 1, 1, 1, 3); }
+        R(sx + 6, sy + 11, 4, 5, 3); R(sx + 7, sy + 12, 1, 3, 2); break;
       }
       R(sx, sy, T, T, 0);
       for (let y = 0; y < 13; y++) for (let x = 0; x < 16; x++) {
@@ -888,6 +946,12 @@ function renderWorld() {
         const [dx, dy] = DIRS[P.dir];
         drawPerson(sx - dx * 10, sy - dy * 10, P.dir, 0, { ...playerLook(), ghost: true });
         drawPerson(sx - dx * 5, sy - dy * 5, P.dir, 0, { ...playerLook(), ghost: true });
+      }
+      const ms = moveSpeed() / FASTX(1.5);
+      if (P.moving && ms > 1.4) {
+        const [dx, dy] = DIRS[P.dir];
+        drawPerson(sx - dx * 6, sy - dy * 6, P.dir, 0, { ...playerLook(), ghost: true });
+        if (ms > 1.9) drawPerson(sx - dx * 12, sy - dy * 12, P.dir, 0, { ...playerLook(), ghost: true });
       }
       drawPerson(sx + ox, sy + oy, P.dir, step, playerLook(), P.hurtT > 0 && P.hurtT % 6 < 3);
     }
