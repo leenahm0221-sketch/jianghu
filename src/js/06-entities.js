@@ -3,6 +3,27 @@ function tileAt(x, y) { if (x < 0 || y < 0 || x >= map.w || y >= map.h) return '
 const resKey = (x, y) => `${map.id}:${x},${y}`;
 const isDepleted = (x, y) => { const t = depleted[resKey(x, y)]; return t != null && t > frame; };
 const LOOT_NAME = { J: '石刻', '*': '草药', '&': '灵芝', 'O': '铁矿', 'X': '旧木箱', 'm': '棉花' };
+/* 点一下地上的东西，看它叫什么 */
+const TILE_NAME = { '.': '草地', ',': '长草', ';': '林间空地', f: '野花', r: '石头', q: '灌木', o: '水井', T: '树', c: '山崖', k: '竹子', M: '大山', '~': '河水', W: '城墙', Q: '城门', P: '雪松', '^': '台阶', '_': '石板地', '=': '大路', E: '大路', B: '木桥', R: '屋顶', '#': '墙', D: '门', F: '篱笆', S: '告示牌', i: '冰崖', v: '碎石地', y: '沙地', U: '石碑', H: '屋里', '%': '雪地' };
+let peek = null;
+function peekName(x, y) {
+  const e = enemies.find(e => !e.dead && Math.abs(e.px / T - x) < 0.6 && Math.abs(e.py / T - y) < 0.6) || enemyAt(x, y);
+  if (e) { const d = ED(e); return `${d.name} ${d.lv}级` + (isAggro(e) ? ' 会主动打人' : ''); }
+  const n = npcs.find(n => n.x === x && n.y === y);
+  if (n) return n.name;
+  if (x < 0 || y < 0 || x >= map.w || y >= map.h) return null;
+  const t = map.rows[y][x];
+  if (t === 'J' || t === 'X') return LOOT_NAME[t] + (lootable(x, y) ? ' 走近按A' : '（已看过）');
+  if (RES_TILES[t]) {
+    const b = (typeof RES_BONUS !== 'undefined' && RES_BONUS[t] || {})[map.id], extra = b && ITEMS[b[0]] ? `，偶得${ITEMS[b[0]].name}` : '';
+    const nm = t === 'O' ? '矿石' : LOOT_NAME[t];
+    return isDepleted(x, y) ? `${nm}（采过了，过阵子再长）` : `${nm}${extra} 走近按A采`;
+  }
+  if (t === 'T') { const hs = hash(x, y), inF = map.ground === 'forest'; return inF ? (hs % 3 === 0 ? '柏树' : '松树') : ['树', '松树', '柳树', '果树', '树'][hs % 5]; }
+  if (t === 'r' && map.ground === 'sand') return '大石头';
+  return TILE_NAME[t] || null;
+}
+function setPeek(x, y) { const name = peekName(x, y); peek = name ? { x, y, name, until: frame + 150 } : null; }
 function lootable(x, y) {
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return false;
   const t = map.rows[y][x];

@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v45 加速' : 'v45', 156, 0, 2, 'right');
+  txt(FAST ? 'v46 加速' : 'v46', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -68,6 +68,24 @@ function renderTitleUI() {
   });
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
+/* 用字符画小图：' ' 透明，'0'~'3' 是四种颜色 */
+function spr(rows, sx, sy) { rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const c = r.charCodeAt(x) - 48; if (c >= 0 && c <= 3) R(sx + x, sy + y, 1, 1, c); } }); }
+/* 可采的东西统一画法：黑描边、亮色块，个头小一圈，脚下一圈浅影，和树、石头这些挡路的东西分开 */
+const SPR_HERB = [
+  '       3        ',
+  '      303       ',
+  '  3   323   3   ',
+  ' 303  323  303  ',
+  ' 3223 323 3223  ',
+  '  3223323 3223  ',
+  '   32232332233  ',
+  '    322222223   ',
+  '     3222223    ',
+  '      32223     ',
+  '       323      ',
+  '       323      ',
+];
+const SPR_COTTON_BALL = ['  33  ', ' 3003 ', '300003', '300013', ' 3113 ', '  33  '];
 function drawTile(t, sx, sy, mx, my) {
   const hs = hash(mx, my);
   const grass = () => {
@@ -149,9 +167,12 @@ function drawTile(t, sx, sy, mx, my) {
       if (tileAt(mx, my - 1) !== 'i') R(sx, sy, T, 1, 2);
       break;
     case 'm':
+      /* 棉花：细细的黑枝，顶着三团雪白的棉桃，没有树冠 */
       base();
-      R(sx + 7, sy + 8, 2, 8, 2); R(sx + 4, sy + 11, 3, 1, 2); R(sx + 9, sy + 10, 3, 1, 2);
-      if (!isDepleted(mx, my)) for (const [bx, by] of [[4, 6], [11, 4], [7, 1]]) { R(sx + bx - 2, sy + by, 5, 4, 3); R(sx + bx - 3, sy + by + 1, 7, 2, 3); R(sx + bx - 1, sy + by + 1, 3, 2, 0); R(sx + bx - 2, sy + by + 1, 1, 1, 0); R(sx + bx + 2, sy + by + 2, 1, 1, 0); }
+      R(sx + 3, sy + 15, 10, 1, 2);
+      R(sx + 7, sy + 7, 1, 9, 3); R(sx + 4, sy + 8, 1, 4, 3); R(sx + 5, sy + 11, 2, 1, 3); R(sx + 11, sy + 6, 1, 5, 3); R(sx + 8, sy + 10, 3, 1, 3);
+      R(sx + 2, sy + 12, 3, 1, 2); R(sx + 9, sy + 13, 3, 1, 2);
+      if (!isDepleted(mx, my)) { spr(SPR_COTTON_BALL, sx + 1, sy + 4); spr(SPR_COTTON_BALL, sx + 9, sy + 2); spr(SPR_COTTON_BALL, sx + 4, sy); }
       break;
     case 'o':
       base();
@@ -205,13 +226,9 @@ function drawTile(t, sx, sy, mx, my) {
         for (const [x, h] of [[4, 10], [7, 13], [10, 9], [12, 11]]) { R(sx + x, sy + 16 - h, 1, h, 3); R(sx + x - 1, sy + 16 - h, 3, 3, 2); R(sx + x, sy + 16 - h, 1, 1, 0); }
         break;
       }
-      // 一丛草药：深色叶丛，上面开三朵白花
-      for (let y = 0; y < 8; y++) for (let x = 0; x < 14; x++) {
-        const ddx = x - 6.5, ddy = y - 4, rr = ddx * ddx / 42 + ddy * ddy / 18;
-        if (rr < 1) R(sx + 1 + x, sy + 7 + y, 1, 1, rr > 0.6 ? 3 : (x + y) % 3 === 0 ? 1 : 2);
-      }
-      R(sx + 2, sy + 15, 12, 1, 2);
-      for (const [bx, by] of [[4, 5], [8, 3], [12, 6]]) { R(sx + bx - 2, sy + by - 2, 5, 5, 3); R(sx + bx - 1, sy + by - 1, 3, 3, 0); R(sx + bx, sy + by, 1, 1, 2); }
+      /* 普通草药：三片尖叶的一小丛，叶尖发白 */
+      R(sx + 4, sy + 15, 8, 1, 2);
+      spr(SPR_HERB, sx, sy + 3);
       break;
     }
     case '&':
@@ -223,23 +240,36 @@ function drawTile(t, sx, sy, mx, my) {
         R(sx + 7, sy + 7, 2, 2, 1); R(sx + 3, sy + 14, 10, 1, 2);
         break;
       }
-      R(sx + 2, sy + 4, 12, 6, 3); R(sx + 4, sy + 3, 8, 1, 3); R(sx + 3, sy + 5, 10, 3, 2); R(sx + 4, sy + 5, 8, 1, 1);
-      R(sx + 5, sy + 6, 1, 1, 0); R(sx + 9, sy + 6, 1, 1, 0); R(sx + 7, sy + 7, 1, 1, 0);
-      R(sx + 6, sy + 10, 4, 5, 3); R(sx + 7, sy + 10, 2, 4, 0);
+      /* 灵芝：扇形菌盖，一圈圈年轮，下面一根短柄 */
+      R(sx + 3, sy + 15, 10, 1, 2);
+      R(sx + 7, sy + 10, 2, 5, 3); R(sx + 8, sy + 10, 1, 4, 2);
+      for (let y = 0; y < 8; y++) for (let x = 0; x < 16; x++) {
+        const dx = x - 7.5, dy = 8 - y, r = Math.sqrt(dx * dx / 60 + dy * dy / 64);
+        if (r < 1) R(sx + x, sy + 2 + y, 1, 1, r > 0.86 || y === 7 ? 3 : r > 0.66 ? 1 : r > 0.5 ? 2 : r > 0.3 ? 1 : 2);
+      }
+      R(sx + 4, sy + 4, 2, 1, 0);
       break;
     case 'O': {
       base();
       const ore = ((RES_BONUS.O || {})[map && map.id] || [])[0], dep = isDepleted(mx, my);
       if (dep) { R(sx + 3, sy + 12, 4, 3, 2); R(sx + 9, sy + 13, 3, 2, 2); R(sx + 3, sy + 12, 4, 1, 3); break; }
       const dark = ore === 'wujin' || ore === 'xuantiekuang', ice = ore === 'hantie';
-      /* 棱角矿块：一层层往上收的多边形 */
-      const rows = [[5, 6], [3, 10], [2, 12], [1, 14], [1, 14], [1, 14], [2, 12], [2, 12], [3, 11], [4, 9], [5, 7]];
-      rows.forEach(([x0, w], k) => { const y = sy + 4 + k; R(sx + x0, y, w, 1, dark ? 3 : 2); R(sx + x0, y, 1, 1, 3); R(sx + x0 + w - 1, y, 1, 1, 3); });
-      R(sx + 5, sy + 4, 6, 1, 3); R(sx + 5, sy + 14, 7, 1, 3);
-      if (ice) { /* 寒铁：冒出冰晶 */ for (const [cx, h] of [[4, 6], [8, 9], [12, 5]]) { R(sx + cx, sy + 11 - h, 2, h, 0); R(sx + cx - 1, sy + 11 - h + 1, 1, h - 1, 3); R(sx + cx + 2, sy + 11 - h + 1, 1, h - 1, 3); R(sx + cx, sy + 11 - h - 1, 2, 1, 3); } }
-      else { /* 矿脉：亮色斜纹 */ const c = dark ? 1 : 0; R(sx + 3, sy + 8, 3, 1, c); R(sx + 5, sy + 7, 2, 1, c); R(sx + 9, sy + 10, 3, 1, c); R(sx + 11, sy + 9, 1, 1, c); R(sx + 6, sy + 12, 2, 1, c); if (ore === 'jingtie') { R(sx + 4, sy + 6, 7, 1, 1); R(sx + 7, sy + 11, 5, 1, 1); }
-        /* 顶上冒出两三颗矿晶，一眼就和普通石头分开 */
-        for (const [cx, h] of [[4, 4], [9, 6], [12, 3]]) { R(sx + cx, sy + 5 - h, 2, h + 1, dark ? 1 : 0); R(sx + cx - 1, sy + 5 - h + 1, 1, h, 3); R(sx + cx + 2, sy + 5 - h + 1, 1, h, 3); R(sx + cx, sy + 4 - h, 2, 1, 3); } }
+      /* 矿：一堆棱角分明的矿块，每块左上一道白亮面，和圆滚滚的普通石头一眼分开 */
+      R(sx + 1, sy + 15, 14, 1, 2);
+      const chunk = (x, y, w, h) => {
+        for (let k = 0; k < h; k++) {
+          const cut = k === 0 || k === h - 1 ? 2 : k === 1 || k === h - 2 ? 1 : 0, x0 = sx + x + cut, ww = w - cut * 2, yy = sy + y + k;
+          R(x0, yy, ww, 1, dark ? 3 : 2); R(x0, yy, 1, 1, 3); R(x0 + ww - 1, yy, 1, 1, 3);
+          if (k === 0 || k === h - 1) R(x0, yy, ww, 1, 3);
+          else {
+            if (!dark) R(x0 + 1, yy, ww - 2, 1, 1);
+            if (k < h / 2) R(x0 + 1, yy, Math.max(2, Math.round((ww - 2) * (0.75 - k / h))), 1, 0);
+            else R(x0 + Math.round(ww / 2), yy, ww - Math.round(ww / 2) - 1, 1, dark ? 3 : 2);
+          }
+        }
+      };
+      chunk(1, 7, 8, 8); chunk(8, 8, 7, 7); chunk(4, 2, 8, 8);
+      if (ice) { R(sx + 6, sy, 1, 3, 0); R(sx + 5, sy + 1, 3, 1, 0); }
       if ((frame + hs) % 90 < 10) { const px = sx + 4 + (hs % 8), py = sy + 6 + ((hs >> 3) % 5); R(px - 1, py, 3, 1, 0); R(px, py - 1, 1, 3, 0); }
       break;
     }
@@ -340,12 +370,13 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 2, sy + 2, 2, 13, 3); R(sx + 12, sy + 2, 2, 13, 3);
       break;
     case 'r':
+      /* 石头：矮矮扁扁一大块，平底，上面有裂纹；不发光，不能采 */
       base();
-      for (let y = 0; y < 12; y++) for (let x = 0; x < 14; x++) {
-        const dx = x - 6.5, dy = y - 5.5, r = dx * dx / 42 + dy * dy / 30;
-        if (r < 1) R(sx + 1 + x, sy + 3 + y, 1, 1, r > 0.75 ? 3 : (dx < 0 && dy < 0) ? 1 : 2);
+      for (let y = 0; y < 9; y++) for (let x = 0; x < 16; x++) {
+        const dx = x - 7.5, dy = Math.max(0, 6 - y), r = dx * dx / 64 + dy * dy / 40;
+        if (r < 1) R(sx + x, sy + 6 + y, 1, 1, r > 0.72 || y === 8 ? 3 : (y < 3 && dx < 0) ? 1 : 2);
       }
-      R(sx + 8, sy + 9, 3, 1, 3);
+      R(sx + 9, sy + 8, 1, 3, 3); R(sx + 10, sy + 10, 2, 1, 3); R(sx + 4, sy + 11, 2, 1, 3);
       break;
     case 'S':
       grass();
@@ -1040,6 +1071,17 @@ function renderLootTag() {
   const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y + 17;
   R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
 }
+/* 点地上的东西后显示的名字牌，带个小箭头指着它 */
+function renderPeek() {
+  if (!peek || dlg || menu || frame > peek.until) return;
+  const w = tw(peek.name) + 6, cx = Math.round(peek.x * T - cam.x + 8);
+  let lx = clamp(cx - w / 2, 2, GW - w - 2), ly = peek.y * T - cam.y - 14;
+  if (ly < HUD_H + 2) ly = peek.y * T - cam.y + 18;
+  R(lx - 1, ly - 1, w + 2, 14, 3); R(lx, ly, w, 12, 0); txt(peek.name, lx + 3, ly + 1, 3);
+  if (ly < peek.y * T - cam.y) { R(cx - 2, ly + 12, 5, 1, 3); R(cx - 1, ly + 13, 3, 1, 3); R(cx, ly + 14, 1, 1, 3); }
+  const bx = peek.x * T - cam.x, by = peek.y * T - cam.y;
+  if (Math.floor(frame / 8) % 2) for (const [ox, oy] of [[0, 0], [13, 0], [0, 13], [13, 13]]) { R(bx + ox, by + oy, 3, 1, 3); R(bx + ox + (ox ? 2 : 0), by + oy + (oy ? -2 : 0), 1, 3, 3); }
+}
 /* 头顶信息：[门派]名字，有称号再加一行。正派浅底黑框，邪派黑底白字，中立或无门派只描边 */
 function headTag(cx, top, name, sectShort, camp, title) {
   const label = (sectShort ? `[${sectShort}]` : '') + name, w = tw(label) + 6, x = Math.round(cx - w / 2);
@@ -1083,6 +1125,7 @@ function renderUI() {
   renderGuide();
   renderNpcTags();
   renderLootTag();
+  renderPeek();
   const tg = P.target;
   if (tg && !tg.dead && !dlg && !menu) {
     const name = `${tg.name || ED(tg).name}${ED(tg).lv && !ED(tg).dummy ? ' ' + ED(tg).lv + '级' : ''}`, w = tw(name) + 6, x = Math.round(tg.px + 8 - cam.x - w / 2), y = Math.round(tg.py - cam.y - 24);

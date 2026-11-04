@@ -140,7 +140,11 @@ screen.addEventListener('pointerdown', e => {
   /* 联网时点一下别的玩家，查看他的装备和武功 */
   if (!fullMapOn && NET.online && S && map && !menu && !dlg) {
     const tx = Math.floor((gx + cam.x) / T), ty = Math.floor((gy + cam.y) / T), o = otherAt(tx, ty) || otherAt(tx, ty + 1);
-    if (o) inspectPlayer(o);
+    if (o) { inspectPlayer(o); return; }
+  }
+  /* 点一下地上的东西（树、石头、草药、矿、怪……），头上显示它叫什么 */
+  if (!fullMapOn && S && map && !menu && !dlg && mode === 'play') {
+    setPeek(Math.floor((gx + cam.x) / T), Math.floor((gy + cam.y) / T));
     return;
   }
   if (!fullMapOn || !menu) return;
