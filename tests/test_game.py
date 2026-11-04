@@ -225,6 +225,31 @@ def 低等级怪不主动打人(b):
     g.close()
 
 @case
+def 采集自动转向_有怪先打怪(b):
+    g = Game(b); g.new_game()
+    g.ev(f'{G}.warp("meadow", 10, 10)'); g.pg.wait_for_timeout(300)
+    # 找一块四周都空着、没有人的空地站上去，左边放一株草药，人物面朝右
+    setup = f'''(() => {{ const G = {G}, m = G.map; G.enemies.length = 0;
+      const put = (x, y, c) => {{ m.rows[y] = m.rows[y].slice(0, x) + c + m.rows[y].slice(x + 1); }};
+      const free = (x, y) => !G.SOLID.has(m.rows[y][x]) && !G.npcs.some(n => n.x === x && n.y === y) && !m.exits[x + ',' + y];
+      for (let y = 3; y < m.h - 3; y++) for (let x = 3; x < m.w - 3; x++)
+        if ([[0,0],[1,0],[-1,0],[0,1],[0,-1]].every(([a, c]) => free(x + a, y + c))) {{
+          G.P.tx = x; G.P.ty = y; G.P.px = x * 16; G.P.py = y * 16; G.P.moving = false; put(x - 1, y, '*'); G.P.dir = 'right'; return [x, y]; }}
+    }})()'''
+    x, y = g.ev(setup); g.ev(f'{G}.S.items.caoyao = 0'); g.pg.wait_for_timeout(200)
+    g.tap('a'); g.pg.wait_for_timeout(300)
+    assert g.ev(f'{G}.P.dir') == 'left', '按A没有自动转向旁边的草药'
+    assert g.ev(f'{G}.S.items.caoyao || 0') > 0, '没有采到草药'
+    # 再放一株草药，右边站一只兔子：按A应该先打兔子
+    g.ev(setup); g.ev(f'{G}.enemies.push({G}.makeEnemy("rabbit", {G}.P.tx + 1, {G}.P.ty)); {G}.P.dir = "left"')
+    n0 = g.ev(f'{G}.S.items.caoyao')
+    g.tap('a'); g.pg.wait_for_timeout(100)
+    assert g.ev(f'!!{G}.P.target'), '身边有怪时按A没有先打怪'
+    assert g.ev(f'{G}.S.items.caoyao') == n0, '身边有怪时却去采药了'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

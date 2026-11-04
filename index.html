@@ -3195,10 +3195,20 @@ function actA() {
     if (b && fx_ === b.x + Math.floor(b.w / 2) && fy === b.y + b.h - 1) { const o = npcs.find(m => m.id === b.owner); if (o) return talkTo(o); }
     if (b) return say(null, b.label ? `这是${b.label}。${b.owner ? '门口有人招呼。' : ''}` : b.kind === 'pagoda' ? '一座石塔，塔身刻满经文。' : '寻常人家，门关着。');
   }
+  /* 身边有怪时先打怪：贴身的怪，或正冲着你来的怪（3 格内） */
+  const threat = enemies.filter(e => !e.dead && !ED(e).dummy && (!ED(e).camp || campHostile(ED(e).camp) || foeOf(e.kind) || e.provoked))
+    .map(e => [e, distTo(e)]).filter(([e, d]) => d <= 1 || (d <= 3 && (isAggro(e) || e.adj) && !ED(e).passive)).sort((a, b) => a[1] - b[1])[0];
+  if (threat) { const e = threat[0]; P.target = e; P.sit = false; if (inReach(e)) { faceTo(e); attack(); } else autoFight(); return; }
   if (t === 'o') return say(null, '一口水井。井水清凉。');
   if (t === 'X') return openChest(key);
   if (t === 'J') return readStele(fx_, fy);
   if (RES_TILES[t] && !isDepleted(fx_, fy)) return gather(fx_, fy, t);
+  /* 采集和打怪一样：没对准也会自动转向身边能采的东西 */
+  for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
+    const ax = P.tx + ddx, ay = P.ty + ddy, tt = tileAt(ax, ay);
+    if (RES_TILES[tt] && !isDepleted(ax, ay)) { P.dir = k; return gather(ax, ay, tt); }
+    if ((tt === 'X' || tt === 'J') && lootable(ax, ay)) { P.dir = k; return tt === 'X' ? openChest(`${ax},${ay}`) : readStele(ax, ay); }
+  }
   if ((t === '~' || t === 'i') && !nearestEnemy(4)) return startFish(fx_, fy);
   const front = enemyAt(fx_, fy);
   if (front) { P.target = front; P.sit = false; attack(); return; }
@@ -3212,11 +3222,6 @@ function actA() {
   }
   const dm = nearestEnemy(1, { dummy: true });
   if (dm) { P.target = dm; P.sit = false; faceTo(dm); attack(); return; }
-  for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
-    const tt = tileAt(P.tx + ddx, P.ty + ddy);
-    if (RES_TILES[tt] && !isDepleted(P.tx + ddx, P.ty + ddy)) { P.dir = k; return gather(P.tx + ddx, P.ty + ddy, tt); }
-    if (tt === 'X' && lootable(P.tx + ddx, P.ty + ddy)) { P.dir = k; return actA(); }
-  }
   if (t === '~' || t === 'i') return startFish(fx_, fy);
   attack();
 }
@@ -3789,7 +3794,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v47 加速' : 'v47', 156, 0, 2, 'right');
+  txt(FAST ? 'v48 加速' : 'v48', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
