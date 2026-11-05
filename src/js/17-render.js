@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v63 ' + FAST_NAME[FAST] : 'v63', 156, 0, 2, 'right');
+  txt(FAST ? 'v64 ' + FAST_NAME[FAST] : 'v64', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1159,7 +1159,7 @@ function renderNpcTags() {
   /* 主人在屋里的房子：有事找你时，门口上方也冒出 ! 或 ? */
   for (const b of map.buildings || []) {
     if (!b.inside) continue;
-    const mk = (NPCS[b.inside] || []).map(questMark).find(Boolean);
+    const mk = (NPCS[b.inside] || []).map(n => { const q = questMark(n); return n.amb ? (q === '?' ? q : null) : q; }).find(Boolean);
     if (!mk) continue;
     const bx = (b.x + Math.floor(b.w / 2)) * T - cam.x + 2, by = (b.y + b.h - 1) * T - cam.y - 14 - ((frame >> 3) % 2);
     if (by < HUD_H) continue;

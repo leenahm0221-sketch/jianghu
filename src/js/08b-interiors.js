@@ -134,7 +134,70 @@ for (const id of Object.keys(MAPS)) {
   for (let j = 0; j < n0 && free.length; j++) {
     const [name, look, lines] = pool[j], sp = free.splice((hs0 + j * 7) % free.length, 1)[0];
     const n = { id: `${id}_f${j}`, name, role: '', x: sp[0], y: sp[1], home: { x: sp[0], y: sp[1] }, dir: 'down', amb: true,
-      look: folkLook(MAPS[extId], b, look), talk: me => say(name, lines[(me.said = ((me.said || 0) + 1)) % lines.length]) };
+      look: folkLook(MAPS[extId], b, look), talk: me => folkTalk(me, name, lines) };
     (NPCS[id] || (NPCS[id] = [])).push(n);
   }
 }
+/* ---- 闲人的用处：有的会讲江湖消息，有的托你办点小事（每个角色每人只托一次） ----
+   need：要交的东西；kill：要打的怪；give：一次性送你东西；reward：办完的谢礼 */
+const FOLK_TASK = {
+  '看病的老汉': { ask: '老毛病又犯了，郎中说缺几株草药。你能帮我采 3 株来吗？', need: { caoyao: 3 }, reward: { silver: 40, items: { yao: 2 }, rep: 3 }, thanks: '好孩子，这药钱你拿着，金创药也带上。' },
+  '药童': { ask: '师父要炼一炉回气丹，缺一朵灵芝。你在野外见了能捎一朵吗？', need: { lingzhi: 1 }, reward: { silver: 50, items: { qidan: 2 }, rep: 3 }, thanks: '太好了！这两颗回气丹是师父让我给你的。' },
+  '打铁学徒': { ask: '师父让我攒料，我力气小挖不动矿。你能给我 3 块生铁吗？', need: { shengtie: 3 }, reward: { silver: 20, items: { jingtie: 1 }, rep: 2 }, thanks: '多谢！这块精铁是我偷偷攒下的，给你。' },
+  '绣娘': { ask: '绣线快用完了，你能帮我摘 3 朵棉花吗？', need: { mianhua: 3 }, reward: { silver: 40, rep: 3 }, thanks: '多谢大侠，这些银子你收下。' },
+  '小丫头': { ask: '我想要个布娃娃……你能给我 2 朵棉花吗？', need: { mianhua: 2 }, reward: { items: { qidan: 1 }, rep: 5 }, thanks: '谢谢大侠！这颗糖……不对，是爹爹的回气丹，送你！' },
+  '住店客人': { ask: '我想给娘子做件狐裘，城外的狐狸太狡猾，你能弄 2 张狐皮来吗？', need: { hulipi: 2 }, reward: { silver: 60, rep: 3 }, thanks: '有劳有劳，这六十两是谢礼。' },
+  '老婆婆': { ask: '夜里狼叫得我睡不着。你能去伏牛山脚打 3 只野狼吗？', kill: { kind: 'wolf', n: 3 }, reward: { silver: 60, items: { yao: 3 }, rep: 5 }, thanks: '这下能睡个安稳觉了。这些伤药你带着。' },
+  '屋主': { ask: '兔儿坡的野兔把我家菜地啃光了，帮我打 5 只吧？', kill: { kind: 'rabbit', n: 5 }, reward: { silver: 30, items: { yao: 2 }, rep: 3 }, thanks: '多谢多谢！一点心意，别嫌少。' },
+  '赶路镖师': { ask: '前面的路上山贼拦道，你能先去伏牛山脚收拾 3 个山贼吗？', kill: { kind: 'bandit', n: 3 }, reward: { silver: 100, rep: 6 }, thanks: '好身手！这一百两是镖局的谢礼。' },
+  '镖师': { ask: '蜀道上的山匪劫了我们一趟镖。你若能打掉 3 个山匪，镖局重谢。', kill: { kind: 'shanfei', n: 3 }, reward: { silver: 200, rep: 8 }, thanks: '痛快！总镖头让我把这两百两交给你。' },
+  '富商': { ask: '我的货在大漠被沙匪劫了，替我教训 3 个沙匪，银子少不了你的。', kill: { kind: 'shafei', n: 3 }, reward: { silver: 300, rep: 8 }, thanks: '果然是少年英雄！三百两，收好。' },
+  '村长夫人': { give: { yao: 3 }, gift: '孩子，出门在外别亏着自己。这三服金创药你带上。' },
+  '练功弟子': { train: true, gift: '来，陪我过两招！（你们拆了几十招，你对手上的武功又多了几分体会）' },
+};
+/* 讲消息的人 */
+const FOLK_INFO = {
+  '说书先生': me => { const ks = Object.keys(VILLAIN_WHERE), k = ks[(me.said || 0) % ks.length]; me.said = (me.said || 0) + 1;
+    const sk = Object.values(SK).find(s => s.villain === k);
+    return ['（醒木一拍）', `话说那${EN[k].name}，盘踞在${VILLAIN_WHERE[k]}，武功深不可测。`, sk ? `据说谁要是打败了他，就有机会得到${sk.name}的秘籍！` : '江湖上谁不惧他三分。', '欲知后事如何，且听下回分解！']; },
+  '醉酒客': me => { const ks = Object.keys(HERMITS), h = HERMITS[ks[(me.said || 0) % ks.length]]; me.said = (me.said || 0) + 1;
+    return ['（他醉眼朦胧地凑过来）嘿，我跟你说个秘密……', `${h.where}有个怪人，叫什么${h.name}……一身的绝学${SK[h.skill].name}。`, '要是能入他的眼，嗝……说不定肯传你两手。']; },
+  '江湖客': me => { me.said = (me.said || 0) + 1; return null; },   /* 交给门派见闻（传闻） */
+};
+function folkTalk(me, name, lines) {
+  const fk = S.folk || (S.folk = {}), t = FOLK_TASK[name], st = fk[me.id] || {};
+  if (name === '江湖客') return tellRumor(name);
+  if (FOLK_INFO[name]) return say(name, FOLK_INFO[name](me));
+  if (t && !st.done) {
+    if (t.give) { st.done = true; fk[me.id] = st; for (const k in t.give) S.items[k] = (S.items[k] || 0) + t.give[k]; sfx('coin'); save(); return say(name, t.gift); }
+    if (t.train) { st.done = true; fk[me.id] = st; const a = S.active; if (a) S.skills[a] = Math.min(skillCap(a), S.skills[a] + 1); sfx('level'); save(); return say(name, [t.gift, `（${SK[a].name} +1.00）`]); }
+    if (!st.on) return ask(name, t.ask, ['帮这个忙', '下次吧'], i => { if (i === 0) { st.on = true; st.cnt = 0; fk[me.id] = st; save(); toast(`接受：${name}的委托`); } });
+    const ok = t.need ? Object.entries(t.need).every(([k, n]) => (S.items[k] || 0) >= n) : st.cnt >= t.kill.n;
+    if (!ok) return say(name, t.need ? `还差一些：${Object.entries(t.need).map(([k, n]) => `${ITEMS[k].name} ${S.items[k] || 0}/${n}`).join('、')}。` : `${EN[t.kill.kind].name}打了 ${st.cnt}/${t.kill.n} 只，还差一点。`);
+    if (t.need) for (const k in t.need) S.items[k] -= t.need[k];
+    const r = t.reward; S.silver += r.silver || 0; for (const k in r.items || {}) S.items[k] = (S.items[k] || 0) + r.items[k];
+    if (r.rep) addRep(r.rep);
+    st.done = true; st.on = false; fk[me.id] = st; sfx('level'); save();
+    const got = [r.silver ? `银两 ${r.silver}` : '', ...Object.entries(r.items || {}).map(([k, n]) => `${ITEMS[k].name}×${n}`)].filter(Boolean).join('、');
+    return say(name, [t.thanks, `（得到 ${got}${r.rep ? `，江湖声望 +${r.rep}` : ''}）`]);
+  }
+  say(name, lines[(me.said = ((me.said || 0) + 1)) % lines.length]);
+}
+/* 闲人头上的标记：有事托你 !，办好了回来交 ? */
+function folkMark(n) {
+  const t = FOLK_TASK[n.name]; if (!t || !S) return FOLK_INFO[n.name] ? '…' : null;
+  const st = (S.folk || {})[n.id] || {};
+  if (st.done) return null;
+  if (!st.on) return '!';
+  return (t.need ? Object.entries(t.need).every(([k, c]) => (S.items[k] || 0) >= c) : st.cnt >= t.kill.n) ? '?' : null;
+}
+/* 打怪时给接了委托的人计数 */
+function folkKill(kind) {
+  const fk = S.folk || {};
+  for (const id in fk) {
+    const st = fk[id]; if (!st.on) continue;
+    const name = id.includes('_f') ? folkName(id) : null, t = name && FOLK_TASK[name];
+    if (t && t.kill && t.kill.kind === kind && st.cnt < t.kill.n) { st.cnt++; toast(st.cnt >= t.kill.n ? `${name}的委托完成，回去找他` : `${name}的委托 ${EN[kind].name} ${st.cnt}/${t.kill.n}`); }
+  }
+}
+function folkName(id) { const m = id.split('_f')[0]; const n = (NPCS[m] || []).find(x => x.id === id); return n ? n.name : null; }

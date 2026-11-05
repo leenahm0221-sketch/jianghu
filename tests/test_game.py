@@ -336,6 +336,24 @@ def 走进房子_隔着柜台说话_再走出来(b):
     g.close()
 
 @case
+def 屋里闲人_接委托交东西拿谢礼(b):
+    g = Game(b); g.new_game(); g.ev(f'{G}.S.tut = 9')
+    def talk_to(name):
+        g.ev(f'''(()=>{{const G={G}, n=G.npcs.find(n=>n.name==="{name}"); n.amb=false;
+          for (const [dx,dy,d] of [[0,1,'up'],[1,0,'left'],[-1,0,'right'],[0,-1,'down']]) {{ const x=n.x+dx,y=n.y+dy;
+            if (!G.SOLID.has(G.map.rows[y][x]) && !G.npcs.some(o=>o.x===x&&o.y===y)) {{ G.P.tx=x;G.P.ty=y;G.P.px=x*16;G.P.py=y*16;G.P.dir=d; return; }} }} }})()''')
+        g.tap('a'); g.pg.wait_for_timeout(300)
+    g.ev(f'{G}.warp("village~2", 5, 6)'); g.pg.wait_for_timeout(300)
+    assert len(g.ev(f'{G}.npcs')) >= 3, '药铺里人太少'
+    talk_to('看病的老汉'); opts = g.talk(); assert opts and opts[0] == '帮这个忙', opts
+    g.choose(0); g.talk()
+    g.ev(f'{G}.S.items.caoyao = 3'); s0 = g.ev(f'{G}.S.silver')
+    talk_to('看病的老汉'); g.talk()
+    assert g.ev(f'{G}.S.silver') > s0 and g.ev(f'{G}.S.items.caoyao') == 0, '交了草药没拿到谢礼'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

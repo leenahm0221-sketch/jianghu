@@ -414,6 +414,7 @@ function killEnemy(e) {
   const d = ED(e);
   e.dead = true; e.respawn = (d.boss || d.once) ? Infinity : (d.resp || 1800);
   if (d.camp || d.hunter) campKill(e, d);
+  folkKill(e.kind);
   for (const [k, p] of DROPS[e.kind] || []) {
     if (Math.random() >= p) continue;
     if (EQ[k]) { S.gear.push(k); toast(`得到 ${EQ[k].name}！`); sfx('level'); continue; }

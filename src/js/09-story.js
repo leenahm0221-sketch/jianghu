@@ -257,6 +257,7 @@ const reqFail = k => {
 const canLearnSect = sect => Object.keys(SK).some(k => SK[k].sect === sect && S.skills[k] == null && !reqFail(k));
 /* 头顶标记：! 有事找你，? 可以交任务 */
 function questMark(n) {
+  if (n.amb) return folkMark(n);
   const q = S.q;
   switch (n.id) {
     case 'chief': return q.main === 0 ? '!' : (q.main < CH1_END && mainDone()) ? '?' : null;
