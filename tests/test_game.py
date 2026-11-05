@@ -273,6 +273,30 @@ def 所有地图_物件底下都是本图地面_不留白方块(b):
     g.close()
 
 @case
+def 所有地图_挡路的东西和地面分得开(b):
+    """走不过去的东西（山壁、山崖、树、石头……）至少要有两成像素和地面不同，不能出现看不见的墙"""
+    g = Game(b); g.new_game()
+    bad = g.ev(f'''new Promise(res => requestAnimationFrame(() => {{ const G = {G}, out = [], c = G.g;
+      for (const id of Object.keys(G.MAPS)) {{
+        G.warp(id, -1, -1); G.enemies.length = 0; const m = G.map, cnt = {{}}, solid = new Set();
+        for (const r of m.rows) for (const ch of r) {{ if (!G.SOLID.has(ch)) cnt[ch] = (cnt[ch] || 0) + 1; else solid.add(ch); }}
+        const fl = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0];
+        for (const t of solid) {{
+          if ('H*&Om'.includes(t)) continue;   /* 房子另外画；能采的东西头上有名字 */
+          let diff = 0, n = 0;
+          for (let k = 0; k < 4; k++) {{
+            c.setTransform(1, 0, 0, 1, 0, 0); G.drawTile(fl, 0, 40, 3 + k, 5 + k * 3); G.drawTile(t, 40, 40, 3 + k, 5 + k * 3);
+            const a = c.getImageData(0, 40, 16, 16).data, b2 = c.getImageData(40, 40, 16, 16).data;
+            for (let i = 0; i < a.length; i += 4) {{ n++; if (Math.abs(a[i] - b2[i]) > 20) diff++; }}
+          }}
+          if (diff / n < 0.2) out.push(id + ':' + t + ' ' + Math.round(diff / n * 100) + '%');
+        }}
+      }}
+      res(out); }}))''')
+    assert not bad, '这些挡路的东西和地面几乎一样，看不见：' + ', '.join(bad[:20])
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')
