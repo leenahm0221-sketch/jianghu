@@ -206,7 +206,7 @@ function renderWorldMap() {
   const top = 18, bot = GH - 25, m = 4, colW = (GW - 2 * m) / 7, rowH = (bot - top) / 6;
   const XY = id => { const [c, r] = MAP_NODES[id]; return [Math.round(m + colW * (c + 0.5)), Math.round(top + rowH * (r + 0.5))]; };
   const nodeOf = id => { if (MAP_NODES[id]) return id; const seen = new Set([id]), q = [id]; while (q.length) { const c = q.shift(); for (const l of mapLinks(c)) { if (MAP_NODES[l.to]) return l.to; if (!seen.has(l.to)) { seen.add(l.to); q.push(l.to); } } } return null; };
-  const here = nodeOf(map.id), hasCave = id => mapLinks(id).some(l => !MAP_NODES[l.to]);
+  const here = nodeOf(map.id), hasCave = id => mapLinks(id).some(l => !MAP_NODES[l.to] && !MAPS[l.to].indoor);
   const gl = navGoal(), raw = gl ? mapRoute(map.id, gl.map) : [], route = gl ? raw.map(nodeOf).filter((v, i, a) => v && v !== a[i - 1]) : [], onRoute = new Set();
   for (let i = 1; i < route.length; i++) onRoute.add([route[i - 1], route[i]].sort().join('-'));
   const seen = new Set(), edges = [];

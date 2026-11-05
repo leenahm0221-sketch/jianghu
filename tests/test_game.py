@@ -316,6 +316,26 @@ def 采空的矿和草药可以走过去(b):
     g.close()
 
 @case
+def 走进房子_隔着柜台说话_再走出来(b):
+    g = Game(b); g.new_game(); g.ev(f'{G}.S.tut = 9')
+    # 药铺门口外面一格，面朝门
+    door = g.ev(f'''(() => {{ const G = {G}, m = G.MAPS.village, b = m.buildings.find(b => b.kind === 'pharmacy');
+      return [b.x + Math.floor(b.w / 2), b.y + b.h - 1, b.inside]; }})()''')
+    assert door[2], '药铺没有室内'
+    g.ev(f'{G}.warp("village", {door[0]}, {door[1] + 1})'); g.pg.wait_for_timeout(300)
+    g.tap('up', 200); g.pg.wait_for_timeout(600)
+    assert g.ev(f'{G}.map.id') == door[2], '走进门没有进到屋里'
+    assert any(n['name'] == '孙郎中' for n in g.ev(f'{G}.npcs')), '孙郎中不在屋里'
+    g.tap('up', 120); g.pg.wait_for_timeout(500)   # 走到柜台前
+    g.tap('a'); g.pg.wait_for_timeout(300)
+    assert g.ev(f'!!{G}.dlg'), '隔着柜台和孙郎中说不上话'
+    g.talk(); g.ev(f'{G}.dlg = null')
+    for _ in range(4): g.tap('down', 200); g.pg.wait_for_timeout(350)
+    assert g.ev(f'{G}.map.id') == 'village', '从屋里走不出来'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

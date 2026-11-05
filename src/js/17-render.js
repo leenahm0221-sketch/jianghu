@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v61 ' + FAST_NAME[FAST] : 'v61', 156, 0, 2, 'right');
+  txt(FAST ? 'v62 ' + FAST_NAME[FAST] : 'v62', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -167,7 +167,78 @@ function drawTile0(t, sx, sy, mx, my) {
     if (mountain) { R(sx + 2, sy + 6, 5, 1, 3); R(sx + 9, sy + 3, 4, 1, 3); R(sx + 8, sy + 12, 5, 1, 1); }  /* 山壁多几道岩层 */
     if (isSnow && !up) R(sx + 3, sy + 1, 10, 2, 0);
   }
+  /* ---- 室内 ---- */
+  const ik = map && map.ikind;
+  const planks = () => {   /* 木地板：一条条横木板，接缝错开 */
+    R(sx, sy, T, T, 1);
+    for (let y = 3; y < 16; y += 4) R(sx, sy + y, T, 1, 2);
+    for (let r = 0; r < 4; r++) { const sx2 = ((r * 7 + mx * 5) % 16); R(sx + sx2, sy + r * 4, 1, 3, 2); }
+  };
   switch (t) {
+    case 'L': planks(); break;
+    case 'u':   /* 红地毯：深色，两边一道花边 */
+      planks(); R(sx + 2, sy, 12, T, 2); R(sx + 2, sy, 1, T, 3); R(sx + 13, sy, 1, T, 3);
+      for (let y = (my % 2) * 4; y < 16; y += 8) { R(sx + 6, sy + y + 1, 4, 1, 1); R(sx + 7, sy + y, 2, 3, 1); }
+      break;
+    case 'Y': {   /* 墙：白粉墙，上面一道房梁，下面一道深色墙裙；后墙上隔几格开一扇格子窗 */
+      const back = my <= 1;
+      R(sx, sy, T, T, 0);
+      if (back && my === 0) { R(sx, sy, T, 4, 3); R(sx, sy + 4, T, 1, 2); }
+      if (back && my === 1) {
+        R(sx, sy + 11, T, 5, 2); R(sx, sy + 11, T, 1, 3); R(sx, sy + 15, T, 1, 3);
+        if (mx % 4 === 2) { R(sx + 3, sy + 1, 10, 9, 3); R(sx + 4, sy + 2, 8, 7, 1); R(sx + 7, sy + 2, 2, 7, 3); R(sx + 4, sy + 5, 8, 1, 3); }
+      }
+      if (!back) { R(sx, sy, T, T, 2); R(sx + 1, sy, 1, T, 3); R(sx + 14, sy, 1, T, 3); for (let y = 2; y < 16; y += 5) R(sx + 2, sy + y, 12, 1, 3); }
+      if (my === map.h - 1 && !back) { R(sx, sy, T, T, 3); R(sx, sy, T, 2, 2); }
+      break;
+    }
+    case 'n':   /* 柜台：浅色台面、深色木板正面，台面上随手放着算盘、茶碗 */
+      planks();
+      R(sx, sy + 3, T, 4, 3); R(sx, sy + 4, T, 2, 0); R(sx, sy + 7, T, 9, 2);
+      for (let x = 3; x < 16; x += 5) R(sx + x, sy + 8, 1, 7, 3);
+      R(sx, sy + 15, T, 1, 3);
+      if (hs % 3 === 0) { R(sx + 4, sy + 1, 7, 3, 3); R(sx + 5, sy + 2, 5, 1, 1); }      /* 算盘 */
+      else if (hs % 3 === 1) { R(sx + 6, sy + 1, 4, 3, 3); R(sx + 7, sy + 1, 2, 1, 0); }  /* 茶碗 */
+      break;
+    case 'h': {   /* 货架：靠墙的木架子，上面摆的东西看是什么铺子 */
+      R(sx, sy, T, T, 2); R(sx, sy, T, 1, 3); R(sx, sy, 1, T, 3); R(sx + 15, sy, 1, T, 3);
+      for (const y of [5, 10, 15]) R(sx, sy + y, T, 1, 3);
+      for (const [y0, h] of [[1, 4], [6, 4], [11, 4]]) {
+        if (ik === 'pharmacy') { for (let x = 1; x < 15; x += 5) { R(sx + x, sy + y0, 4, h, 1); R(sx + x, sy + y0, 4, 1, 3); R(sx + x + 1, sy + y0 + 2, 2, 1, 3); } }   /* 药柜小抽屉 */
+        else if (ik === 'smith' || ik === 'school' || ik === 'escort') { for (let x = 2; x < 15; x += 4) { R(sx + x, sy + y0, 1, h, 0); R(sx + x - 1, sy + y0 + h - 1, 3, 1, 3); } }   /* 一排刀剑 */
+        else if (ik === 'tavern' || ik === 'inn') { for (let x = 2; x < 15; x += 5) { R(sx + x, sy + y0 + 1, 4, h - 1, 3); R(sx + x + 1, sy + y0, 2, 1, 3); R(sx + x + 1, sy + y0 + 2, 1, 1, 0); } }   /* 酒坛 */
+        else if (ik === 'library') { for (let x = 1; x < 15; x += 2) R(sx + x, sy + y0 + ((x * 3 + y0) % 2), 1, h - ((x * 3 + y0) % 2), (x + y0) % 3 ? 0 : 3); }   /* 书 */
+        else if (ik === 'cloth') { for (let x = 1; x < 15; x += 5) { R(sx + x, sy + y0, 4, h, (x + y0) % 2 ? 0 : 1); R(sx + x, sy + y0, 1, h, 3); } }   /* 布匹 */
+        else if (ik === 'bank' || ik === 'pawn') { for (let x = 2; x < 15; x += 5) { R(sx + x, sy + y0 + 1, 4, h - 1, 3); R(sx + x + 1, sy + y0 + 2, 2, 1, 0); } }   /* 钱箱 */
+        else { for (let x = 2; x < 15; x += 6) { R(sx + x, sy + y0 + 1, 3, h - 1, 3); R(sx + x + 1, sy + y0 + 1, 1, 1, 0); } }   /* 坛坛罐罐 */
+      }
+      break;
+    }
+    case 'b':   /* 床：木床架，白褥子，枕头，盖着深色被子 */
+      planks();
+      R(sx + 1, sy, 14, 16, 3); R(sx + 2, sy + 1, 12, 14, 0);
+      R(sx + 3, sy + 2, 10, 3, 1); R(sx + 3, sy + 2, 10, 1, 3);
+      R(sx + 2, sy + 7, 12, 8, 2); for (let x = 4; x < 14; x += 4) R(sx + x, sy + 8, 1, 7, 3);
+      break;
+    case 't':   /* 桌子：方桌，桌上一把茶壶两只茶杯，两边小凳 */
+      planks();
+      R(sx + 2, sy + 4, 12, 7, 3); R(sx + 3, sy + 5, 10, 5, 0);
+      R(sx + 3, sy + 11, 2, 4, 3); R(sx + 11, sy + 11, 2, 4, 3);
+      R(sx + 6, sy + 5, 4, 3, 3); R(sx + 7, sy + 4, 2, 1, 3); R(sx + 10, sy + 6, 2, 1, 2); R(sx + 4, sy + 7, 2, 1, 2);
+      R(sx, sy + 7, 2, 4, 2); R(sx + 14, sy + 7, 2, 4, 2);
+      break;
+    case 'a':   /* 供桌：长桌上香炉、蜡烛；正中那格后面供着神像 */
+      planks();
+      if (mx === Math.floor(map.w / 2)) { R(sx + 4, sy, 8, 7, 3); R(sx + 5, sy, 6, 6, 1); R(sx + 7, sy + 1, 2, 2, 0); R(sx + 6, sy + 3, 4, 3, 2); }
+      R(sx, sy + 7, T, 2, 3); R(sx, sy + 9, T, 7, 2); R(sx, sy + 9, T, 1, 0); R(sx + 1, sy + 10, 1, 6, 3); R(sx + 14, sy + 10, 1, 6, 3);
+      if (mx === Math.floor(map.w / 2)) { R(sx + 6, sy + 5, 4, 2, 3); R(sx + 7, sy + 3, 1, 2, 2); R(sx + 8, sy + 2, 1, 3, 2); }   /* 香炉冒烟 */
+      else { R(sx + 7, sy + 3, 2, 4, 0); R(sx + 7, sy + 3, 2, 4, 3); R(sx + 8, sy + 1 + (frame >> 4) % 2, 1, 2, 0); R(sx + 8, sy + 2, 1, 1, 3); }   /* 蜡烛 */
+      break;
+    case 'p':   /* 柱子：一根粗木柱，上下有柱础 */
+      planks();
+      R(sx + 4, sy, 8, 16, 3); R(sx + 5, sy, 6, 16, 2); R(sx + 6, sy, 1, 16, 1);
+      R(sx + 3, sy + 13, 10, 3, 3); R(sx + 4, sy + 13, 8, 1, 1);
+      break;
     case '.': if (map && floorOf(map) !== '.') base(); else grass(); break;   /* 别的地面上零星的草地格也跟着地面走 */
     case 'H': if (isSnow) snow(); else if (map && map.hfloor === '_' && !darkGround()) flag_(); else base(); break;   /* 房子底下：深色地面就铺地面本身，不铺白石板 */
     case '_': flag_(); break;
@@ -346,6 +417,7 @@ function drawTile0(t, sx, sy, mx, my) {
       break;
     }
     case '=': case 'E':
+      if (map && map.indoor) { planks(); R(sx + 2, sy + 4, 12, 10, 3); R(sx + 3, sy + 5, 10, 8, 2); R(sx + 5, sy + 8, 6, 2, 1); R(sx, sy + 14, T, 2, 3); break; }   /* 室内门口：一块门垫 */
       R(sx, sy, T, T, 0);
       R(sx + (hs % 13) + 1, sy + ((hs >> 5) % 13) + 1, 1, 1, 1);
       R(sx + ((hs >> 9) % 13) + 1, sy + ((hs >> 13) % 13) + 1, 2, 1, 1);
@@ -1084,6 +1156,16 @@ function renderWorld() {
 
 /* NPC：头顶职业图标，有任务时换成闪烁的 ! 或 ?；脚下一直写着名字，走近时换成名字·身份 */
 function renderNpcTags() {
+  /* 主人在屋里的房子：有事找你时，门口上方也冒出 ! 或 ? */
+  for (const b of map.buildings || []) {
+    if (!b.inside) continue;
+    const mk = (NPCS[b.inside] || []).map(questMark).find(Boolean);
+    if (!mk) continue;
+    const bx = (b.x + Math.floor(b.w / 2)) * T - cam.x + 2, by = (b.y + b.h - 1) * T - cam.y - 14 - ((frame >> 3) % 2);
+    if (by < HUD_H) continue;
+    R(bx, by, 12, 12, 3); R(bx + 4, by + 12, 4, 1, 3); R(bx + 5, by + 13, 2, 1, 3);
+    if (frame % 40 < 30) txt(mk, bx + 6, by, 0, 'center');
+  }
   for (const n of npcs) {
     const sx = n.x * T - cam.x, sy = n.y * T - cam.y;
     if (sx < -40 || sx > GW + 40 || sy < -20 || sy > GH + 20) continue;

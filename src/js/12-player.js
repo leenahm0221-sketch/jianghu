@@ -245,7 +245,7 @@ function updFish() {
 function actA() {
   const [dx, dy] = DIRS[P.dir];
   const fx_ = P.tx + dx, fy = P.ty + dy;
-  const n = npcAt(fx_, fy);
+  const n = npcAt(fx_, fy) || (tileAt(fx_, fy) === 'n' ? npcAt(fx_ + dx, fy + dy) : null);   /* 隔着柜台也能说话 */
   if (n) { n.dir = OPP[P.dir]; P.sit = false; talkTo(n); return; }
   const t = tileAt(fx_, fy), key = `${fx_},${fy}`;
   if (t === 'S') return say(null, map.signs[key] || '字迹已经模糊了。');
@@ -279,7 +279,7 @@ function actA() {
   const e = nearestEnemy(CHASE, { passive: true }) || nearestEnemy(1, { camp: true });
   if (e) { P.target = e; P.sit = false; if (inReach(e)) { faceTo(e); attack(); } else autoFight(); return; }
   for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
-    const m = npcAt(P.tx + ddx, P.ty + ddy);
+    const m = npcAt(P.tx + ddx, P.ty + ddy) || (tileAt(P.tx + ddx, P.ty + ddy) === 'n' ? npcAt(P.tx + ddx * 2, P.ty + ddy * 2) : null);
     if (m) { P.dir = k; m.dir = OPP[k]; P.sit = false; talkTo(m); return; }
   }
   const dm = nearestEnemy(1, { dummy: true });

@@ -59,6 +59,8 @@ function enterMap(id, x, y, dir) {
   map = MAPS[id]; S.map = id;
   npcs = (NPCS[id] || []).map(n => ({ ...n }));
   safeSpots = npcs.filter(n => isSafeNpc(n.id)).map(n => [n.x, n.y]);
+  /* 掌门搬进大殿以后，大殿门口照样是安全的山门 */
+  for (const b of map.buildings || []) if (b.inside && (NPCS[b.inside] || []).some(n => isSafeNpc(n.id))) safeSpots.push([b.x + Math.floor(b.w / 2), b.y + b.h]);
   P.tx = x; P.ty = y; P.px = x * T; P.py = y * T; P.dir = dir || 'down'; P.moving = false; P.sit = false; P.target = null;
   const st = mapState[id];
   if (st) {
