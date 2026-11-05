@@ -60,7 +60,7 @@ function renderInspect() {
   txt(`${c.age}岁 ${c.sect && SECTS[c.sect] ? SECTS[c.sect].name : '无门无派'}`, MW - 8, 16, 2, 'right');
   R(4, 29, MW - 8, 1, 3);
   const pair = (y, a, b) => { txt(a, 8, y, 2); g_clip(30, y, MW - 36, 12, () => txt(b, 30, y, 3)); };
-  const eqn = id => (id && EQ[id] ? EQ[id].name : '—');
+  const eqn = id => (id && EQ[id] ? EQ[id].name : '—');   /* 别人的强化等级看不到，只显示兵器本名 */
   pair(32, '兵器', eqn(c.equip && c.equip.weapon));
   pair(44, '衣帽', `${eqn(c.equip && c.equip.body)} ${c.equip && c.equip.head ? eqn(c.equip.head) : ''}`);
   pair(56, '名望', `声望${c.rep} 正${c.zheng} 邪${c.xie}${camp ? ' ' + { 正: '正派', 邪: '邪派', 中: '中立' }[camp] : ''}`);

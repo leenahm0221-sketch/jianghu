@@ -354,6 +354,29 @@ def 屋里闲人_接委托交东西拿谢礼(b):
     g.close()
 
 @case
+def 花银子_强化兵器和坐车(b):
+    g = Game(b); g.new_game(); g.ev(f'{G}.S.tut = 9')
+    g.ev(f'{G}.S.gear.push("tiejian"); {G}.S.equip.weapon = "tiejian"; {G}.S.silver = 1000; {G}.S.items.shengtie = 10')
+    smith = g.ev(f'(() => {{ const b = {G}.MAPS.village.buildings.find(b => b.kind === "smith"); return b.inside; }})()')
+    g.ev(f'{G}.warp("{smith}", 5, 5)'); g.pg.wait_for_timeout(300)
+    g.ev(f'{G}.P.dir = "up"'); g.tap('a'); g.pg.wait_for_timeout(300)
+    opts = g.talk(); assert '强化兵器' in opts, opts
+    g.choose(opts.index('强化兵器')); opts = g.talk(); assert opts and opts[0] == '强化', opts
+    g.choose(0); g.talk()
+    assert g.ev(f'{G}.S.enh && {G}.S.enh.tiejian') == 1, '强化 +1 没成功（+1 成功率应是 100%）'
+    assert g.ev(f'{G}.S.silver') == 980 and g.ev(f'{G}.S.items.shengtie') == 9, '强化扣的银子或材料不对'
+    g.ev(f'{G}.dlg = null')
+    # 坐车：牛家村 → 洛阳
+    g.ev(f'{G}.warp("village", 11, 9)'); g.pg.wait_for_timeout(300)
+    g.ev(f'''(()=>{{const G={G}, n=G.npcs.find(n=>n.name==="车夫"); G.P.tx=n.x;G.P.ty=n.y+1;G.P.px=n.x*16;G.P.py=(n.y+1)*16;G.P.dir='up';}})()''')
+    g.tap('a'); g.pg.wait_for_timeout(300); opts = g.talk()
+    i = [k for k, o in enumerate(opts) if o.startswith('洛阳')][0]
+    s0 = g.ev(f'{G}.S.silver'); g.choose(i); g.pg.wait_for_timeout(400)
+    assert g.ev(f'{G}.map.id') == 'luoyang' and g.ev(f'{G}.S.silver') < s0, '坐车没到洛阳或没收钱'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

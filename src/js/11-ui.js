@@ -68,7 +68,7 @@ function menuItems() {
     for (const id of S.gear) cnt[id] = (cnt[id] || 0) + 1;
     return Object.keys(cnt).map(id => {
       const it = EQ[id], on = S.equip[it.slot] === id;
-      return { label: it.name + (cnt[id] > 1 ? `×${cnt[id]}` : ''), right: on ? '装备中' : SLOT_NAME[it.slot], mark: on, info: `${SLOT_NAME[it.slot]}：${it.info}`, act: () => {
+      return { label: eqName(id) + (cnt[id] > 1 ? `×${cnt[id]}` : ''), right: on ? '装备中' : SLOT_NAME[it.slot], mark: on, info: `${SLOT_NAME[it.slot]}：${it.info}${enhLv(id) ? ` 强化+${enhLv(id)}（攻击+${Math.round(enhLv(id) * ENH_STEP * 100)}%）` : ''}`, act: () => {
         if (on) {
           if (it.slot === 'body') return toast('总不能光着身子吧');
           S.equip[it.slot] = null; ensureActive(); toast(`卸下 ${it.name}`); sfx('menu');

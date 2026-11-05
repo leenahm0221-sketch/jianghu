@@ -318,7 +318,7 @@ function sellMenu(who, buyer, back) {
   const list = Object.keys(ITEMS).filter(k => (buyer === 'any' ? ITEMS[k].sell > 0 && !ITEMS[k].book : ITEMS[k].buyer === buyer) && S.items[k] > 0).map(k => ({
     txt: `${ITEMS[k].name}×${S.items[k]} ${ITEMS[k].sell * S.items[k]}两`, go: () => { S.silver += ITEMS[k].sell * S.items[k]; S.items[k] = 0; },
   }));
-  if (buyer === 'smith' || buyer === 'any') for (const id of spareGear()) { const pr = eqSell(id); list.push({ txt: `${EQ[id].name} ${pr}两`, go: () => { S.gear.splice(S.gear.indexOf(id), 1); S.silver += pr; } }); }
+  if (buyer === 'smith' || buyer === 'any') for (const id of spareGear()) { const pr = eqSell(id); list.push({ txt: `${eqName(id)} ${pr}两`, go: () => { S.gear.splice(S.gear.indexOf(id), 1); S.silver += pr; } }); }
   const PER = 4, pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(sellMenu.pg || 0, pages - 1), shown = list.slice(pg * PER, pg * PER + PER);
   if (!list.length) { sellMenu.pg = 0; return say(who, '你身上没有我收的东西。', back); }
   const more = pages > 1 ? [`下一页（${pg + 1}/${pages}）`] : [];
@@ -399,7 +399,7 @@ function tailorTalk() {
 }
 function smithTalk() {
   const st = S.side.duanzao || 0;
-  const opts = ['买兵器', '买衣帽铁料', '卖东西'];
+  const opts = ['买兵器', '买衣帽铁料', '卖东西', '强化兵器'];
   opts.push(S.skills.duanzao != null ? '打造' : st === 1 ? `交狼皮（${S.items.langpi}/3）` : '学打铁');
   opts.push('离开');
   ask('张铁匠', '叮——当！刀剑枪锤、衣帽铁料，都有。', opts, i => {
@@ -407,6 +407,7 @@ function smithTalk() {
     if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui'], smithTalk);
     else if (o === '买衣帽铁料') buy('张铁匠', ['jinzhuang', 'changpao', 'douli', 'shengtie'], smithTalk);
     else if (o === '卖东西') sellMenu('张铁匠', 'smith', smithTalk);
+    else if (o === '强化兵器') enhanceTalk('铁匠', smithTalk);
     else if (o === '打造') craft('张铁匠', FORGE['兵器'], 'duanzao', smithTalk);
     else if (o === '学打铁') say('张铁匠', ['想学打铁？先让我看看你的胆量。', '去伏牛山脚弄三张狼皮来，我就教你。'], () => { S.side.duanzao = 1; toast('接受任务：三张狼皮'); });
     else if (o.startsWith('交狼皮')) {

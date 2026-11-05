@@ -13,7 +13,7 @@ function cycleWeapon() {
   if (ws.length < 2) { toast('身上没有兵器可换'); return; }
   const nx = ws[(ws.indexOf(S.equip.weapon) + 1) % ws.length];
   S.equip.weapon = nx; ensureActive();
-  toast(nx ? `换上${EQ[nx].name}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu');
+  toast(nx ? `换上${eqName(nx)}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu');
 }
 /* 轻功主要是提高闪躲；走路只快一点点：练到顶、最好的身法也只快 15%，测试加速也不加快走路 */
 const moveSpeed = () => (1 + Math.min(1.4, pv('步法', 'mv') / 100) / 1.4 * 0.15) * (injured('leg') ? 0.6 : 1);
@@ -326,7 +326,7 @@ function attack() {
     if (Math.random() * 100 > clamp(hitp, 25, 97)) { floatText(e.px + 8, e.py, '闪'); e.adj = true; continue; }
     let r = Math.random(), loc = 0;
     while (loc < 3 && r > LOC_W[loc]) { r -= LOC_W[loc]; loc++; }
-    let dmg = ((sk.tier === 2 ? 11 : 7) * RV[sk.atk[loc]] + (wp && wp.type === sk.cat ? wp.atk[loc] : 0)) * (1 + v / 45) * (0.85 + Math.random() * 0.3);
+    let dmg = ((sk.tier === 2 ? 11 : 7) * RV[sk.atk[loc]] + (wp && wp.type === sk.cat ? wp.atk[loc] * enhMul() : 0)) * (1 + v / 45) * (0.85 + Math.random() * 0.3);
     if (weak) dmg *= 0.6;
     if (injured('arm')) dmg *= 0.6;
     dmg = Math.max(1, Math.round(dmg + qi() * 0.08));
