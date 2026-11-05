@@ -68,5 +68,17 @@ function updEnemies() {
 }
 function updNpcs() {
   for (const n of npcs) if (frame % 150 === (n.x * 7) % 150 && Math.random() < 0.5) n.dir = Object.keys(DIRS)[rnd(0, 3)];
+  /* 屋里的闲人隔一阵走一步，离原地不超过两格，不走到门口、不挡人 */
+  for (const n of npcs) {
+    if (!n.amb || dlg) continue;
+    if (n.px == null) { n.px = n.x * T; n.py = n.y * T; }
+    n.px += Math.sign(n.x * T - n.px); n.py += Math.sign(n.y * T - n.py);
+    if (n.px !== n.x * T || n.py !== n.y * T || Math.random() > 0.006) continue;
+    const [k, [dx, dy]] = Object.entries(DIRS)[rnd(0, 3)], nx = n.x + dx, ny = n.y + dy;
+    n.dir = k;
+    if (Math.abs(nx - n.home.x) > 2 || Math.abs(ny - n.home.y) > 2 || tileAt(nx, ny) !== 'L' || ny >= map.h - 2) continue;
+    if (npcAt(nx, ny) || (P.tx === nx && P.ty === ny)) continue;
+    n.x = nx; n.y = ny;
+  }
 }
 

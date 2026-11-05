@@ -2038,6 +2038,77 @@ for (const extId of Object.keys(MAPS)) {
     });
   });
 }
+/* ---- 屋里的闲人：伙计、客人、香客、弟子……每间屋子两到四个，会在屋里慢慢走动，按 A 能搭话 ---- */
+const IN_FOLK = {
+  inn: [['店小二', { body: 'apron', hair: 'cap' }, ['客官里边请！楼上客房干净着呢。', '住一晚活力、内功、伤势全养好，五两银子，划算！']],
+    ['住店客人', { body: 'changpao', hair: 'fangjin' }, ['明早还得赶路，今晚早点歇着。', '听说城外的山贼最近又闹起来了。']],
+    ['赶路镖师', { body: 'jinzhuang', hair: 'band', weapon: 'gangdao' }, ['这趟镖走完，能歇上半个月。', '走镖靠的是名头，名头靠的是刀。']]],
+  tavern: [['店小二', { body: 'apron', hair: 'cap' }, ['好嘞——两斤牛肉一壶酒！', '客官要点什么？本店的女儿红远近闻名。']],
+    ['醉酒客', { body: 'buyi', hair: 'messy' }, ['（打了个酒嗝）再……再来一壶！', '想当年老子也是一条好汉……']],
+    ['说书先生', { body: 'changpao', hair: 'fangjin', beard: true }, ['话说那华山之巅，两大高手比剑三天三夜……', '欲知后事如何，且听下回分解！']],
+    ['江湖客', { body: 'heipao', hair: 'knot', weapon: 'tiejian' }, ['喝完这杯，我要去黑木崖碰碰运气。', '有人说东方不败练成了绝世武功，谁信？']]],
+  smith: [['打铁学徒', { body: 'vest', hair: 'band' }, ['师父打铁，我拉风箱，一天下来胳膊都抬不起来。', '好铁要千锤百炼，精铁矿里出的料子最好。']],
+    ['买刀的江湖客', { body: 'jinzhuang', hair: 'knot' }, ['这把刀太轻，有没有沉一点的？', '听说寒铁打的兵器削铁如泥。']]],
+  pharmacy: [['药童', { body: 'buyi', hair: 'bun' }, ['抓药请到柜台，我只管碾药。', '三七止血、灵芝补气，师父说的。']],
+    ['看病的老汉', { body: 'buyi', hair: 'knot', beard: true }, ['（咳嗽）老毛病了，开几服药就好。', '年轻人，练武也要爱惜身子。']]],
+  pawn: [['伙计', { body: 'apron', hair: 'cap' }, ['当东西请找朝奉。', '死当活当，价钱可不一样。']],
+    ['落魄书生', { body: 'changpao', hair: 'fangjin' }, ['这块玉佩是家传的……唉，先当了吧。']]],
+  bank: [['账房先生', { body: 'changpao', hair: 'fangjin' }, ['（噼里啪啦打着算盘）别吵，算错了要赔的。']],
+    ['富商', { body: 'heipao', hair: 'crown', beard: true }, ['存银子还是钱庄稳妥，路上山贼太多。']]],
+  cloth: [['绣娘', { body: 'buyi', hair: 'bun' }, ['这匹绸子要绣一对鸳鸯，得绣三天。']],
+    ['挑布的夫人', { body: 'changpao', hair: 'bun' }, ['这花色好看，就是贵了点。']]],
+  chief: [['村长夫人', { body: 'buyi', hair: 'bun' }, ['老头子整天操心村里的事，饭都顾不上吃。', '孩子，路上小心，多带几服药。']],
+    ['小孙子', { body: 'buyi', hair: 'knot' }, ['爷爷说等我长大了，也送我去学武！']]],
+  house: [['屋主', { body: 'buyi', hair: 'knot' }, ['家里简陋，别嫌弃。', '最近夜里总听见狼叫，门得关紧。']],
+    ['老婆婆', { body: 'buyi', hair: 'bun' }, ['年轻人，吃了饭再走吧。']]],
+  home: [['屋主', { body: 'changpao', hair: 'fangjin' }, ['寒舍简陋，让大侠见笑了。']],
+    ['小丫头', { body: 'buyi', hair: 'bun' }, ['你是江湖上的大侠吗？会飞吗？']]],
+  temple: [['香客', { body: 'changpao', hair: 'bun' }, ['求菩萨保佑我家孩儿平平安安。']],
+    ['上香的老汉', { body: 'buyi', hair: 'knot', beard: true }, ['每月初一十五，都要来上一炷香。']],
+    ['扫地僧', { body: 'sengyi', hair: 'bald' }, ['（他扫着地，头也不抬）施主请自便。']]],
+  tower: [['守塔人', { body: 'buyi', hair: 'knot' }, ['这塔几百年了，风吹雨打都没倒。']]],
+  library: [['抄经僧', { body: 'sengyi', hair: 'bald' }, ['藏经阁里的经书，不得带出阁外。', '阿弥陀佛，这一卷我抄了三年。']],
+    ['借书的书生', { body: 'changpao', hair: 'fangjin' }, ['听说这里有失传的武学典籍……我只是看看。']]],
+  school: [['练功弟子', { body: 'jinzhuang', hair: 'band' }, ['马步扎稳，拳才打得出劲！', '教头说基础武功最要紧，我已经练了三年了。']],
+    ['新来的学徒', { body: 'buyi', hair: 'knot' }, ['我爹让我来学两手，好不受人欺负。']]],
+  escort: [['镖师', { body: 'jinzhuang', hair: 'band', weapon: 'gangdao' }, ['镖旗一插，黑白两道都要给几分面子。']],
+    ['趟子手', { body: 'vest', hair: 'band' }, ['合——吾——！走镖的时候喊这一嗓子，山贼就知道是谁家的镖。']]],
+  nunnery: [['小尼姑', { body: 'nun', hair: 'hood' }, ['施主，佛门清净之地，请勿喧哗。']]],
+  hall: [['守殿弟子', null, ['大殿之内，不得动武。', '掌门在上，有事请上前禀报。']],
+    ['值守弟子', null, ['今日轮到我守殿，一站就是一整天。']],
+    ['扫地弟子', null, ['师兄们都去练功了，就剩我扫地。']]],
+};
+function folkLook(ext, b, look) {
+  if (look) return look;
+  /* 大殿弟子穿本门派的衣服 */
+  const master = (NPCS[b.inside] || [])[0], sect = master && Object.keys(SECTS).find(k => SECTS[k].name === master.role);
+  return { body: sect ? SECTS[sect].uniform : 'jinzhuang', hair: 'band' };
+}
+for (const id of Object.keys(MAPS)) {
+  const m = MAPS[id]; if (!m.indoor) continue;
+  const extId = id.split('~')[0], b = MAPS[extId].buildings[+id.split('~')[1]];
+  const pool = IN_FOLK[m.ikind] || []; if (!pool.length) continue;
+  const taken = new Set((NPCS[id] || []).map(n => n.x + ',' + n.y));
+  /* 能站人的地方：地板或地毯，不在门口那一列的下半截，不贴着柜台前面（别挡路） */
+  const free = [];
+  for (let y = 3; y < m.h - 1; y++) for (let x = 1; x < m.w - 1; x++) {
+    const c = m.rows[y][x];
+    if (c !== 'L') continue;
+    if (x === m.doorX && y >= m.h - 3) continue;
+    if (m.rows[y - 1][x] === 'n' && Math.abs(x - m.doorX) <= 1) continue;
+    if (taken.has(x + ',' + y)) continue;
+    if (IN_SHOP.has(m.ikind) && y <= 4) continue;   /* 店里的人站在柜台外面 */
+    free.push([x, y]);
+  }
+  const hs0 = [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const n0 = Math.min(pool.length, IN_HOME.has(m.ikind) ? 2 : pool.length);
+  for (let j = 0; j < n0 && free.length; j++) {
+    const [name, look, lines] = pool[j], sp = free.splice((hs0 + j * 7) % free.length, 1)[0];
+    const n = { id: `${id}_f${j}`, name, role: '', x: sp[0], y: sp[1], home: { x: sp[0], y: sp[1] }, dir: 'down', amb: true,
+      look: folkLook(MAPS[extId], b, look), talk: me => say(name, lines[(me.said = ((me.said || 0) + 1)) % lines.length]) };
+    (NPCS[id] || (NPCS[id] = [])).push(n);
+  }
+}
 /* ======== 阵营主线：邪派「神教密令」、中立「江南风云」，由主城接引使发放 ======== */
 const STORY = {
   邪: { name: '神教密令', giver: 'envoy_xie', steps: [
@@ -3619,6 +3690,18 @@ function updEnemies() {
 }
 function updNpcs() {
   for (const n of npcs) if (frame % 150 === (n.x * 7) % 150 && Math.random() < 0.5) n.dir = Object.keys(DIRS)[rnd(0, 3)];
+  /* 屋里的闲人隔一阵走一步，离原地不超过两格，不走到门口、不挡人 */
+  for (const n of npcs) {
+    if (!n.amb || dlg) continue;
+    if (n.px == null) { n.px = n.x * T; n.py = n.y * T; }
+    n.px += Math.sign(n.x * T - n.px); n.py += Math.sign(n.y * T - n.py);
+    if (n.px !== n.x * T || n.py !== n.y * T || Math.random() > 0.006) continue;
+    const [k, [dx, dy]] = Object.entries(DIRS)[rnd(0, 3)], nx = n.x + dx, ny = n.y + dy;
+    n.dir = k;
+    if (Math.abs(nx - n.home.x) > 2 || Math.abs(ny - n.home.y) > 2 || tileAt(nx, ny) !== 'L' || ny >= map.h - 2) continue;
+    if (npcAt(nx, ny) || (P.tx === nx && P.ty === ny)) continue;
+    n.x = nx; n.y = ny;
+  }
 }
 
 /* ---------------- main update ---------------- */
@@ -3919,7 +4002,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v62 ' + FAST_NAME[FAST] : 'v62', 156, 0, 2, 'right');
+  txt(FAST ? 'v63 ' + FAST_NAME[FAST] : 'v63', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4963,7 +5046,7 @@ function renderWorld() {
     if (bx > -b.w * T - 10 && bx < GW + 10 && by > -b.h * T - 10 && by < GH + 10) { RMAP = darkGround() && b.kind === 'pagoda' ? [0, 0, 1, 3] : null; drawBuilding(b, bx, by); RMAP = null; }
   }
   const list = [];
-  for (const n of npcs) list.push({ y: n.y * T, d: () => drawPerson(n.x * T - cx, n.y * T - cy, n.dir, 0, n.look) });
+  for (const n of npcs) { const nx = n.px != null ? n.px : n.x * T, ny = n.py != null ? n.py : n.y * T, walk = nx !== n.x * T || ny !== n.y * T; list.push({ y: ny, d: () => drawPerson(nx - cx, ny - cy, n.dir, walk ? (Math.floor((nx + ny) / 6) % 2) + 1 : 0, n.look) }); }
   for (const e of enemies) if (!e.dead) list.push({ y: e.py, d: () => drawEnemy(e, e.px - cx, e.py - cy) });
   for (const o of NET.others.values()) list.push({ y: o.py, d: () => {
     const sx = Math.round(o.px - cx), sy = Math.round(o.py - cy);
@@ -5030,7 +5113,7 @@ function renderNpcTags() {
     if (frame % 40 < 30) txt(mk, bx + 6, by, 0, 'center');
   }
   for (const n of npcs) {
-    const sx = n.x * T - cam.x, sy = n.y * T - cam.y;
+    const sx = (n.px != null ? n.px : n.x * T) - cam.x, sy = (n.py != null ? n.py : n.y * T) - cam.y;
     if (sx < -40 || sx > GW + 40 || sy < -20 || sy > GH + 20) continue;
     const mark = questMark(n);
     const near = Math.abs(n.x - P.tx) + Math.abs(n.y - P.ty) <= 2;
@@ -5047,11 +5130,11 @@ function renderNpcTags() {
       }
     }
     if (near && !dlg && !menu) {
-      const label = `${n.name}·${n.role}`, w = tw(label) + 6;
+      const label = n.role ? `${n.name}·${n.role}` : n.name, w = tw(label) + 6;
       const below = P.ty > n.y;
       const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
       R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
-    } else if (!dlg && !menu && S.showTag !== false && sy + 17 < UB - 2) {
+    } else if (!dlg && !menu && S.showTag !== false && !n.amb && sy + 17 < UB - 2) {   /* 屋里的闲人走近了才显示名字，免得满屋都是字 */
       /* 离得远时脚下也写着名字，一眼看清谁是谁；走近再显示身份 */
       txtOutline(n.name, sx + 8, sy + 16, 'center');
     }

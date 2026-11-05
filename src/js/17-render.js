@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v62 ' + FAST_NAME[FAST] : 'v62', 156, 0, 2, 'right');
+  txt(FAST ? 'v63 ' + FAST_NAME[FAST] : 'v63', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1100,7 +1100,7 @@ function renderWorld() {
     if (bx > -b.w * T - 10 && bx < GW + 10 && by > -b.h * T - 10 && by < GH + 10) { RMAP = darkGround() && b.kind === 'pagoda' ? [0, 0, 1, 3] : null; drawBuilding(b, bx, by); RMAP = null; }
   }
   const list = [];
-  for (const n of npcs) list.push({ y: n.y * T, d: () => drawPerson(n.x * T - cx, n.y * T - cy, n.dir, 0, n.look) });
+  for (const n of npcs) { const nx = n.px != null ? n.px : n.x * T, ny = n.py != null ? n.py : n.y * T, walk = nx !== n.x * T || ny !== n.y * T; list.push({ y: ny, d: () => drawPerson(nx - cx, ny - cy, n.dir, walk ? (Math.floor((nx + ny) / 6) % 2) + 1 : 0, n.look) }); }
   for (const e of enemies) if (!e.dead) list.push({ y: e.py, d: () => drawEnemy(e, e.px - cx, e.py - cy) });
   for (const o of NET.others.values()) list.push({ y: o.py, d: () => {
     const sx = Math.round(o.px - cx), sy = Math.round(o.py - cy);
@@ -1167,7 +1167,7 @@ function renderNpcTags() {
     if (frame % 40 < 30) txt(mk, bx + 6, by, 0, 'center');
   }
   for (const n of npcs) {
-    const sx = n.x * T - cam.x, sy = n.y * T - cam.y;
+    const sx = (n.px != null ? n.px : n.x * T) - cam.x, sy = (n.py != null ? n.py : n.y * T) - cam.y;
     if (sx < -40 || sx > GW + 40 || sy < -20 || sy > GH + 20) continue;
     const mark = questMark(n);
     const near = Math.abs(n.x - P.tx) + Math.abs(n.y - P.ty) <= 2;
@@ -1184,11 +1184,11 @@ function renderNpcTags() {
       }
     }
     if (near && !dlg && !menu) {
-      const label = `${n.name}·${n.role}`, w = tw(label) + 6;
+      const label = n.role ? `${n.name}·${n.role}` : n.name, w = tw(label) + 6;
       const below = P.ty > n.y;
       const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
       R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
-    } else if (!dlg && !menu && S.showTag !== false && sy + 17 < UB - 2) {
+    } else if (!dlg && !menu && S.showTag !== false && !n.amb && sy + 17 < UB - 2) {   /* 屋里的闲人走近了才显示名字，免得满屋都是字 */
       /* 离得远时脚下也写着名字，一眼看清谁是谁；走近再显示身份 */
       txtOutline(n.name, sx + 8, sy + 16, 'center');
     }
