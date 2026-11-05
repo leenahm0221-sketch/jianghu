@@ -17,7 +17,7 @@ function enhCost(id, L) {
   const base = [0, 20, 40, 80, 150][enhTier(id)];
   const silver = base * (L + 1) * (L + 2) / 2;
   const [mat, n] = L < 3 ? ['shengtie', L + 1] : L < 6 ? ['jingtie', L - 2] : L < 9 ? ['hantie', L - 5] : ['xuantiekuang', 2];
-  const rate = Math.min(100, [100, 100, 100, 90, 80, 70, 60, 50, 40, 30][L] + Math.floor(lv('duanzao') * 0.2));
+  const rate = Math.min(100, [90, 80, 70, 60, 50, 40, 30, 20, 15, 10][L] + Math.floor(lv('duanzao') * 0.1));
   return { silver, mat, n, rate };
 }
 function enhanceTalk(who, back) {
@@ -73,5 +73,31 @@ function stationTalk(here) {
     const [sx, sy] = stationSpot[to];
     enterMap(to, sx, sy + 1, 'down'); save();
     toast(`坐了一路车，到了${MAPS[to].name}（车钱 ${fare} 两）`);
+  });
+}
+
+/* ---- 门派捐献：向师门捐银子换门派声望，声望够了升阶领本派神兵、宝甲 ---- */
+const DONATE = [[100, 2], [500, 12], [2000, 50]];
+function donateMenu(who, sect) {
+  ask(who, `捐银两给师门，可以换门派声望。你身上有 ${S.silver} 两，门派声望 ${S.srep[sect] || 0}。`, DONATE.map(([s, r]) => `捐${s}两（声望+${r}）`).concat(['算了']), i => {
+    if (i >= DONATE.length) return masterMenu(who, sect);
+    const [s, r] = DONATE[i];
+    if (S.silver < s) return say(who, `心意领了，可你身上没有 ${s} 两。`, () => masterMenu(who, sect));
+    S.silver -= s; addSrep(r); sfx('coin'); save();
+    say(who, [`善哉。本门记下你这份心意。`, `（门派声望 +${r}）`], () => masterMenu(who, sect));
+  });
+}
+/* ---- 武馆陪练：交银子请教头陪练，接下来一段时间练功经验翻倍（游戏时间，最多攒 60 分钟） ---- */
+const COACH = [[100, 10], [280, 30], [500, 60]];
+const coachLeft = () => Math.max(0, S.coach || 0);   /* 剩余帧数，每帧减 1 */
+function coachMenu(who, back) {
+  const left = Math.ceil(coachLeft() / 3600);
+  ask(who, `请我陪练，练功经验翻倍。${left ? `你还剩 ${left} 分钟。` : ''}你身上有 ${S.silver} 两。`, COACH.map(([s, m]) => `${m}分钟 ${s}两`).concat(['算了']), i => {
+    if (i >= COACH.length) return back();
+    const [s, m] = COACH[i];
+    if (S.silver < s) return say(who, `要 ${s} 两，你的银子不够。`, back);
+    if (coachLeft() + m * 3600 > 60 * 3600) return say(who, '一口气练太多会伤身，剩下的时间用完再来。', back);
+    S.silver -= s; S.coach = coachLeft() + m * 3600; sfx('coin'); save();
+    say(who, [`好，接下来 ${Math.ceil(coachLeft() / 3600)} 分钟，我盯着你练！`, '（练功经验翻倍，左上角会显示剩余时间）'], back);
   });
 }

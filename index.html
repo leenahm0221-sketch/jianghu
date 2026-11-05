@@ -1381,6 +1381,15 @@ function passWall(c, axis, at, label) {
   if (ok) c.bld({ x: tx, y: ty, w: 5, h: 4, style: 'tall', label, kind: 'tower' });
   c.sign(axis === 'v' ? at + 1 : g + 2, axis === 'v' ? g + 2 : at + 1, `${label}。边关要地。\n正邪两派在此狭路相逢，各自小心。`);
 }
+/* 野外地图放大：人多了不挤，坐车才有意义。山洞放大四分之一，其余野外放大六成；怪物、草药矿石、木箱跟着加 */
+for (const id in W_SPECS) {
+  const sp = W_SPECS[id], k = sp.ground === 'cave' ? 1.25 : 1.6, n = k * k;
+  sp.W = Math.round(sp.W * k); sp.H = Math.round(sp.H * k);
+  for (const z of sp.zones || []) z.n = Math.round(z.n * n * 0.8);
+  for (const r in sp.res || {}) sp.res[r] = Math.round(sp.res[r] * n);
+  if (sp.chests) sp.chests = Math.round(sp.chests * n);
+  for (const pt of sp.patches || []) pt[1] = Math.round(pt[1] * n);
+}
 const T_SPECS = {
   luoyang: { W: 36, H: 26, seed: 201, street: 12, buildings: [
       { x: 2, y: 2, label: '客栈', kind: 'inn', owner: 'inn_ly' }, { x: 8, y: 2, label: '兵器铺', kind: 'smith', owner: 'smith_ly' },
@@ -1641,7 +1650,7 @@ function train(id, amt) {
   const v = S.skills[id], cap = skillCap(id);
   if (v >= cap) return;
   const gain = 0.04 * amt * (SK[id].tier === 2 ? 0.7 : 1) / Math.pow(1 + v / 10, 1.5) * FASTT(SK[id].cat === '心法' ? 80 : ['护体', '步法'].includes(SK[id].cat) ? 30 : 15);
-  const nv = Math.min(cap, v + gain);
+  const nv = Math.min(cap, v + gain * (S.coach > 0 ? 2 : 1));   /* 武馆陪练期间经验翻倍 */
   S.skills[id] = nv;
   if (nv >= 99.99 && cap === 99.99) { toast(`${SK[id].name}练至化境，元气 +10`); sfx('level'); }
   if (Math.floor(nv) > Math.floor(v)) {
@@ -2392,7 +2401,9 @@ function jiulouTalk() {
   });
 }
 function jiaotouTalk() {
-  ask('武馆教头', ['武馆收上层武功秘籍，也教你看武功的门道。'], ['买秘籍', '武功门道', '离开'], i => {
+  ask('武馆教头', ['武馆收上层武功秘籍，也教你看武功的门道。'], ['买秘籍', '请教头陪练', '武功门道', '离开'], i => {
+    if (i === 1) return coachMenu('武馆教头', jiaotouTalk);
+    if (i > 1) i -= 1;
     if (i === 0) buy('武馆教头', ['book_yuejia', 'book_tiesha', 'book_jinzhong'], jiaotouTalk);
     else if (i === 1) say('武馆教头', ['每门武功有攻速、回击、闪躲、命中，和身、头、手、脚四处攻击力，从特差到优分六档。', '攻速快出手勤；回击好挨打后还手快；闪躲高少挨打。', '基础武功每招只耗体力，其他武功每招同时耗体力和内功。体力用完出招无力，歇一歇或打坐就回来。', '在菜单“武功”里选中武功按 A，能看详情。', '武功练到 50 级会练成第二式，练满 99.99 元气加 10。', '换兵器按 SELECT，同一种兵器的武功在菜单里选。', '武功分四层：基础武功谁都能练；门派武功要拜师，叛出师门最多练到 49.99；江湖武功和门派武功一样厉害，秘籍在我这儿买，或在野外打怪、开木箱得到；特殊武功要打败反派或奇人传授。']);
   });
@@ -2755,7 +2766,7 @@ function masterMenu(who, sect) {
   const srep = S.srep[sect] || 0;
   if (hasGift(sect) && rankGift(who, sect)) return;
   const st = S.stask && S.stask.sect === sect ? S.stask : null;
-  ask(who, `${titleOf(SREP_TITLES, srep)}（门派声望 ${srep}）。有什么事？`, ids.map(k => (S.skills[k] != null ? `${SK[k].name}（已学）` : SK[k].name)).concat([st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', pg ? '门户任务中' : '清理门户', '叛出师门', '离开']), i => {
+  ask(who, `${titleOf(SREP_TITLES, srep)}（门派声望 ${srep}）。有什么事？`, ids.map(k => (S.skills[k] != null ? `${SK[k].name}（已学）` : SK[k].name)).concat([st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', pg ? '门户任务中' : '清理门户', '叛出师门', '捐献银两', '离开']), i => {
     if (i === ids.length) return sectTaskMenu(who, sect);
     if (i > ids.length) i -= 1;
     if (i === ids.length) {
@@ -2765,6 +2776,7 @@ function masterMenu(who, sect) {
       return say(who, [`本门出了个叛徒，偷了武功秘要，逃到了${MAPS[m].name}。`, '去把他拿下，替本门清理门户！']);
     }
     if (i === ids.length + 1) return leaveSect(who, sect);
+    if (i === ids.length + 2) return donateMenu(who, sect);
     if (i > ids.length + 1) return;
     const k = ids[i], again = () => masterMenu(who, sect);
     if (S.skills[k] != null) return say(who, '已经教过你了，好好练。', again);
@@ -2839,7 +2851,7 @@ function enhCost(id, L) {
   const base = [0, 20, 40, 80, 150][enhTier(id)];
   const silver = base * (L + 1) * (L + 2) / 2;
   const [mat, n] = L < 3 ? ['shengtie', L + 1] : L < 6 ? ['jingtie', L - 2] : L < 9 ? ['hantie', L - 5] : ['xuantiekuang', 2];
-  const rate = Math.min(100, [100, 100, 100, 90, 80, 70, 60, 50, 40, 30][L] + Math.floor(lv('duanzao') * 0.2));
+  const rate = Math.min(100, [90, 80, 70, 60, 50, 40, 30, 20, 15, 10][L] + Math.floor(lv('duanzao') * 0.1));
   return { silver, mat, n, rate };
 }
 function enhanceTalk(who, back) {
@@ -2895,6 +2907,32 @@ function stationTalk(here) {
     const [sx, sy] = stationSpot[to];
     enterMap(to, sx, sy + 1, 'down'); save();
     toast(`坐了一路车，到了${MAPS[to].name}（车钱 ${fare} 两）`);
+  });
+}
+
+/* ---- 门派捐献：向师门捐银子换门派声望，声望够了升阶领本派神兵、宝甲 ---- */
+const DONATE = [[100, 2], [500, 12], [2000, 50]];
+function donateMenu(who, sect) {
+  ask(who, `捐银两给师门，可以换门派声望。你身上有 ${S.silver} 两，门派声望 ${S.srep[sect] || 0}。`, DONATE.map(([s, r]) => `捐${s}两（声望+${r}）`).concat(['算了']), i => {
+    if (i >= DONATE.length) return masterMenu(who, sect);
+    const [s, r] = DONATE[i];
+    if (S.silver < s) return say(who, `心意领了，可你身上没有 ${s} 两。`, () => masterMenu(who, sect));
+    S.silver -= s; addSrep(r); sfx('coin'); save();
+    say(who, [`善哉。本门记下你这份心意。`, `（门派声望 +${r}）`], () => masterMenu(who, sect));
+  });
+}
+/* ---- 武馆陪练：交银子请教头陪练，接下来一段时间练功经验翻倍（游戏时间，最多攒 60 分钟） ---- */
+const COACH = [[100, 10], [280, 30], [500, 60]];
+const coachLeft = () => Math.max(0, S.coach || 0);   /* 剩余帧数，每帧减 1 */
+function coachMenu(who, back) {
+  const left = Math.ceil(coachLeft() / 3600);
+  ask(who, `请我陪练，练功经验翻倍。${left ? `你还剩 ${left} 分钟。` : ''}你身上有 ${S.silver} 两。`, COACH.map(([s, m]) => `${m}分钟 ${s}两`).concat(['算了']), i => {
+    if (i >= COACH.length) return back();
+    const [s, m] = COACH[i];
+    if (S.silver < s) return say(who, `要 ${s} 两，你的银子不够。`, back);
+    if (coachLeft() + m * 3600 > 60 * 3600) return say(who, '一口气练太多会伤身，剩下的时间用完再来。', back);
+    S.silver -= s; S.coach = coachLeft() + m * 3600; sfx('coin'); save();
+    say(who, [`好，接下来 ${Math.ceil(coachLeft() / 3600)} 分钟，我盯着你练！`, '（练功经验翻倍，左上角会显示剩余时间）'], back);
   });
 }
 /* ---------------- 任务指引 ---------------- */
@@ -3864,6 +3902,7 @@ function update() {
   if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
   if (menu) return updMenu();
   if (hitStop > 0) { hitStop--; return; }
+  if (S.coach > 0 && --S.coach === 0) toast('陪练时间到了');
   if ((S.ageT += FAST === 2 ? 20 : FASTX(8)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
   updPlayer(); updEnemies(); updNpcs();
   if (!P.dead) {
@@ -4145,7 +4184,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v65 ' + FAST_NAME[FAST] : 'v65', 156, 0, 2, 'right');
+  txt(FAST ? 'v66 ' + FAST_NAME[FAST] : 'v66', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -4888,6 +4927,13 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   const p = (x, y, w, h, c) => R(sx + (fl ? 16 - x - w : x), sy + y, w, h, C(c));
   const B = BODY[L.body] || BODY.buyi;
   const W = L.weapon ? WEAPON_LOOK[L.weapon] || WEAPON_LOOK.tiejian : null;
+  /* 外观：脚下光环（一圈闪动的光点） */
+  if (L.aura && !L.ghost && !L.sil) {
+    for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 + frame / 20; R(sx + 8 + Math.round(Math.cos(a) * 8), sy + 15 + Math.round(Math.sin(a) * 2), 1, 1, (k + (frame >> 3)) % 3 ? 3 : 0); }
+  }
+  /* 外观：披风（正面、侧面在身后露出两边和下摆） */
+  const capeC = L.cape === 'white' ? 0 : L.cape === 'grey' ? 1 : 2;
+  if (L.cape && !up) { p(2, 6, 12, 9, 3); p(3, 7, 10, 7, capeC); if (side) { p(0, 7, 4, 8, 3); p(1, 8, 2, 6, capeC); } }
   // 长枪、铁锤：竖在身后，比人还高 / 锤头很大
   if (W && W.kind && !up) {
     const x = side ? 2 : 13;
@@ -4979,6 +5025,7 @@ function drawPerson(sx, sy, dir, step, L, flash) {
     p(11, 0, 1, 3, W.hilt); p(10, 3, 4, 1, W.guard);
     if (W.tassel) { p(12, -1, 1, 1, 3); p(13, 0, 1, 3, 3); }
   }
+  if (L.cape && up) { p(2, 6, 12, 10, 3); p(3, 6, 10, 9, capeC); p(7, 7, 2, 7, capeC === 2 ? 3 : 2); }   /* 背面：披风盖住整个后背 */
 }
 /* 野兽：兔、狐、狼、熊、虎，外形和体型各不相同；木人桩不动 */
 function drawBeast(kind, sx, sy, face, step, flash) {
@@ -5403,6 +5450,7 @@ function renderUI() {
     const w = tw(map.name) + 10, x = 3, y = HUD_H + 3;
     R(x, y, w, 13, 3); R(x + 1, y + 1, w - 2, 11, 0); R(x + 2, y + 2, w - 4, 9, 3);
     txt(map.name, x + 5, y + 1, 0);
+    if (S.coach > 0) { const ct = `陪练×2 ${Math.ceil(S.coach / 3600)}分`, w2 = tw(ct) + 10; R(x, y + 15, w2, 13, 3); R(x + 1, y + 16, w2 - 2, 11, 0); txt(ct, x + 5, y + 16, 3); }
     g.setTransform(1, 0, 0, 1, UX, 0);
   }
   g.setTransform(1, 0, 0, 1, UX, 0);
@@ -5604,7 +5652,7 @@ addEventListener('pagehide', () => { if (mode === 'play') save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') save(); });
 window.claude?.hot?.snapshot?.(() => (mode === 'play' && S ? { S: { ...S, x: P.tx, y: P.ty, dir: P.dir } } : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__game = { craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
+window.__game = { drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
 })();
 </script>
 

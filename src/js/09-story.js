@@ -218,7 +218,9 @@ function jiulouTalk() {
   });
 }
 function jiaotouTalk() {
-  ask('武馆教头', ['武馆收上层武功秘籍，也教你看武功的门道。'], ['买秘籍', '武功门道', '离开'], i => {
+  ask('武馆教头', ['武馆收上层武功秘籍，也教你看武功的门道。'], ['买秘籍', '请教头陪练', '武功门道', '离开'], i => {
+    if (i === 1) return coachMenu('武馆教头', jiaotouTalk);
+    if (i > 1) i -= 1;
     if (i === 0) buy('武馆教头', ['book_yuejia', 'book_tiesha', 'book_jinzhong'], jiaotouTalk);
     else if (i === 1) say('武馆教头', ['每门武功有攻速、回击、闪躲、命中，和身、头、手、脚四处攻击力，从特差到优分六档。', '攻速快出手勤；回击好挨打后还手快；闪躲高少挨打。', '基础武功每招只耗体力，其他武功每招同时耗体力和内功。体力用完出招无力，歇一歇或打坐就回来。', '在菜单“武功”里选中武功按 A，能看详情。', '武功练到 50 级会练成第二式，练满 99.99 元气加 10。', '换兵器按 SELECT，同一种兵器的武功在菜单里选。', '武功分四层：基础武功谁都能练；门派武功要拜师，叛出师门最多练到 49.99；江湖武功和门派武功一样厉害，秘籍在我这儿买，或在野外打怪、开木箱得到；特殊武功要打败反派或奇人传授。']);
   });
@@ -581,7 +583,7 @@ function masterMenu(who, sect) {
   const srep = S.srep[sect] || 0;
   if (hasGift(sect) && rankGift(who, sect)) return;
   const st = S.stask && S.stask.sect === sect ? S.stask : null;
-  ask(who, `${titleOf(SREP_TITLES, srep)}（门派声望 ${srep}）。有什么事？`, ids.map(k => (S.skills[k] != null ? `${SK[k].name}（已学）` : SK[k].name)).concat([st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', pg ? '门户任务中' : '清理门户', '叛出师门', '离开']), i => {
+  ask(who, `${titleOf(SREP_TITLES, srep)}（门派声望 ${srep}）。有什么事？`, ids.map(k => (S.skills[k] != null ? `${SK[k].name}（已学）` : SK[k].name)).concat([st ? (sectTaskDone(st) ? '交门务' : '门务中') : '门派任务', pg ? '门户任务中' : '清理门户', '叛出师门', '捐献银两', '离开']), i => {
     if (i === ids.length) return sectTaskMenu(who, sect);
     if (i > ids.length) i -= 1;
     if (i === ids.length) {
@@ -591,6 +593,7 @@ function masterMenu(who, sect) {
       return say(who, [`本门出了个叛徒，偷了武功秘要，逃到了${MAPS[m].name}。`, '去把他拿下，替本门清理门户！']);
     }
     if (i === ids.length + 1) return leaveSect(who, sect);
+    if (i === ids.length + 2) return donateMenu(who, sect);
     if (i > ids.length + 1) return;
     const k = ids[i], again = () => masterMenu(who, sect);
     if (S.skills[k] != null) return say(who, '已经教过你了，好好练。', again);

@@ -506,6 +506,15 @@ function passWall(c, axis, at, label) {
   if (ok) c.bld({ x: tx, y: ty, w: 5, h: 4, style: 'tall', label, kind: 'tower' });
   c.sign(axis === 'v' ? at + 1 : g + 2, axis === 'v' ? g + 2 : at + 1, `${label}。边关要地。\n正邪两派在此狭路相逢，各自小心。`);
 }
+/* 野外地图放大：人多了不挤，坐车才有意义。山洞放大四分之一，其余野外放大六成；怪物、草药矿石、木箱跟着加 */
+for (const id in W_SPECS) {
+  const sp = W_SPECS[id], k = sp.ground === 'cave' ? 1.25 : 1.6, n = k * k;
+  sp.W = Math.round(sp.W * k); sp.H = Math.round(sp.H * k);
+  for (const z of sp.zones || []) z.n = Math.round(z.n * n * 0.8);
+  for (const r in sp.res || {}) sp.res[r] = Math.round(sp.res[r] * n);
+  if (sp.chests) sp.chests = Math.round(sp.chests * n);
+  for (const pt of sp.patches || []) pt[1] = Math.round(pt[1] * n);
+}
 const T_SPECS = {
   luoyang: { W: 36, H: 26, seed: 201, street: 12, buildings: [
       { x: 2, y: 2, label: '客栈', kind: 'inn', owner: 'inn_ly' }, { x: 8, y: 2, label: '兵器铺', kind: 'smith', owner: 'smith_ly' },

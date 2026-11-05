@@ -356,14 +356,14 @@ def 屋里闲人_接委托交东西拿谢礼(b):
 @case
 def 花银子_强化兵器和坐车(b):
     g = Game(b); g.new_game(); g.ev(f'{G}.S.tut = 9')
-    g.ev(f'{G}.S.gear.push("tiejian"); {G}.S.equip.weapon = "tiejian"; {G}.S.silver = 1000; {G}.S.items.shengtie = 10')
+    g.ev(f'{G}.S.gear.push("tiejian"); {G}.S.equip.weapon = "tiejian"; {G}.S.silver = 1000; {G}.S.items.shengtie = 10; {G}.S.skills.duanzao = 100')   # 锻造练满，+1 成功率到 100%
     smith = g.ev(f'(() => {{ const b = {G}.MAPS.village.buildings.find(b => b.kind === "smith"); return b.inside; }})()')
     g.ev(f'{G}.warp("{smith}", 5, 5)'); g.pg.wait_for_timeout(300)
     g.ev(f'{G}.P.dir = "up"'); g.tap('a'); g.pg.wait_for_timeout(300)
     opts = g.talk(); assert '强化兵器' in opts, opts
     g.choose(opts.index('强化兵器')); opts = g.talk(); assert opts and opts[0] == '强化', opts
     g.choose(0); g.talk()
-    assert g.ev(f'{G}.S.enh && {G}.S.enh.tiejian') == 1, '强化 +1 没成功（+1 成功率应是 100%）'
+    assert g.ev(f'{G}.S.enh && {G}.S.enh.tiejian') == 1, '锻造满级时强化 +1 应该必成'
     assert g.ev(f'{G}.S.silver') == 980 and g.ev(f'{G}.S.items.shengtie') == 9, '强化扣的银子或材料不对'
     g.ev(f'{G}.dlg = null')
     # 坐车：牛家村 → 洛阳

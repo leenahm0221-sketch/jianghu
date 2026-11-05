@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v65 ' + FAST_NAME[FAST] : 'v65', 156, 0, 2, 'right');
+  txt(FAST ? 'v66 ' + FAST_NAME[FAST] : 'v66', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -799,6 +799,13 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   const p = (x, y, w, h, c) => R(sx + (fl ? 16 - x - w : x), sy + y, w, h, C(c));
   const B = BODY[L.body] || BODY.buyi;
   const W = L.weapon ? WEAPON_LOOK[L.weapon] || WEAPON_LOOK.tiejian : null;
+  /* 外观：脚下光环（一圈闪动的光点） */
+  if (L.aura && !L.ghost && !L.sil) {
+    for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 + frame / 20; R(sx + 8 + Math.round(Math.cos(a) * 8), sy + 15 + Math.round(Math.sin(a) * 2), 1, 1, (k + (frame >> 3)) % 3 ? 3 : 0); }
+  }
+  /* 外观：披风（正面、侧面在身后露出两边和下摆） */
+  const capeC = L.cape === 'white' ? 0 : L.cape === 'grey' ? 1 : 2;
+  if (L.cape && !up) { p(2, 6, 12, 9, 3); p(3, 7, 10, 7, capeC); if (side) { p(0, 7, 4, 8, 3); p(1, 8, 2, 6, capeC); } }
   // 长枪、铁锤：竖在身后，比人还高 / 锤头很大
   if (W && W.kind && !up) {
     const x = side ? 2 : 13;
@@ -890,6 +897,7 @@ function drawPerson(sx, sy, dir, step, L, flash) {
     p(11, 0, 1, 3, W.hilt); p(10, 3, 4, 1, W.guard);
     if (W.tassel) { p(12, -1, 1, 1, 3); p(13, 0, 1, 3, 3); }
   }
+  if (L.cape && up) { p(2, 6, 12, 10, 3); p(3, 6, 10, 9, capeC); p(7, 7, 2, 7, capeC === 2 ? 3 : 2); }   /* 背面：披风盖住整个后背 */
 }
 /* 野兽：兔、狐、狼、熊、虎，外形和体型各不相同；木人桩不动 */
 function drawBeast(kind, sx, sy, face, step, flash) {
@@ -1314,6 +1322,7 @@ function renderUI() {
     const w = tw(map.name) + 10, x = 3, y = HUD_H + 3;
     R(x, y, w, 13, 3); R(x + 1, y + 1, w - 2, 11, 0); R(x + 2, y + 2, w - 4, 9, 3);
     txt(map.name, x + 5, y + 1, 0);
+    if (S.coach > 0) { const ct = `陪练×2 ${Math.ceil(S.coach / 3600)}分`, w2 = tw(ct) + 10; R(x, y + 15, w2, 13, 3); R(x + 1, y + 16, w2 - 2, 11, 0); txt(ct, x + 5, y + 16, 3); }
     g.setTransform(1, 0, 0, 1, UX, 0);
   }
   g.setTransform(1, 0, 0, 1, UX, 0);
