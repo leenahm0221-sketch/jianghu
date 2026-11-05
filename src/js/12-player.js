@@ -68,7 +68,7 @@ function inReach(e) {
   const rc = SK[S.active].reach || 1;
   if (d <= rc && (e.tx === P.tx || e.ty === P.ty)) {
     const sx = Math.sign(e.tx - P.tx), sy = Math.sign(e.ty - P.ty);
-    for (let i = 1; i < d; i++) { const mx = P.tx + sx * i, my = P.ty + sy * i; if (SOLID.has(tileAt(mx, my)) || npcAt(mx, my)) return false; }
+    for (let i = 1; i < d; i++) { const mx = P.tx + sx * i, my = P.ty + sy * i; if (blocks(mx, my) || npcAt(mx, my)) return false; }
     return true;
   }
   return false;

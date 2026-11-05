@@ -93,7 +93,7 @@ function goalPoint(g) {
 }
 /* 任务指引：地上一串脚印通往目标（会绕开树和房子），人物身边一个大箭头，屏幕下方写着目标和还有几步 */
 let trail = null, trailT = 0;
-const walkable = (x, y) => { const t = tileAt(x, y); return !SOLID.has(t) || ((t === '*' || t === '&') && isDepleted(x, y)); };
+const walkable = (x, y) => !blocks(x, y);
 function findTrail(pt) {
   const key = (x, y) => y * 1000 + x, prev = new Map([[key(P.tx, P.ty), -1]]), q = [[P.tx, P.ty]];
   const goalAdj = !walkable(pt.x, pt.y) || npcAt(pt.x, pt.y) || enemyAt(pt.x, pt.y);

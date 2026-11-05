@@ -297,6 +297,25 @@ def 所有地图_挡路的东西和地面分得开(b):
     g.close()
 
 @case
+def 采空的矿和草药可以走过去(b):
+    g = Game(b); g.new_game()
+    g.ev(f'{G}.warp("meadow", 10, 10)'); g.pg.wait_for_timeout(300)
+    for kind in ['O', '*', 'm', '&']:
+        x, y = g.ev(f'''(() => {{ const G = {G}, m = G.map; G.enemies.length = 0;
+          const put = (x, y, c) => {{ m.rows[y] = m.rows[y].slice(0, x) + c + m.rows[y].slice(x + 1); }};
+          const free = (x, y) => !G.SOLID.has(m.rows[y][x]) && !G.npcs.some(n => n.x === x && n.y === y) && !m.exits[x + ',' + y];
+          for (let y = 3; y < m.h - 3; y++) for (let x = 3; x < m.w - 3; x++)
+            if (free(x, y) && free(x + 1, y)) {{ G.P.tx = x; G.P.ty = y; G.P.px = x * 16; G.P.py = y * 16; G.P.moving = false; put(x + 1, y, '{kind}'); G.P.dir = 'right'; return [x, y]; }}
+        }})()''')
+        g.tap('right', 200); g.pg.wait_for_timeout(300)
+        assert g.ev(f'{G}.P.tx') == x, f'{kind} 没采时人物居然走过去了'
+        g.tap('a'); g.pg.wait_for_timeout(300)
+        g.tap('right', 200); g.pg.wait_for_timeout(500)
+        assert g.ev(f'{G}.P.tx') == x + 1, f'{kind} 采完以后还是走不过去'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

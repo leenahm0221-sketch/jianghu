@@ -1,7 +1,9 @@
 /* ---------------- map / entities ---------------- */
 function tileAt(x, y) { if (x < 0 || y < 0 || x >= map.w || y >= map.h) return 'M'; return map.rows[y][x]; }
 const resKey = (x, y) => `${map.id}:${x},${y}`;
-const isDepleted = (x, y) => { const t = depleted[resKey(x, y)]; return t != null && t > frame; };
+/* 采过的格子：时间没到算采空；时间到了但上面正站着人或怪，也先不长回来，等走开再长 */
+const isDepleted = (x, y) => { const t = depleted[resKey(x, y)]; if (t == null) return false; if (t > frame) return true;
+  return (P.tx === x && P.ty === y) || enemies.some(e => !e.dead && e.tx === x && e.ty === y); };
 const LOOT_NAME = { J: '石刻', '*': '草药', '&': '灵芝', 'O': '铁矿', 'X': '旧木箱', 'm': '棉花' };
 /* 点一下地上的东西，看它叫什么 */
 const TILE_NAME = { '.': '草地', ',': '长草', ';': '林间空地', f: '野花', r: '石头', q: '灌木', o: '水井', T: '树', c: '山崖', k: '竹子', M: '大山', '~': '河水', W: '城墙', Q: '城门', P: '雪松', '^': '台阶', '_': '石板地', '=': '大路', E: '大路', B: '木桥', R: '屋顶', '#': '墙', D: '门', F: '篱笆', S: '告示牌', i: '冰崖', v: '碎石地', y: '沙地', U: '石碑', H: '屋里', '%': '雪地' };
@@ -30,6 +32,8 @@ function chestLeft(x, y) {
   const v = S && S.flags['chest_' + map.id + `${x},${y}`];
   return typeof v === 'number' ? Math.max(0, v - Date.now()) : 0;
 }
+/* 挡路吗：草药、灵芝、矿、棉花采完以后只剩一点残根碎石，人能走过去，长回来以前都能走 */
+function blocks(x, y) { const t = tileAt(x, y); return SOLID.has(t) && !(RES_TILES[t] && isDepleted(x, y)); }
 function lootable(x, y) {
   if (x < 0 || y < 0 || x >= map.w || y >= map.h) return false;
   const t = map.rows[y][x];
@@ -80,7 +84,7 @@ function occupied(x, y, self) {
 }
 function canMove(x, y, self) {
   const t = tileAt(x, y);
-  if (SOLID.has(t) && !((t === '*' || t === '&') && isDepleted(x, y))) return false;
+  if (blocks(x, y)) return false;
   if (self !== P && t === 'E') return false;
   return !occupied(x, y, self);
 }
