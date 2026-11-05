@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v60 ' + FAST_NAME[FAST] : 'v60', 156, 0, 2, 'right');
+  txt(FAST ? 'v61 ' + FAST_NAME[FAST] : 'v61', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -892,8 +892,8 @@ function drawEnemy(e, sx, sy) {
   }
   if (e.stunT > 0) for (let k = 0; k < 3; k++) { const a = frame / 8 + k * 2.1; R(sx + 8 + Math.cos(a) * 6, sy - 2 + Math.sin(a) * 2, 1, 1, 3); }
   if (e === P.target && frame % 30 < 20) { R(sx + 6, sy - 10, 5, 1, 3); R(sx + 7, sy - 9, 3, 1, 3); R(sx + 8, sy - 8, 1, 1, 3); }
-  if (!d.dummy && e.hp < e.max) {
-    const w = d.boss ? 16 : 12, x0 = sx + (16 - w) / 2;
+  if (!d.dummy && (e.hp < e.max || fighting(e))) {
+    const w = d.boss || d.dboss ? 18 : 16, x0 = sx + (16 - w) / 2;
     R(x0 - 1, sy - 4, w + 2, 3, 3); R(x0, sy - 3, Math.max(0, Math.round(w * e.hp / e.max)), 1, 0);
   }
 }
@@ -1180,6 +1180,14 @@ function headTag(cx, top, name, sectShort, camp, title) {
   else txtOutline(label, cx, top, 'center');
   if (title) { const tw2 = tw(title); txtOutline(title, cx, top - 12, 'center'); }
 }
+/* 正在和你打的怪：你锁定的那只，或者已经被惹毛、在 4 格内的 */
+const fighting = e => !e.dead && !ED(e).dummy && (e === P.target || (e.adj && Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty) <= 4));
+function foeInFocus() {
+  if (P.target && !P.target.dead && enemies.includes(P.target)) return P.target;
+  let best = null, bd = 99;
+  for (const e of enemies) if (fighting(e)) { const d = Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty); if (d < bd) { bd = d; best = e; } }
+  return best;
+}
 function renderHeadTags() {
   if (S.showTag === false || dlg) return;
   for (const e of enemies) {
@@ -1216,11 +1224,7 @@ function renderUI() {
   renderNpcTags();
   renderLootTag();
   renderPeek();
-  const tg = P.target;
-  if (tg && !tg.dead && !dlg && !menu) {
-    const name = `${tg.name || ED(tg).name}${ED(tg).lv && !ED(tg).dummy ? ' ' + ED(tg).lv + '级' : ''}`, w = tw(name) + 6, x = Math.round(tg.px + 8 - cam.x - w / 2), y = Math.round(tg.py - cam.y - 24);
-    R(x, y, w, 12, 0); R(x, y + 11, w, 1, 3); txt(name, x + 3, y, 3);
-  }
+  /* 对手的名字和血量统一放在上方的对手面板里，头顶只留血条和小箭头，不和自己的名字叠在一起 */
   for (const f of fx) txtOutline(f.text, f.x - cam.x, f.y - cam.y - 8 - (45 - f.t) * 0.35);
   /* 左上角一直写着现在在哪张地图（进图时中间的大横幅显示期间先不重复） */
   if (map && !menu && !(banner && banner.t > 0)) {
@@ -1235,7 +1239,16 @@ function renderUI() {
   if (menu) renderMenu();
   renderInspect();
   const fm = !!(menu && menu.tab === 5 && !menu.detail); if (fm !== fullMapOn) { fullMapOn = fm; gameEl.classList.toggle('fullmap', fm); }
-  if (banner && !menu) {
+  /* 对手面板：正在打的怪的名字、等级、血量，固定在画面上方正中 */
+  const foe = !menu && !dlg ? foeInFocus() : null;
+  if (foe) {
+    const d = ED(foe), name = `${foe.name || d.name}${d.dummy ? '' : '  ' + d.lv + '级'}`, hpTxt = d.dummy ? '' : `${Math.max(0, Math.ceil(foe.hp))}/${foe.max}`;
+    const w = Math.max(96, tw(name) + tw(hpTxt) + 18), x = Math.round(80 - w / 2), y = HUD_H + 3;
+    R(x, y, w, 24, 3); R(x + 1, y + 1, w - 2, 22, 0); R(x + 2, y + 2, w - 4, 20, 3);
+    txt(name, x + 5, y + 2, 0); txt(hpTxt, x + w - 5, y + 2, 1, 'right');
+    bar(x + 5, y + 15, w - 10, 5, foe.hp / foe.max, 0);
+  }
+  if (banner && !menu && !foe) {
     const w = tw(banner.text) + 18;
     box(80 - w / 2, HUD_H + 4, w, 17); txt(banner.text, 80, HUD_H + 7, 3, 'center');
   }
