@@ -3842,7 +3842,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v55 ' + FAST_NAME[FAST] : 'v55', 156, 0, 2, 'right');
+  txt(FAST ? 'v56 ' + FAST_NAME[FAST] : 'v56', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -3913,6 +3913,37 @@ function drawTile0(t, sx, sy, mx, my) {
     else drawTile0(f, sx, sy, mx, my);
     RMAP = keep;
   };
+  /* 岩石（山崖 c、山壁 M）：相连的岩石连成一整面岩壁，露在外面的边是圆角、黑描边，
+     顶上一道亮边、底下一道阴影，中间有裂纹和碎点；单独一块就是一块圆滚滚的大石头 */
+  function rock(mountain) {
+    const isR = (x, y) => { const c = tileAt(x, y); return c === 'c' || c === 'M'; };
+    const up = isR(mx, my - 1), dn = isR(mx, my + 1), lf = isR(mx - 1, my), rt = isR(mx + 1, my);
+    if (!(up && dn && lf && rt)) base();
+    const rad = 4;
+    const inside = (x, y) => {
+      const cx = x < rad && !lf ? rad - x : x > 15 - rad && !rt ? x - (15 - rad) : 0;
+      const cy = y < rad && !up ? rad - y : y > 15 - rad && !dn ? y - (15 - rad) : 0;
+      return cx * cx + cy * cy <= rad * rad;
+    };
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+      if (!inside(x, y)) continue;
+      const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1) ||
+        (x === 0 && !lf) || (x === 15 && !rt) || (y === 0 && !up) || (y === 15 && !dn);
+      let c = 2;
+      if (edge) c = 3;
+      else if (!up && y <= 2) c = 1;                       /* 顶上受光 */
+      else if (!dn && y >= 12) c = (x + y) % 2 ? 3 : 2;      /* 底下背光 */
+      else if (!lf && x <= 1) c = 1;
+      R(sx + x, sy + y, 1, 1, c);
+    }
+    /* 裂纹：每块位置不同 */
+    const k1 = hs % 7, k2 = (hs >> 3) % 6;
+    R(sx + 4 + k1, sy + 4, 1, 3, 3); R(sx + 5 + k1, sy + 7, 1, 2, 3); R(sx + 3 + k1, sy + 6, 1, 1, 3);
+    if (hs % 3) { R(sx + 3, sy + 9 + (k2 % 3), 3, 1, 3); R(sx + 6, sy + 10 + (k2 % 3), 2, 1, 3); }
+    R(sx + 2 + k2 * 2, sy + 3 + (k1 % 3), 1, 1, 1); R(sx + 10 - k2, sy + 11, 1, 1, 1);
+    if (mountain) { R(sx + 2, sy + 6, 5, 1, 3); R(sx + 9, sy + 3, 4, 1, 3); R(sx + 8, sy + 12, 5, 1, 1); }  /* 山壁多几道岩层 */
+    if (isSnow && !up) R(sx + 3, sy + 1, 10, 2, 0);
+  }
   switch (t) {
     case '.': if (map && floorOf(map) !== '.') base(); else grass(); break;   /* 别的地面上零星的草地格也跟着地面走 */
     case 'H': if (isSnow) snow(); else if (map && map.hfloor === '_' && !darkGround()) flag_(); else base(); break;   /* 房子底下：深色地面就铺地面本身，不铺白石板 */
@@ -3955,13 +3986,7 @@ function drawTile0(t, sx, sy, mx, my) {
         R(sx + x + 2, sy + 16 - h + 2, 3, 1, 3); R(sx + x + 4, sy + 16 - h + 1, 1, 1, 3); R(sx + x - 3, sy + 16 - h + 6, 3, 1, 3);
       }
       break;
-    case 'c':
-      R(sx, sy, T, T, 2);
-      R(sx, sy, T, 1, 3); R(sx, sy, 1, T, 3);
-      R(sx + 2, sy + 2, 6, 2, 1); R(sx + 2, sy + 4, 2, 3, 1);
-      R(sx + 9, sy + 5, 1, 6, 3); R(sx + 10, sy + 10, 4, 1, 3); R(sx + 4, sy + 11, 1, 4, 3);
-      if (isSnow) R(sx, sy, T, 3, 0);
-      break;
+    case 'c': rock(false); break;
     case 'i':
       R(sx, sy, T, T, 1);
       R(sx + 2, sy + 3, 5, 1, 0); R(sx + 3, sy + 4, 2, 1, 0); R(sx + 9, sy + 9, 5, 1, 0); R(sx + 10, sy + 10, 2, 1, 0);
@@ -4145,10 +4170,7 @@ function drawTile0(t, sx, sy, mx, my) {
       R(sx + 6, sy + 12, 4, 4, 3); R(sx + 7, sy + 13, 1, 2, 2);
       break;
     }
-    case 'M':
-      R(sx, sy, T, T, 2);
-      for (let i = 0; i < 16; i += 4) { R(sx + ((i + (hs % 4)) % 16), sy + i, 5, 1, 3); R(sx + ((i * 3 + 6) % 14), sy + i + 2, 3, 1, 1); }
-      break;
+    case 'M': rock(true); break;
     case '~': {
       R(sx, sy, T, T, 2);
       const o = Math.floor(frame / 12) % 8;
