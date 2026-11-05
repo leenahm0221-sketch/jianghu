@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v56 ' + FAST_NAME[FAST] : 'v56', 156, 0, 2, 'right');
+  txt(FAST ? 'v57 ' + FAST_NAME[FAST] : 'v57', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -82,6 +82,15 @@ const SPR_HERB = [
   '   323   ',
   '   333   ',
 ]
+const SPR_FLOWER = [
+  ' 3 3 ',
+  '31313',
+  ' 333 ',
+  '31313',
+  ' 3 3 ',
+  '  3  ',
+  ' 33  ',
+]
 const SPR_COTTON_BALL = ['  33  ', ' 3003 ', '300003', '300013', ' 3113 ', '  33  '];
 function floorOf(m) {
   if (m._floor) return m._floor;
@@ -89,7 +98,7 @@ function floorOf(m) {
   return (m._floor = (Object.entries(c).sort((a, b) => b[1] - a[1])[0] || ['.'])[0]);
 }
 /* 深色地面（碎石山、山洞）上的障碍物：整体提亮一档、保留黑描边，一眼和地面分开 */
-const OBJ_TILES = new Set(['T', 'P', 'k', 'q', 'r', '*', '&', 'O', 'm', 'f', 'c', 'i', 'S', 'J', 'X', 'o', 'F', 'M']);
+const OBJ_TILES = new Set(['T', 'P', 'k', 'q', 'r', '*', '&', 'O', 'm', 'f', 'c', 'i', 'S', 'J', 'X', 'o', 'F', 'M', 'U']);
 const darkGround = () => map && (map.ground === 'cave' || floorOf(map) === 'v');
 function drawTile(t, sx, sy, mx, my) {
   RMAP = OBJ_TILES.has(t) && darkGround() ? [0, 0, 1, 3] : null;
@@ -129,8 +138,8 @@ function drawTile0(t, sx, sy, mx, my) {
   };
   /* 岩石（山崖 c、山壁 M）：相连的岩石连成一整面岩壁，露在外面的边是圆角、黑描边，
      顶上一道亮边、底下一道阴影，中间有裂纹和碎点；单独一块就是一块圆滚滚的大石头 */
-  function rock(mountain) {
-    const isR = (x, y) => { const c = tileAt(x, y); return c === 'c' || c === 'M'; };
+  function rock(mountain, icy) {
+    const isR = (x, y) => { const c = tileAt(x, y); return icy ? c === 'i' : c === 'c' || c === 'M'; };
     const up = isR(mx, my - 1), dn = isR(mx, my + 1), lf = isR(mx - 1, my), rt = isR(mx + 1, my);
     if (!(up && dn && lf && rt)) base();
     const rad = 4;
@@ -148,7 +157,7 @@ function drawTile0(t, sx, sy, mx, my) {
       else if (!up && y <= 2) c = 1;                       /* 顶上受光 */
       else if (!dn && y >= 12) c = (x + y) % 2 ? 3 : 2;      /* 底下背光 */
       else if (!lf && x <= 1) c = 1;
-      R(sx + x, sy + y, 1, 1, c);
+      R(sx + x, sy + y, 1, 1, icy && c < 3 ? c - 1 < 0 ? 0 : c - 1 : c);   /* 冰崖：整体亮一档，像冻住的冰 */
     }
     /* 裂纹：每块位置不同 */
     const k1 = hs % 7, k2 = (hs >> 3) % 6;
@@ -162,10 +171,20 @@ function drawTile0(t, sx, sy, mx, my) {
     case '.': if (map && floorOf(map) !== '.') base(); else grass(); break;   /* 别的地面上零星的草地格也跟着地面走 */
     case 'H': if (isSnow) snow(); else if (map && map.hfloor === '_' && !darkGround()) flag_(); else base(); break;   /* 房子底下：深色地面就铺地面本身，不铺白石板 */
     case '_': flag_(); break;
-    case 'U':
-      base(); R(sx + 1, sy + 3, 14, 13, 3); R(sx + 3, sy + 1, 10, 3, 3);
-      R(sx + 1, sy + 3, 2, 2, 2); R(sx + 13, sy + 3, 2, 2, 2); R(sx + 5, sy + 13, 6, 1, 2); R(sx + 4, sy + 10, 8, 1, 2); R(sx + 6, sy + 7, 4, 1, 2);
+    case 'U': {
+      /* 洞口：一块岩石，中间拱形的黑洞，洞里越往深处越黑 */
+      base();
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+        const dx = x - 7.5, top = y < 6 ? (dx * dx) / 64 + ((6 - y) * (6 - y)) / 36 : 0;
+        if (top > 1) continue;
+        const edge = top > 0.72 || x === 0 || x === 15;
+        R(sx + x, sy + y, 1, 1, edge ? 3 : y < 3 && dx < 0 ? 1 : 2);
+      }
+      for (let y = 5; y < 16; y++) { const hw = y < 8 ? [2, 4, 5][y - 5] : 5; R(sx + 8 - hw, sy + y, hw * 2, 1, 3); }
+      R(sx + 5, sy + 9, 1, 1, 2); R(sx + 10, sy + 12, 1, 1, 2);   /* 洞里一点微光 */
+      R(sx + 2, sy + 4, 2, 1, 3); R(sx + 12, sy + 3, 1, 2, 3);   /* 岩石裂纹 */
       break;
+    }
     case '%': snow(); break;
     case '^':
       R(sx, sy, T, T, 1);
@@ -193,20 +212,20 @@ function drawTile0(t, sx, sy, mx, my) {
       R(sx + 7, sy, 2, 1, 3);
       break;
     case 'k':
+      /* 竹子：三根竹竿，一节一节的竹节，节上斜伸出竹叶 */
       base();
-      for (const [x, h] of [[2, 16], [7, 14], [12, 16]]) {
-        R(sx + x, sy + 16 - h, 2, h, 2); R(sx + x, sy + 16 - h, 1, h, 3);
-        for (let y = 16 - h + 3; y < 16; y += 4) R(sx + x - 1, sy + y, 4, 1, 3);
-        R(sx + x + 2, sy + 16 - h + 2, 3, 1, 3); R(sx + x + 4, sy + 16 - h + 1, 1, 1, 3); R(sx + x - 3, sy + 16 - h + 6, 3, 1, 3);
+      for (const [x, h, s] of [[2, 16, 1], [7, 13, -1], [11, 15, 1]]) {
+        const y0 = 16 - h;
+        R(sx + x, sy + y0, 3, h, 2); R(sx + x, sy + y0, 1, h, 1); R(sx + x + 2, sy + y0, 1, h, 3);
+        for (let y = y0 + 3; y < 16; y += 4) R(sx + x, sy + y, 3, 1, 3);
+        for (let y = y0 + 2; y < 13; y += 4) {
+          const lx = s > 0 ? x + 3 : x - 3;
+          R(sx + lx, sy + y, 3, 1, 3); R(sx + lx + (s > 0 ? 2 : -1), sy + y - 1, 2, 1, 3);
+        }
       }
       break;
     case 'c': rock(false); break;
-    case 'i':
-      R(sx, sy, T, T, 1);
-      R(sx + 2, sy + 3, 5, 1, 0); R(sx + 3, sy + 4, 2, 1, 0); R(sx + 9, sy + 9, 5, 1, 0); R(sx + 10, sy + 10, 2, 1, 0);
-      R(sx + 6, sy + 6, 1, 4, 2); R(sx + 7, sy + 10, 3, 1, 2);
-      if (tileAt(mx, my - 1) !== 'i') R(sx, sy, T, 1, 2);
-      break;
+    case 'i': rock(false, true); break;
     case 'm':
       /* 棉花：细细的黑枝，顶着三团雪白的棉桃，没有树冠 */
       base();
@@ -215,14 +234,19 @@ function drawTile0(t, sx, sy, mx, my) {
       R(sx + 2, sy + 12, 3, 1, 2); R(sx + 9, sy + 13, 3, 1, 2);
       if (!isDepleted(mx, my)) { spr(SPR_COTTON_BALL, sx + 1, sy + 4); spr(SPR_COTTON_BALL, sx + 9, sy + 2); spr(SPR_COTTON_BALL, sx + 4, sy); }
       break;
-    case 'o':
+    case 'o': {
+      /* 水井：一圈石头井栏，井口黑黑的水；上面木架子挂着吊桶 */
       base();
-      for (let y = 0; y < 10; y++) for (let x = 0; x < 14; x++) {
-        const ddx = x - 6.5, ddy = y - 4.5, rr = ddx * ddx / 42 + ddy * ddy / 22;
-        if (rr < 1) R(sx + 1 + x, sy + 6 + y, 1, 1, rr > 0.55 ? ((x + y) % 3 ? 1 : 3) : rr > 0.4 ? 3 : 2);
-      }
-      R(sx + 2, sy + 1, 1, 9, 3); R(sx + 13, sy + 1, 1, 9, 3); R(sx + 1, sy, 14, 2, 3); R(sx + 7, sy + 2, 2, 4, 3);
+      R(sx + 2, sy + 1, 2, 10, 3); R(sx + 12, sy + 1, 2, 10, 3); R(sx + 3, sy + 2, 1, 8, 2); R(sx + 13, sy + 2, 1, 8, 2);
+      R(sx + 1, sy, 14, 2, 3); R(sx + 2, sy, 12, 1, 2);
+      R(sx + 8, sy + 2, 1, 3, 3); R(sx + 7, sy + 5, 3, 3, 3); R(sx + 8, sy + 6, 1, 1, 1);
+      const rows = [[3, 10], [1, 14], [1, 14], [1, 14], [1, 14], [2, 12], [3, 10]];
+      rows.forEach(([x0, w], k) => { const y = sy + 9 + k; R(sx + x0, y, w, 1, 1); R(sx + x0, y, 1, 1, 3); R(sx + x0 + w - 1, y, 1, 1, 3); });
+      R(sx + 3, sy + 9, 10, 1, 3); R(sx + 3, sy + 15, 10, 1, 3);
+      R(sx + 3, sy + 10, 10, 2, 3); R(sx + 5, sy + 10, 3, 1, 2);   /* 井口和水面反光 */
+      for (const x of [4, 8, 11]) R(sx + x, sy + 12 + (x % 2), 1, 2, 2);   /* 井栏石缝 */
       break;
+    }
     case ';': forest(); break;
     case 'v':
       R(sx, sy, T, T, 2);
@@ -329,14 +353,21 @@ function drawTile0(t, sx, sy, mx, my) {
       if (tileAt(mx, my + 1) !== '=' && tileAt(mx, my + 1) !== 'E' && tileAt(mx, my + 1) !== 'B') R(sx, sy + 15, T, 1, 1);
       break;
     case ',': {
-      R(sx, sy, T, T, 1);
-      const sway = (Math.floor(frame / 30) + mx) % 2;
-      for (let i = 0; i < 4; i++) { const x = sx + 1 + i * 4; R(x + sway, sy + 3, 1, 4, 2); R(x + 2, sy + 2, 1, 5, 2); R(x + 1, sy + 10, 1, 4, 2); R(x + 3 - sway, sy + 9, 1, 5, 2); }
+      /* 长草：铺在地面上的一丛丛尖草叶，随风轻轻摆；不铺灰底，草地边缘不会是方方正正的色块 */
+      base();
+      const sway = (Math.floor(frame / 30) + mx + my) % 2;
+      for (const [bx, by] of [[1, 1], [9, 0], [5, 8], [12, 9]]) {
+        const x = sx + bx, y = sy + by;
+        R(x + 3, y + 1, 1, 6, 3); R(x + 3 + sway, y, 1, 1, 3);
+        R(x + 1, y + 3, 1, 4, 2); R(x + 2, y + 5, 1, 2, 3); R(x + sway, y + 2, 1, 1, 2);
+        R(x + 5, y + 3, 1, 4, 2); R(x + 4, y + 5, 1, 2, 3); R(x + 6 + sway, y + 2, 1, 1, 2);
+      }
       break;
     }
     case 'f':
+      /* 野花：两朵四瓣小花，白花瓣、黑描边、深色花心，下面有茎和叶 */
       base();
-      for (const [ox, oy] of [[4, 4], [10, 9]]) { R(sx + ox, sy + oy - 1, 1, 1, 2); R(sx + ox - 1, sy + oy, 3, 1, 2); R(sx + ox, sy + oy + 1, 1, 1, 2); R(sx + ox, sy + oy, 1, 1, 3); }
+      for (const [fx, fy] of [[2, 2], [9, 8], [10, 1]]) spr(SPR_FLOWER, sx + fx, sy + fy);
       break;
     case 'T': {
       if (inForest && hs % 3 === 0) { /* 林中的柏树：细高 */
