@@ -306,6 +306,8 @@ function buy(who, ids, back) {
     S.items[id] = (S.items[id] || 0) + 1; toast(`得到 ${nameOf(id)}`); save(); buy(who, ids, back);
   });
 }
+/* 装备卖价：有定价的按定价，店里买的按买价一半 */
+const eqSell = id => EQ[id].sell != null ? EQ[id].sell : Math.floor((EQ[id].price || 0) / 2);
 function spareGear() {
   const cnt = {};
   for (const id of S.gear) cnt[id] = (cnt[id] || 0) + 1;
@@ -315,7 +317,7 @@ function sellMenu(who, buyer, back) {
   const list = Object.keys(ITEMS).filter(k => (buyer === 'any' ? ITEMS[k].sell > 0 && !ITEMS[k].book : ITEMS[k].buyer === buyer) && S.items[k] > 0).map(k => ({
     txt: `${ITEMS[k].name}×${S.items[k]} ${ITEMS[k].sell * S.items[k]}两`, go: () => { S.silver += ITEMS[k].sell * S.items[k]; S.items[k] = 0; },
   }));
-  if (buyer === 'smith' || buyer === 'any') for (const id of spareGear()) list.push({ txt: `${EQ[id].name} ${EQ[id].sell}两`, go: () => { S.gear.splice(S.gear.indexOf(id), 1); S.silver += EQ[id].sell; } });
+  if (buyer === 'smith' || buyer === 'any') for (const id of spareGear()) { const pr = eqSell(id); list.push({ txt: `${EQ[id].name} ${pr}两`, go: () => { S.gear.splice(S.gear.indexOf(id), 1); S.silver += pr; } }); }
   const PER = 4, pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(sellMenu.pg || 0, pages - 1), shown = list.slice(pg * PER, pg * PER + PER);
   if (!list.length) { sellMenu.pg = 0; return say(who, '你身上没有我收的东西。', back); }
   const more = pages > 1 ? [`下一页（${pg + 1}/${pages}）`] : [];
