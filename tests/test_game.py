@@ -250,6 +250,29 @@ def 采集自动转向_有怪先打怪(b):
     g.close()
 
 @case
+def 所有地图_物件底下都是本图地面_不留白方块(b):
+    """树、石头、草药、石刻……画在任何地图上，四角都要和这张图的地面一样，不能出现白底方块"""
+    g = Game(b); g.new_game()
+    bad = g.ev(f'''new Promise(res => requestAnimationFrame(() => {{ const G = {G}, out = [], c = G.g, OBJ = 'TPqr*&OmfSJXo';
+      for (const id of Object.keys(G.MAPS)) {{
+        G.warp(id, -1, -1); G.enemies.length = 0;
+        const m = G.map; let fl = null, cnt = {{}};
+        for (const r of m.rows) for (const ch of r) if (!G.SOLID.has(ch)) cnt[ch] = (cnt[ch] || 0) + 1;
+        fl = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0];
+        for (const t of OBJ) {{
+          c.setTransform(1, 0, 0, 1, 0, 0);
+          G.drawTile(fl, 0, 40, 3, 3); G.drawTile(t, 40, 40, 3, 3);
+          for (const [x, y] of [[0, 15], [15, 15]]) {{
+            const a = c.getImageData(x, 40 + y, 1, 1).data, b2 = c.getImageData(40 + x, 40 + y, 1, 1).data;
+            if (a[0] !== b2[0] || a[1] !== b2[1] || a[2] !== b2[2]) {{ out.push(id + ':' + t); break; }}
+          }}
+        }}
+      }}
+      res(out); }}))''')
+    assert not bad, '这些物件底下不是本图地面：' + ', '.join(bad[:20])
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

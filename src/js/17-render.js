@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v53 ' + FAST_NAME[FAST] : 'v53', 156, 0, 2, 'right');
+  txt(FAST ? 'v54 ' + FAST_NAME[FAST] : 'v54', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -88,16 +88,17 @@ function floorOf(m) {
   const c = {}; for (const r of m.rows) for (const ch of r) if (!SOLID.has(ch)) c[ch] = (c[ch] || 0) + 1;
   return (m._floor = (Object.entries(c).sort((a, b) => b[1] - a[1])[0] || ['.'])[0]);
 }
-const rocky = () => map && !map.ground && floorOf(map) === 'v';
+/* 深色地面（碎石山、山洞）上的障碍物：整体提亮一档、保留黑描边，一眼和地面分开 */
+const OBJ_TILES = new Set(['T', 'P', 'k', 'q', 'r', '*', '&', 'O', 'm', 'f', 'c', 'i', 'S', 'J', 'X', 'o', 'F']);
+const darkGround = () => map && (map.ground === 'cave' || floorOf(map) === 'v');
 function drawTile(t, sx, sy, mx, my) {
+  RMAP = OBJ_TILES.has(t) && darkGround() ? [0, 0, 1, 3] : null;
+  drawTile0(t, sx, sy, mx, my);
+  RMAP = null;
+}
+function drawTile0(t, sx, sy, mx, my) {
   const hs = hash(mx, my);
   const grass = () => {
-    if (rocky()) {   /* 华山、黑木崖这类石头山：地面是深灰碎石，树、草、石刻底下也铺碎石，不留白方块 */
-      R(sx, sy, T, T, 2);
-      R(sx + (hs % 13) + 1, sy + ((hs >> 5) % 13) + 1, 2, 1, 3); R(sx + ((hs >> 9) % 12) + 2, sy + ((hs >> 13) % 12) + 2, 1, 1, 1);
-      if (hs % 4 === 0) { R(sx + 3, sy + 10, 4, 1, 3); R(sx + 6, sy + 11, 3, 1, 3); }
-      return;
-    }
     if (map && map.ground === 'cave') { R(sx, sy, T, T, 2); if (hs % 3 === 0) R(sx + (hs % 12) + 2, sy + ((hs >> 4) % 12) + 2, 2, 1, 3); if (hs % 5 === 0) R(sx + ((hs >> 7) % 10) + 3, sy + ((hs >> 11) % 10) + 3, 1, 1, 1); return; }
     R(sx, sy, T, T, 0);
     const a = 2 + (hs % 9), b = 3 + ((hs >> 4) % 9), c = 3 + ((hs >> 8) % 9), d = 1 + ((hs >> 12) % 10);
@@ -119,10 +120,16 @@ function drawTile(t, sx, sy, mx, my) {
     R(sx + (my % 2 ? 4 : 11), sy, 1, 7, 1); R(sx + (my % 2 ? 12 : 3), sy + 8, 1, 7, 1);
   }
   const sand = () => { R(sx, sy, T, T, 0); if (hs % 4 === 0) R(sx + (hs % 11) + 2, sy + ((hs >> 4) % 11) + 2, 2, 1, 1); if (hs % 7 === 0) R(sx + ((hs >> 6) % 9) + 3, sy + ((hs >> 10) % 9) + 3, 3, 1, 1); };
-  const base = () => (inForest ? forest() : isSnow ? snow() : map && map.ground === 'sand' ? sand() : grass());
+  /* 东西底下一律铺这张地图本来的地面（草地、林地、雪地、沙地、碎石、山洞），不留白方块 */
+  const base = () => {
+    const f = map ? floorOf(map) : '.', keep = RMAP; RMAP = null;
+    if (f === '.' || f === t) { if (inForest) forest(); else if (isSnow) snow(); else if (map && map.ground === 'sand') sand(); else grass(); }
+    else drawTile0(f, sx, sy, mx, my);
+    RMAP = keep;
+  };
   switch (t) {
-    case '.': grass(); break;
-    case 'H': if (isSnow) snow(); else if (map && map.hfloor === '_') flag_(); else base(); break;
+    case '.': if (map && floorOf(map) !== '.') base(); else grass(); break;   /* 别的地面上零星的草地格也跟着地面走 */
+    case 'H': if (isSnow) snow(); else if (map && map.hfloor === '_' && !darkGround()) flag_(); else base(); break;   /* 房子底下：深色地面就铺地面本身，不铺白石板 */
     case '_': flag_(); break;
     case 'U':
       base(); R(sx + 1, sy + 3, 14, 13, 3); R(sx + 3, sy + 1, 10, 3, 3);
@@ -146,7 +153,7 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 6, sy + 9, 4, 6, 3); R(sx + 7, sy + 10, 2, 4, 1);
       break;
     case 'P':
-      if (isSnow) snow(); else base();
+      base();
       R(sx + 7, sy + 12, 2, 4, 3);
       for (let y = 0; y < 13; y++) {
         const w = Math.min(14, 2 + (y % 5) * 2 + Math.floor(y / 5) * 2), x0 = sx + 8 - w / 2;
@@ -155,7 +162,7 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 7, sy, 2, 1, 3);
       break;
     case 'k':
-      grass();
+      base();
       for (const [x, h] of [[2, 16], [7, 14], [12, 16]]) {
         R(sx + x, sy + 16 - h, 2, h, 2); R(sx + x, sy + 16 - h, 1, h, 3);
         for (let y = 16 - h + 3; y < 16; y += 4) R(sx + x - 1, sy + y, 4, 1, 3);
@@ -203,7 +210,7 @@ function drawTile(t, sx, sy, mx, my) {
       if (hs % 6 === 0) { R(sx + 6, sy + 7, 3, 2, 2); R(sx + 7, sy + 6, 1, 1, 2); }
       break;
     case 'q': {
-      grass();
+      base();
       for (let y = 0; y < 13; y++) for (let x = 0; x < 16; x++) {
         const ddx = x - 7.5, ddy = y - 6.5, rr = ddx * ddx / 64 + ddy * ddy / 42;
         if (rr < 1) R(sx + x, sy + y, 1, 1, rr > 0.78 ? 3 : 2);
@@ -384,7 +391,7 @@ function drawTile(t, sx, sy, mx, my) {
       else if ((mx + my) % 3 === 0) { R(sx + 4, sy + 4, 8, 6, 3); R(sx + 5, sy + 5, 6, 4, 1); R(sx + 7, sy + 5, 1, 4, 3); R(sx + 5, sy + 7, 6, 1, 3); }
       break;
     case 'F':
-      grass();
+      base();
       R(sx, sy + 5, T, 2, 2); R(sx, sy + 11, T, 2, 2); R(sx, sy + 5, T, 1, 3);
       R(sx + 2, sy + 2, 2, 13, 3); R(sx + 12, sy + 2, 2, 13, 3);
       break;
@@ -398,20 +405,20 @@ function drawTile(t, sx, sy, mx, my) {
       R(sx + 9, sy + 8, 1, 3, 3); R(sx + 10, sy + 10, 2, 1, 3); R(sx + 4, sy + 11, 2, 1, 3);
       break;
     case 'S':
-      grass();
+      base();
       R(sx + 7, sy + 9, 2, 7, 3);
       R(sx + 1, sy + 2, 14, 8, 3); R(sx + 2, sy + 3, 12, 6, 1);
       R(sx + 4, sy + 5, 8, 1, 2); R(sx + 4, sy + 7, 5, 1, 2);
       break;
     case 'J': {
-      grass();
+      base();
       R(sx + 2, sy + 13, 12, 3, 3); R(sx + 3, sy + 1, 10, 13, 3); R(sx + 4, sy + 2, 8, 11, 1);   /* 石刻一直立在那里，谁看过都一样，人人都能看 */
       R(sx + 5, sy + 1, 6, 1, 3);
       for (const cx of [6, 9]) for (let yy = 4; yy < 12; yy += 2) R(sx + cx, sy + yy, 1, 1, 3);
       break;
     }
     case 'X': {
-      grass();
+      base();
       const open = map && chestLeft(mx, my) > 0;
       R(sx + 1, sy + 15, 14, 1, 2);
       R(sx + 1, sy + 7, 14, 8, 3); R(sx + 2, sy + 8, 12, 6, open ? 3 : 1);

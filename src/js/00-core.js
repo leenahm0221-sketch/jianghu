@@ -20,7 +20,9 @@ const world = document.createElement('canvas'); world.width = GW; world.height =
 const g = world.getContext('2d');
 g.imageSmoothingEnabled = false;
 
-function R(x, y, w, h, c) { g.fillStyle = PAL[c]; g.fillRect(Math.floor(x), Math.floor(y), w, h); }
+/* RMAP：画东西时临时换色（深色地面上把障碍物整体提亮一档，免得和地面糊成一片） */
+let RMAP = null;
+function R(x, y, w, h, c) { g.fillStyle = PAL[RMAP ? RMAP[c] : c]; g.fillRect(Math.floor(x), Math.floor(y), w, h); }
 function box(x, y, w, h) { R(x, y, w, h, 3); R(x + 1, y + 1, w - 2, h - 2, 0); R(x + 2, y + 2, w - 4, h - 4, 3); R(x + 3, y + 3, w - 6, h - 6, 0); }
 
 /* Bitmap font: glyphs pre-rasterised from BoutiqueBitmap9x9 (SIL OFL 1.1, by Zitong Chen / 精品点阵体). Drawn 1:1 on the 160×144 screen. */
