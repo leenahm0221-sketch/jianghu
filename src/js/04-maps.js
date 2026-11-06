@@ -248,6 +248,24 @@ function genArea(id, sp) {
     for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { if (!keep.has(K(px + ax, py + ay))) set(px + ax, py + ay, sp.floor); keep.add(K(px + ax, py + ay)); }
     npcDefs.push({ id: 'huolang_' + id, name: '货郎', role: '行脚商', icon: '货', x: px, y: py, dir: 'down', look: { body: 'buyi', hat: 'douli' }, talk: () => peddlerTalk() });
   }
+  /* 山岭：野外地图上一道道连绵的山，不压路、不挡出口和房子；山洞的洞口就开在山脚 */
+  const ridges = sp.ground === 'cave' ? 0 : sp.ridges != null ? sp.ridges : Math.round(W * H / 1100);
+  for (let k = 0; k < ridges; k++) {
+    let cx = 4 + rng() * (W - 8), cy = 4 + rng() * (H - 8);
+    const len = 3 + Math.floor(rng() * 5), ang = rng() * Math.PI;
+    for (let s = 0; s < len; s++) {
+      const rx = 2 + rng() * 3.5, ry = 1.5 + rng() * 2.5;
+      for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+        const dx = (x - cx) / rx, dy = (y - cy) / ry;
+        if (dx * dx + dy * dy > 1 - rng() * 0.25 || !inside(x, y) || keep.has(K(x, y))) continue;
+        if (Object.values(exits).some(([ex, ey]) => Math.abs(ex - x) + Math.abs(ey - y) <= 4)) continue;
+        if (m[y][x] === '~' || m[y][x] === 'B' || m[y][x] === 'H') continue;
+        m[y][x] = 'M';
+      }
+      cx += Math.cos(ang) * rx * 1.3; cy += Math.sin(ang) * ry * 1.3;
+      if (cx < 4 || cy < 4 || cx > W - 5 || cy > H - 5) break;
+    }
+  }
   /* 树、石头成片生长：粗网格随机值插值出“疏密” */
   const gw = Math.ceil(W / 6) + 2, gh = Math.ceil(H / 6) + 2, grid = [];
   for (let i = 0; i < gw * gh; i++) grid.push(rng());
@@ -284,6 +302,11 @@ function genArea(id, sp) {
   for (const k in exits) if (k[0] === 'U') {
     const [x, y] = exits[k]; m[y][x] = 'U';
     for (const [ax, ay] of [[-1, 0], [1, 0], [-1, -1], [0, -1], [1, -1]]) if (inside(x + ax, y + ay) && !keep.has(K(x + ax, y + ay))) m[y + ay][x + ax] = 'M';
+    /* 洞口开在一座小山脚下：洞口上方堆一座山 */
+    if (sp.ground !== 'cave') for (let yy = y - 6; yy <= y - 1; yy++) for (let xx = x - 6; xx <= x + 6; xx++) {
+      const dx = (xx - x) / 6.5, dy = (yy - (y - 3)) / 3.2;
+      if (dx * dx + dy * dy <= 1 && inside(xx, yy) && !keep.has(K(xx, yy)) && !SOLID.has(m[yy][xx]) && m[yy][xx] !== 'U') m[yy][xx] = 'M';
+    }
   }
   const signs = { ...extraSigns };
   for (const k in exits) {
@@ -515,6 +538,24 @@ for (const id in W_SPECS) {
   if (sp.chests) sp.chests = Math.round(sp.chests * n);
   for (const pt of sp.patches || []) pt[1] = Math.round(pt[1] * n);
 }
+/* 山里的小山洞：每张有山的野外地图再开一两个，洞里的怪、矿、草药跟这一带相配 */
+const SMALL_CAVES = [
+  ['meadow', 'U2', 'tudong', '兔儿坡土洞', [0.78, 0.3], { W: 32, H: 24, seed: 501, res: { O: 4, '&': 1 }, chests: 2, zones: [{ kind: 'fox', n: 8, area: [0, 0, 1, 1] }] }, '兔子、狐狸的窝，新手也能进。'],
+  ['tongguan', 'U2', 'gudong', '潼关古洞', [0.25, 0.75], { W: 36, H: 28, seed: 502, res: { O: 8 }, chests: 2, zones: [{ kind: 'bandit', n: 8, area: [0, 0, 1, 1] }, { kind: 'wolf', n: 5, area: [0, 0, 1, 1] }] }, '古时的藏兵洞，如今住着山贼。'],
+  ['zhongnan', 'U2', 'zndong', '终南山洞', [0.75, 0.7], { W: 34, H: 26, seed: 503, res: { '&': 5, O: 3 }, chests: 2, zones: [{ kind: 'boar', n: 6, area: [0, 0, 1, 1] }, { kind: 'bear', n: 4, area: [0, 0, 1, 1] }] }, '野猪、黑熊出没，洞里灵芝多。'],
+  ['yanmen', 'U2', 'shiku', '雁门石窟', [0.7, 0.3], { W: 38, H: 28, seed: 504, res: { O: 9 }, chests: 2, zones: [{ kind: 'mazei', n: 8, area: [0, 0, 1, 1] }] }, '马贼的藏身处，石壁里有精铁。'],
+  ['shanhai', 'U2', 'haidong', '海边岩洞', [0.3, 0.3], { W: 34, H: 26, seed: 505, res: { O: 7 }, chests: 2, zones: [{ kind: 'kuangfei', n: 6, area: [0, 0, 1, 1] }, { kind: 'jiaozhong', n: 4, area: [0, 0, 1, 1] }] }, '海边的岩洞，常有人私下挖矿。'],
+  ['wudang', 'U2', 'yandong', '武当岩洞', [0.8, 0.85], { W: 34, H: 28, seed: 506, res: { '&': 6 }, chests: 2, zones: [{ kind: 'baozi', n: 7, area: [0, 0, 1, 1] }] }, '金钱豹的老巢，岩缝里长灵芝。'],
+  ['miaojiang', 'U2', 'dudong', '苗疆毒洞', [0.8, 0.25], { W: 38, H: 30, seed: 507, res: { '*': 8, '&': 4 }, chests: 2, zones: [{ kind: 'wdjz', n: 6, area: [0, 0, 1, 1] }, { kind: 'baozi', n: 4, area: [0, 0, 1, 1] }] }, '五毒教养毒物的地方，三七、老山参不少。'],
+  ['guangming', 'U2', 'mimi', '光明顶秘洞', [0.25, 0.7], { W: 36, H: 28, seed: 508, res: { O: 9 }, chests: 2, zones: [{ kind: 'mjzhong', n: 8, area: [0, 0, 1, 1] }] }, '明教的秘洞，寒铁矿藏在深处。'],
+  ['jueqing', 'U2', 'gudi', '绝情谷底', [0.75, 0.8], { W: 38, H: 30, seed: 509, res: { '&': 7 }, chests: 3, zones: [{ kind: 'jqdizi', n: 5, area: [0, 0, 1, 1] }, { kind: 'tiger', n: 4, area: [0, 0, 1, 1] }] }, '谷底深处，奇花异草，也有猛虎。'],
+];
+for (const [parent, key, id, name, [fx, fy], spec, hint] of SMALL_CAVES) {
+  const P0 = W_SPECS[parent]; if (!P0) continue;
+  W_SPECS[id] = CAVE({ ...spec, smallCave: true }); SPEC_NAME[id] = name; AREA_HINT[id] = hint;
+  LINKS.push([parent, key, id, 'S']);
+  (CAVE_AT[parent] || (CAVE_AT[parent] = {}))[key] = [Math.round(P0.W * fx), Math.round(P0.H * fy)];
+}
 const T_SPECS = {
   luoyang: { W: 36, H: 26, seed: 201, street: 12, buildings: [
       { x: 2, y: 2, label: '客栈', kind: 'inn', owner: 'inn_ly' }, { x: 8, y: 2, label: '兵器铺', kind: 'smith', owner: 'smith_ly' },
@@ -614,6 +655,6 @@ const MAPS = {
     spawns: [['taohuadizi', 6, 8], ['taohuadizi', 20, 10], ['taohuadizi', 16, 16]],
   },
 };
-for (const id in GEN) { const g0 = GEN[id], sp = W_SPECS[id] || T_SPECS[id]; MAPS[id] = { name: SPEC_NAME[id], rows: g0.rows, buildings: g0.buildings, signs: g0.signs, spawns: g0.spawns, ground: sp.ground, hfloor: sp.hfloor || (T_SPECS[id] ? '_' : undefined) }; }
+for (const id in GEN) { const g0 = GEN[id], sp = W_SPECS[id] || T_SPECS[id]; MAPS[id] = { name: SPEC_NAME[id], rows: g0.rows, buildings: g0.buildings, signs: g0.signs, spawns: g0.spawns, ground: sp.ground, smallCave: sp.smallCave, hfloor: sp.hfloor || (T_SPECS[id] ? '_' : undefined) }; }
 for (const id in MAPS) { const m = MAPS[id]; m.id = id; m.w = m.rows[0].length; m.h = m.rows.length; m.doors = {}; m.exits = buildExits(id); }
 

@@ -7,7 +7,9 @@ let _danger = null;
 function dangerOf(id) {
   if (!_danger) {
     _danger = {}; const q = [...TOWNS]; TOWNS.forEach(t => (_danger[t] = 0));
-    while (q.length) { const c = q.shift(); for (const l of mapLinks(c)) if (!(l.to in _danger)) { _danger[l.to] = _danger[c] + 1; q.push(l.to); } }
+    /* 屋里、地窖、山脚小山洞跟外面同一档，不算多走一张图 */
+    const same = id => MAPS[id] && (MAPS[id].indoor || MAPS[id].smallCave);
+    while (q.length) { const c = q.shift(); for (const l of mapLinks(c)) if (!(l.to in _danger)) { if (same(l.to)) { _danger[l.to] = _danger[c]; q.unshift(l.to); } else { _danger[l.to] = _danger[c] + 1; q.push(l.to); } } }
   }
   return Math.min(7, _danger[id] == null ? 3 : _danger[id]);
 }

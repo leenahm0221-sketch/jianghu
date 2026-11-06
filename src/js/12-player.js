@@ -144,9 +144,9 @@ function actB() {
 }
 /* 同样是草药丛、灵芝、矿石，不同地方能多采到当地特产 */
 const RES_BONUS = {
-  '*': { shudao: ['sanqi', 0.35], miaojiang: ['sanqi', 0.4], zhongnan: ['fengmi', 0.3], wudang: ['fengmi', 0.3], forest: ['renshen', 0.15], caoyuan: ['renshen', 0.2], jueqing: ['sanqi', 0.25] },
-  '&': { heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 1], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
-  'O': { chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.06], forest: ['jingtie', 0.15] },
+  '*': { dudong: ['sanqi', 0.4], shudao: ['sanqi', 0.35], miaojiang: ['sanqi', 0.4], zhongnan: ['fengmi', 0.3], wudang: ['fengmi', 0.3], forest: ['renshen', 0.15], caoyuan: ['renshen', 0.2], jueqing: ['sanqi', 0.25] },
+  '&': { zndong: ['renshen', 0.15], yandong: ['fengmi', 0.3], dudong: ['renshen', 0.3], gudi: ['xuelian', 0.3], heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 1], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
+  'O': { gudong: ['jingtie', 0.3], shiku: ['jingtie', 0.45], haidong: ['jingtie', 0.35], mimi: ['hantie', 0.35], chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.06], forest: ['jingtie', 0.15] },
 };
 /* 地方的“档次”：看这里的怪有多厉害 */
 function mapTier(id) {

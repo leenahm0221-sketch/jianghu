@@ -119,6 +119,9 @@ const EN = {
   rabbit: { name: '野兔', lv: 1, hp: 30, atk: 0, dodge: 12, step: 26, mv: 1.25, sight: 0, cd: 60, passive: true, beast: 'rabbit', resp: 900 },
   fox: { name: '狐狸', lv: 8, hp: 70, atk: 4, dodge: 16, step: 22, mv: 1.25, sight: 4, cd: 65, beast: 'fox', resp: 1200 },
   wolf: { name: '野狼', lv: 18, hp: 140, atk: 7, dodge: 10, step: 20, mv: 1.25, sight: 5, cd: 70, beast: 'wolf', resp: 1500 },
+  /* 地窖里的贼：小地方是毛贼，大城里是飞贼 */
+  xiaozei: { name: '毛贼', lv: 8, hp: 90, atk: 6, dodge: 6, step: 24, mv: 1, sight: 5, cd: 76, resp: 2400, look: { body: 'buyi', hair: 'band' } },
+  feizei: { name: '飞贼', lv: 40, hp: 420, atk: 18, dodge: 14, step: 20, mv: 1.2, sight: 6, cd: 64, resp: 2400, look: { body: 'heipao', hair: 'band', weapon: 'gangdao' } },
   bandit: { name: '山贼', lv: 25, hp: 220, atk: 11, dodge: 8, step: 24, mv: 1, sight: 5, cd: 72, resp: 1800 },
   boss: { name: '黑风寨主', lv: 30, hp: 460, atk: 11.5, dodge: 10, step: 22, mv: 1, sight: 6, cd: 68, boss: true },
   bear: { name: '黑熊', lv: 35, hp: 450, atk: 17, dodge: 4, step: 28, mv: 0.9, sight: 4, cd: 85, beast: 'bear', resp: 2400 },
@@ -200,6 +203,8 @@ const DROPS = {
   fox: [['hulipi', 0.6]],
   wolf: [['langpi', 0.6], ['shougu', 0.35]],
   bandit: [['yao', 0.2], ['shengtie', 0.3]],
+  xiaozei: [['yao', 0.3], ['shengtie', 0.25]],
+  feizei: [['yao', 0.4], ['jingtie', 0.3], ['qidan', 0.15]],
   bear: [['xiongpi', 0.7], ['xiongdan', 0.35], ['shougu', 0.5]],
   tiger: [['hupi', 0.7], ['hugu', 0.5], ['book_hujia', 0.08]],
   boar: [['zhurou', 0.7], ['shougu', 0.4]],

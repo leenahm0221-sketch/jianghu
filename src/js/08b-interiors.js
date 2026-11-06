@@ -204,3 +204,26 @@ function folkKill(kind) {
   }
 }
 function folkName(id) { const m = id.split('_f')[0]; const n = (NPCS[m] || []).find(x => x.id === id); return n ? n.name : null; }
+/* ---- 地窖：每座城镇挑一两间屋子，墙角有块活板，掀开下去是地窖。地窖里有贼、酒坛、木箱 ---- */
+const CELLAR_TOWNS = { village: 'xiaozei', xiangyang: 'xiaozei', luoyang: 'feizei', yangzhou: 'feizei', hangzhou: 'feizei', pingding: 'feizei' };
+for (const [town, thief] of Object.entries(CELLAR_TOWNS)) {
+  const ins = Object.keys(MAPS).filter(id => id.startsWith(town + '~') && !id.includes('_') && ['inn', 'house', 'home'].includes(MAPS[id].ikind));
+  const pick = [ins.find(id => MAPS[id].ikind === 'inn'), ins.find(id => MAPS[id].ikind !== 'inn')].filter(Boolean);
+  pick.forEach((inId, j) => {
+    const m = MAPS[inId], tx = m.w - 2, ty = m.h - 2;
+    if (m.rows[ty][tx] !== 'L' || (NPCS[inId] || []).some(n => n.x === tx && n.y === ty)) return;
+    const id = `${inId}_cellar`, W = 17, H = 12;
+    const rows = [];
+    for (let y = 0; y < H; y++) { let r = ''; for (let x = 0; x < W; x++) r += (y === 0 || x === 0 || x === W - 1 || y === H - 1) ? 'M' : 'v'; rows.push(r); }
+    const set = (x, y, c) => { rows[y] = rows[y].slice(0, x) + c + rows[y].slice(x + 1); };
+    for (const x of [3, 4, 5, 9, 10, 13, 14]) set(x, 1, 'h');     /* 靠墙一排酒坛 */
+    for (const [x, y] of [[6, 5], [7, 5], [11, 7], [4, 8]]) set(x, y, 'c');   /* 几根石柱 */
+    set(W - 3, H - 3, 'X'); set(3, H - 3, 'X');
+    set(1, 1, 'g');   /* 爬上去的梯子 */
+    MAPS[id] = { id, name: `${m.name}·地窖`, rows, w: W, h: H, buildings: [], signs: {}, doors: {}, indoor: true, cellar: true, ikind: 'tavern', ground: 'cave',
+      spawns: [[thief, 8, 3], [thief, 12, 9], [thief, 6, 9]].slice(0, thief === 'xiaozei' ? 3 : 2),
+      exits: { '1,1': { map: inId, x: tx - 1, y: ty, dir: 'left' } } };
+    m.rows[ty] = m.rows[ty].slice(0, tx) + 'g' + m.rows[ty].slice(tx + 1);
+    m.exits[`${tx},${ty}`] = { map: id, x: 1, y: 2, dir: 'down' };
+  });
+}

@@ -176,6 +176,10 @@ function drawTile0(t, sx, sy, mx, my) {
   };
   switch (t) {
     case 'L': planks(); break;
+    case 'g':   /* 地窖口：屋里是地上一块活板门；地窖里是往上爬的木梯 */
+      if (map && map.cellar) { base(); R(sx + 3, sy, 2, 16, 3); R(sx + 11, sy, 2, 16, 3); for (let y = 2; y < 16; y += 4) R(sx + 3, sy + y, 10, 2, 2); R(sx + 4, sy, 1, 16, 1); }
+      else { planks(); R(sx + 2, sy + 2, 12, 12, 3); R(sx + 3, sy + 3, 10, 10, 2); for (let x = 5; x < 13; x += 3) R(sx + x, sy + 3, 1, 10, 3); R(sx + 7, sy + 7, 2, 2, 0); }
+      break;
     case 'u':   /* 红地毯：深色，两边一道花边 */
       planks(); R(sx + 2, sy, 12, T, 2); R(sx + 2, sy, 1, T, 3); R(sx + 13, sy, 1, T, 3);
       for (let y = (my % 2) * 4; y < 16; y += 8) { R(sx + 6, sy + y + 1, 4, 1, 1); R(sx + 7, sy + y, 2, 3, 1); }
@@ -1230,7 +1234,7 @@ function renderHud() {
 /* 身边 5 格内能采的东西，头上都标着名字（三七、精铁矿……）；贴身那个多一个“A”，按 A 就采 */
 const MARK_NAME = {
   J: () => '石刻', X: (x, y) => lootable(x, y) ? '旧木箱' : '空木箱',
-  S: () => '告示牌', o: () => '水井', U: () => '洞口',
+  S: () => '告示牌', o: () => '水井', U: () => '洞口', g: () => (map && map.cellar ? '梯子' : '地窖'),
 };
 const markDone = (t, x, y) => t === 'X' && !lootable(x, y);
 function renderLootTag() {
@@ -1245,7 +1249,7 @@ function renderLootTag() {
     else if (RES_TILES[t] && lootable(x, y) && Math.abs(x - P.tx) <= 6 && Math.abs(y - P.ty) <= 5) list.push([d, x, y, resName(x, y, t), true]);
   }
   list.sort((a, b) => b[0] - a[0]).slice(-14).forEach(([d, x, y, name, live]) => {
-    const near = d === 1 && live && name !== '洞口', label = near ? name + ' A' : name, w = tw(label) + 6;
+    const near = d === 1 && live && !['洞口', '地窖', '梯子'].includes(name), label = near ? name + ' A' : name, w = tw(label) + 6;
     const lx = Math.round(x * T - cam.x + 8 - w / 2), ly = y * T - cam.y - 12;
     R(lx, ly, w, 12, live ? 3 : 2); if (!near) R(lx + 1, ly + 1, w - 2, 10, 0);
     txt(label, lx + 3, ly + 1, near ? 0 : live ? 3 : 2);   /* 看过、开过的变灰 */
