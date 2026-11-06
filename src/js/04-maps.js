@@ -348,6 +348,13 @@ function genTown(id, sp) {
   const front = new Set();
   for (const b of buildings) { rect(b.x, b.y, b.w, b.h, 'H'); for (let x = b.x - 1; x <= b.x + b.w; x++) front.add(`${x},${b.y + b.h}`); }
   for (const n of sp.npcs || []) for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) front.add(`${n.x + dx},${n.y + dy}`);
+  /* 各城的风景：先摆好，后面补民居时会绕开 */
+  const sceneSigns = {}, sceneNpcs = [];
+  if (sp.scenic) sp.scenic({ m, set, rect, W, H, st, fl: sp.floor || '.', front,
+    bld: b => { b.w = b.w || 5; b.h = b.h || 3; b.style = b.style || 'hall'; buildings.push(b); rect(b.x, b.y, b.w, b.h, 'H'); for (let y = b.y - 1; y <= b.y + b.h; y++) for (let x = b.x - 1; x <= b.x + b.w; x++) front.add(`${x},${y}`); },
+    sign: (x, y, t) => { set(x, y, 'S'); sceneSigns[`${x},${y}`] = t; front.add(`${x},${y}`); },
+    npc: n => { sceneNpcs.push(n); for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) front.add(`${n.x + dx},${n.y + dy}`); },
+    keep: (x0, y0, w, h) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) front.add(`${x},${y}`); } });
   /* 空着的街区补上民居，城里看起来住满了人 */
   const fl = sp.floor || '.';
   const free = (x0, y0, w, h) => { for (let y = y0 - 1; y <= y0 + h; y++) for (let x = x0 - 1; x <= x0 + w; x++) { if (y < 1 || x < 1 || y > H - 2 || x > W - 2 || m[y][x] !== fl || front.has(`${x},${y}`)) return false; } return true; };
@@ -370,7 +377,7 @@ function genTown(id, sp) {
     if (r < 0.035) m[y][x] = sp.tree || 'T'; else if (r < 0.06) m[y][x] = 'f';
   }
   for (const [x, y] of sp.wells || []) m[y][x] = 'o';
-  return { rows: m.map(r => r.join('')), spawns: [], signs: { ...signs, ...(sp.signs || {}) }, buildings, npcDefs: sp.npcs || [] };
+  return { rows: m.map(r => r.join('')), spawns: [], signs: { ...signs, ...sceneSigns, ...(sp.signs || {}) }, buildings, npcDefs: (sp.npcs || []).concat(sceneNpcs) };
 }
 
 /* ---------- 每张地图的设定 ---------- */
@@ -599,6 +606,75 @@ const T_SPECS = {
       { id: 'envoy_xie', name: '邪派接引使', role: '门派接引', icon: '引', x: 10, y: 12, dir: 'down', look: { body: 'ryrobe', hair: 'messy', beard: true }, talk: () => envoyTalk('邪') },
       { id: 'doctor_pd', name: '平一指', role: '药铺', icon: '药', x: 23, y: 5, dir: 'down', look: { body: 'heipao', hair: 'fangjin', beard: true }, talk: doctorTalk },
       { id: 'xieren', name: '日月教徒', role: '日月神教', x: 15, y: 15, dir: 'down', look: { body: 'ryrobe', hair: 'band' }, talk: () => say('日月教徒', ['平定州是神教的地盘。', '往东上黑木崖拜见长老；往西出城就是塞外草原。']) }] },
+};
+/* ---- 城镇放大：原来的街区挪到正中，四周多出一圈新街区，再摆上各城的风景 ---- */
+const TOWN_GROW = { luoyang: [14, 9], yangzhou: [14, 9], hangzhou: [14, 9], pingding: [14, 9] };
+for (const [id, [ox, oy]] of Object.entries(TOWN_GROW)) {
+  const sp = T_SPECS[id]; sp.W += ox * 2; sp.H += oy * 2; sp.street += oy;
+  sp.buildings.forEach(b => { b.x += ox; b.y += oy; });
+  (sp.npcs || []).forEach(n => { n.x += ox; n.y += oy; });
+  (sp.rects || []).forEach(r => { r[1] += ox; r[2] += oy; });
+  (sp.wells || []).forEach(w => { w[0] += ox; w[1] += oy; });
+  if (sp.signs) sp.signs = Object.fromEntries(Object.entries(sp.signs).map(([k, v]) => { const [x, y] = k.split(',').map(Number); return [`${x + ox},${y + oy}`, v]; }));
+}
+const fenceBox = (c, x0, y0, w, h, gx) => { for (let x = x0; x < x0 + w; x++) { c.set(x, y0, x === gx ? c.fl : 'F'); c.set(x, y0 + h - 1, 'F'); } for (let y = y0; y < y0 + h; y++) { c.set(x0, y, 'F'); c.set(x0 + w - 1, y, 'F'); } };
+T_SPECS.luoyang.scenic = c => {
+  /* 牡丹园：城南一大片花圃，竹篱围着，北边开门 */
+  const x0 = 3, y0 = c.H - 9, w = 20, h = 7;
+  fenceBox(c, x0, y0, w, h, x0 + 10);
+  for (let y = y0 + 1; y < y0 + h - 1; y++) for (let x = x0 + 1; x < x0 + w - 1; x++) c.set(x, y, (x + y) % 3 && y !== y0 + 3 ? 'f' : c.fl);
+  c.keep(x0, y0 - 1, w, h + 1);
+  c.sign(x0 + 9, y0 - 1, '牡丹园。洛阳牡丹甲天下，四月花开满城。');
+  /* 白马寺塔：白马寺东边一座宝塔 */
+  c.bld({ x: c.W - 7, y: 22, w: 2, h: 4, style: 'pagoda', label: '白马寺塔', kind: 'pagoda' });
+  c.sign(c.W - 8, 26, '白马寺塔。中原第一座佛寺，塔下埋着西来的经卷。');
+};
+T_SPECS.yangzhou.scenic = c => {
+  /* 运河：城西一条南北向的大运河，街口和城门口架桥 */
+  const cx = 5;
+  for (let y = 1; y < c.H - 1; y++) for (const x of [cx, cx + 1]) c.set(x, y, '~');
+  for (const y of [c.st, c.st + 1, 8, c.H - 9]) for (const x of [cx, cx + 1]) c.set(x, y, 'B');
+  for (const y of [8, c.H - 9]) { for (let x = 1; x < cx; x++) c.set(x, y, '_'); for (let x = cx + 2; x < cx + 6; x++) c.set(x, y, '_'); }
+  c.keep(1, 1, cx + 3, c.H - 2);
+  c.sign(cx + 2, c.st - 1, '大运河。南来北往的货船都从扬州过。');
+  /* 瘦西湖和二十四桥：城东南一湖，一座长桥横过湖面，湖边一圈垂柳 */
+  const lx = c.W - 22, ly = c.H - 11, lw = 19, lh = 9;
+  for (let y = ly; y < ly + lh; y++) for (let x = lx; x < lx + lw; x++) { const dx = (x - lx - lw / 2) / (lw / 2), dy = (y - ly - lh / 2) / (lh / 2); if (dx * dx + dy * dy < 1) c.set(x, y, '~'); }
+  for (let x = lx; x < lx + lw; x++) c.set(x, ly + 4, 'B');
+  for (const x of [lx - 1, lx + lw]) c.set(x, ly + 4, '_');
+  for (let x = lx; x < lx + lw; x += 3) { if (c.m[ly - 1] && c.m[ly - 1][x] === c.fl) c.set(x, ly - 1, 'T'); if (c.m[ly + lh] && c.m[ly + lh][x] === c.fl) c.set(x, ly + lh, 'T'); }
+  c.keep(lx - 2, ly - 2, lw + 4, lh + 3);
+  c.sign(lx - 2, ly + 3, '瘦西湖·二十四桥。二十四桥明月夜，玉人何处教吹箫。');
+};
+T_SPECS.hangzhou.scenic = c => {
+  /* 西湖放大：断桥横过湖心，湖东岸立着雷峰塔 */
+  const lx = 34, ly = 23, lw = 26, lh = 17;
+  for (let y = ly; y < ly + lh; y++) for (let x = lx; x < lx + lw; x++) if (!(x > lx + lw - 3 && y > ly + lh - 3)) c.set(x, y, '~');
+  for (let x = lx; x < lx + lw; x++) c.set(x, ly + 7, 'B');
+  c.set(lx - 1, ly + 7, '_'); c.set(lx + lw, ly + 7, '_');
+  c.keep(lx - 1, ly - 1, lw + 2, lh + 2);
+  c.bld({ x: c.W - 3, y: ly + 9, w: 2, h: 4, style: 'pagoda', label: '雷峰塔', kind: 'pagoda' });
+  c.sign(lx + 8, ly - 1, '断桥。断桥残雪，西湖十景之一。');
+  c.sign(c.W - 4, ly + 14, '雷峰塔。传说塔下压着白娘子。');
+};
+T_SPECS.pingding.scenic = c => {
+  /* 集市：城南两排摊子，摊主吆喝着卖东西 */
+  const y1 = c.H - 8, y2 = c.H - 5;
+  const hawk = [['卖糖葫芦的', ['糖葫芦——又酸又甜的糖葫芦！']], ['卖肉的屠户', ['上好的羊肉，刚从草原赶来的！']], ['卖皮货的', ['狼皮、狐皮，塞外来的好皮子！']], ['算命先生', ['（摇着签筒）客官印堂发亮，近日必有奇遇。']], ['卖胡饼的', ['胡饼胡饼，热乎的胡饼！']], ['卖马的胡商', ['好马！日行千里！……不过今天不卖。']]];
+  let k = 0;
+  for (const y of [y1, y2]) for (let x = 6; x < 30; x += 4) {
+    c.set(x, y, 'z'); c.set(x + 1, y, 'z');
+    const h = hawk[k++ % hawk.length];
+    c.npc({ id: `hawker_${x}_${y}`, name: h[0], role: '集市', quiet: true, x, y: y + 1, dir: 'down', look: { body: k % 2 ? 'buyi' : 'apron', hair: k % 3 ? 'band' : 'cap' }, talk: () => say(h[0], h[1]) });
+  }
+  c.keep(5, y1 - 1, 27, 7);
+  c.sign(4, y1 - 1, '集市。南北客商在这里买卖，什么稀奇东西都有。');
+  /* 擂台：城东一座擂台，四周拉着绳子，南边留口 */
+  const ax = c.W - 14, ay = 13, aw = 11, ah = 8;
+  c.rect(ax, ay, aw, ah, '_'); fenceBox(c, ax, ay, aw, ah, -1);
+  c.set(ax + 5, ay + ah - 1, '_');
+  c.keep(ax - 1, ay - 1, aw + 2, ah + 2);
+  c.sign(ax + 4, ay + ah, '擂台。江湖人在这里比武切磋，点到为止。');
 };
 /* 出口坐标表 */
 const EXIT_AT = {}, EXIT_TO = {};

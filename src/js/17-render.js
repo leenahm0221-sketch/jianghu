@@ -98,7 +98,7 @@ function floorOf(m) {
   return (m._floor = (Object.entries(c).sort((a, b) => b[1] - a[1])[0] || ['.'])[0]);
 }
 /* 深色地面（碎石山、山洞）上的障碍物：整体提亮一档、保留黑描边，一眼和地面分开 */
-const OBJ_TILES = new Set(['T', 'P', 'k', 'q', 'r', '*', '&', 'O', 'm', 'f', 'c', 'i', 'S', 'J', 'X', 'o', 'F', 'M', 'U']);
+const OBJ_TILES = new Set(['T', 'P', 'k', 'q', 'r', '*', '&', 'O', 'm', 'f', 'c', 'i', 'S', 'J', 'X', 'o', 'F', 'M', 'U', 'z']);
 const darkGround = () => map && (map.ground === 'cave' || floorOf(map) === 'v');
 function drawTile(t, sx, sy, mx, my) {
   RMAP = OBJ_TILES.has(t) && darkGround() ? [0, 0, 1, 3] : null;
@@ -176,6 +176,14 @@ function drawTile0(t, sx, sy, mx, my) {
   };
   switch (t) {
     case 'L': planks(); break;
+    case 'z':   /* 集市摊子：条纹布篷、两根竹竿，下面一张摆满货的木台 */
+      base();
+      R(sx, sy + 1, T, 6, 3); for (let x = 1; x < 15; x += 4) R(sx + x, sy + 2, 2, 4, 0);
+      R(sx, sy + 7, T, 1, 3);
+      R(sx + 1, sy + 7, 1, 8, 3); R(sx + 14, sy + 7, 1, 8, 3);
+      R(sx + 1, sy + 11, 14, 2, 3); R(sx + 2, sy + 11, 12, 1, 1);
+      for (let x = 3; x < 13; x += 3) { R(sx + x, sy + 9 + ((x + mx) % 2), 2, 2 - ((x + mx) % 2), (x + mx) % 3 ? 2 : 0); R(sx + x, sy + 10, 2, 1, 3); }
+      break;
     case 'g':   /* 地窖口：屋里是地上一块活板门；地窖里是往上爬的木梯 */
       if (map && map.cellar) { base(); R(sx + 3, sy, 2, 16, 3); R(sx + 11, sy, 2, 16, 3); for (let y = 2; y < 16; y += 4) R(sx + 3, sy + y, 10, 2, 2); R(sx + 4, sy, 1, 16, 1); }
       else { planks(); R(sx + 2, sy + 2, 12, 12, 3); R(sx + 3, sy + 3, 10, 10, 2); for (let x = 5; x < 13; x += 3) R(sx + x, sy + 3, 1, 10, 3); R(sx + 7, sy + 7, 2, 2, 0); }
@@ -1200,7 +1208,7 @@ function renderNpcTags() {
       const below = P.ty > n.y;
       const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
       R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
-    } else if (!dlg && !menu && S.showTag !== false && !n.amb && sy + 17 < UB - 2) {   /* 屋里的闲人走近了才显示名字，免得满屋都是字 */
+    } else if (!dlg && !menu && S.showTag !== false && !n.amb && !n.quiet && sy + 17 < UB - 2) {   /* 屋里的闲人走近了才显示名字，免得满屋都是字 */
       /* 离得远时脚下也写着名字，一眼看清谁是谁；走近再显示身份 */
       txtOutline(n.name, sx + 8, sy + 16, 'center');
     }
