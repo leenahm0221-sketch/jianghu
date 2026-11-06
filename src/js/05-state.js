@@ -11,7 +11,7 @@ let frame = 0, shake = 0, cam = { x: 0, y: 0 }, lastFight = -999, saveTimer = 0,
 const P = { target: null, tx: 0, ty: 0, px: 0, py: 0, dir: 'down', moving: false, atkT: 0, atkMax: 1, atkCD: 0, hurtT: 0, sit: false, dead: false };
 
 function newState() {
-  return { map: 'village', x: 19, y: 13, grown: 1, dir: 'down', hp: 60, mp: 20, silver: 20, age: 16, ageT: 0,
+  return { map: 'village', x: 19, y: 13, grown: 1, anqi: 1, dir: 'down', hp: 60, mp: 20, silver: 20, age: 16, ageT: 0,
     skills: { changquan: 0, tiebushan: 0, caoshangfei: 0 }, active: 'changquan', pref: {},
     passive: { 护体: 'tiebushan', 步法: 'caoshangfei', 心法: null },
     items: { yao: 2 }, gear: ['buyi'], equip: { weapon: null, body: 'buyi', head: null },
@@ -33,6 +33,12 @@ function migrate(s) {
     delete s.quest;
     s.side = {}; s.sect = null; s.parts = null;
     if (s.map === 'village') { s.x = 11; s.y = 7; }
+  }
+  if (!s.anqi) {   /* 暗器从拳掌里分出来以前学过神针、弹指、花雨、飞刀的：补上基础暗器和一把飞镖 */
+    const had = ['heixue', 'tanzhi', 'mantian', 'feidao'].filter(k => s.skills[k] != null);
+    if (had.length && s.skills.feishi == null) { s.skills.feishi = had.includes('feidao') ? 40 : 30; if (!s.gear.includes('feibiao')) s.gear.push('feibiao'); }
+    for (const c of ['拳', '刀']) if (s.pref && had.includes(s.pref[c])) delete s.pref[c];
+    s.anqi = 1;
   }
   if (!s.grown) {   /* 牛家村、襄阳放大以前的存档：人站的位置跟着挪 */
     const g = GROWN[s.map]; if (g) { s.x += g[0]; s.y += g[1]; }
@@ -74,7 +80,7 @@ const maxHP = () => Math.floor(60 + qi() * 1.5 + pv('心法', 'hp') * 0.4);
 const maxMP = () => Math.floor(20 + pv('心法', 'mp') * 1.2 + gearSum('mp'));
 /* 体力：每招都耗，歇一歇或打坐就回来；基础以外的武功还要再耗内功 */
 const maxST = () => Math.floor(50 + qi() * 0.6 + pv('心法', 'hp') * 0.3);
-const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3 };
+const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3, 暗器: 1 };
 const maxPart = () => 40 + Math.floor(qi() / 2);
 const defense = i => ['body', 'head'].reduce((a, sl) => a + ((S.equip[sl] && EQ[S.equip[sl]].def[i]) || 0), 0);
 const atkSk = () => SK[S.active];
@@ -97,7 +103,7 @@ function ensureActive(quiet) {
   if (S.skills[basic] == null) { S.skills[basic] = 0; if (!quiet) { toast(`初学 ${SK[basic].name}`); sfx('level'); } }
   if (S.skills[S.active] != null && SK[S.active].cat === c) return;
   const pref = S.pref[c];
-  S.active = pref && S.skills[pref] != null ? pref : basic;
+  S.active = pref && S.skills[pref] != null && SK[pref].cat === c ? pref : basic;
 }
 function equipItem(id) {
   const it = EQ[id]; S.equip[it.slot] = id;

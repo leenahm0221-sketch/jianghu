@@ -12,7 +12,7 @@ const RES_TILES = {
 let depleted = {};
 
 /* 武功：cat 决定用途；tier 2 是上乘武功，威力大、成长慢，要门派或秘籍才能学 */
-const ATK_CATS = ['拳', '剑', '刀', '枪', '槌'];
+const ATK_CATS = ['拳', '剑', '刀', '枪', '槌', '暗器'];
 /* 六档评级，和千年一样：特差 差 可 中 佳 优 */
 const RT = ['特差', '差', '可', '中', '佳', '优'];
 const RV = [0.6, 0.8, 0.95, 1.05, 1.2, 1.4];
@@ -23,6 +23,7 @@ const SK = {
   huashan: { name: '基础剑法', short: '剑法', cat: '剑', tier: 1, spd: 4, rec: 3, eva: 3, acc: 4, atk: [3, 4, 2, 1], move: '苍松迎客', desc: '入门剑法，轻快善刺头' },
   wuhu: { name: '基础刀法', short: '刀法', cat: '刀', tier: 1, spd: 2, rec: 1, eva: 1, acc: 2, atk: [4, 3, 4, 2], move: '猛虎下山', desc: '入门刀法，大开大合，收招慢' },
   yangjia: { name: '基础枪法', short: '枪法', cat: '枪', tier: 1, spd: 2, rec: 3, eva: 2, acc: 3, atk: [3, 2, 2, 4], reach: 2, move: '回马枪', desc: '入门枪法，远及两格善攻脚' },
+  feishi: { name: '基础暗器', short: '暗器', cat: '暗器', tier: 1, spd: 3, rec: 3, eva: 3, acc: 3, atk: [2, 3, 2, 2], reach: 3, move: '连珠石', desc: '飞蝗石入门，三格内取人，力道偏轻' },
   kaishan: { name: '基础槌法', short: '槌法', cat: '槌', tier: 1, spd: 1, rec: 1, eva: 0, acc: 1, atk: [5, 4, 3, 3], stun: 0.15, move: '力劈华山', desc: '入门锤法，一锤千钧，常打晕人' },
   xianglong: { name: '降龙十八掌', short: '降龙', cat: '拳', tier: 2, spd: 3, rec: 4, eva: 2, acc: 4, atk: [5, 4, 4, 3], move: '亢龙有悔', sect: 'gaibang', req: ['changquan', 30], qi: 20, desc: '丐帮镇帮绝学，掌力刚猛' },
   quanzhenjian: { name: '全真剑法', short: '全真', cat: '剑', tier: 2, spd: 5, rec: 4, eva: 4, acc: 5, atk: [4, 5, 3, 2], move: '一气化三清', sect: 'quanzhen', req: ['huashan', 30], qi: 20, desc: '全真教正宗剑法，快准灵动' },
@@ -54,18 +55,18 @@ const SK = {
   yanzi: { name: '燕子三抄水', cat: '步法', tier: 2, mv: 4, eva: 5, req: ['caoshangfei', 30], info: '走路时修炼', desc: '身轻如燕，三起三落，最善闪躲' },
   guixi: { name: '龟息功', cat: '心法', tier: 2, mp: 4, hp: 5, yq: 4, req: ['quanzhen', 40], qi: 30, info: '打坐时修炼', desc: '闭气养神，内力深厚绵长' },
   bixie: { name: '辟邪剑法', short: '辟邪', cat: '剑', tier: 2, spd: 5, rec: 3, eva: 5, acc: 4, atk: [3, 5, 3, 3], move: '群邪辟易', req: ['huashan', 50], qi: 35, villain: 'yuebuqun', desc: '快如鬼魅，以快打慢' },
-  heixue: { name: '黑血神针', short: '神针', cat: '拳', tier: 2, spd: 5, rec: 3, eva: 3, acc: 5, atk: [3, 4, 3, 3], reach: 2, poison: 0.25, move: '万针齐发', sect: 'riyue', req: ['changquan', 30], qi: 20, desc: '日月神教暗器，针上淬毒，两格外伤人' },
+  heixue: { name: '黑血神针', short: '神针', cat: '暗器', tier: 2, spd: 5, rec: 3, eva: 3, acc: 5, atk: [3, 4, 3, 3], reach: 3, poison: 0.25, move: '万针齐发', sect: 'riyue', req: ['feishi', 30], qi: 20, desc: '日月神教暗器，针上淬毒，三格内伤人' },
   xixing: { name: '吸星大法', cat: '心法', tier: 2, mp: 5, hp: 3, yq: 4, sect: 'riyue', req: ['quanzhen', 30], qi: 30, info: '打坐时修炼', desc: '化人内力为己用' },
   luoying: { name: '落英神剑掌', short: '落英', cat: '拳', tier: 2, spd: 5, rec: 3, eva: 4, acc: 4, atk: [4, 4, 4, 3], move: '落英缤纷', sect: 'taohua', req: ['changquan', 30], qi: 20, desc: '掌影如桃花纷落' },
   qimen: { name: '奇门身法', cat: '步法', tier: 2, mv: 4, eva: 5, sect: 'taohua', req: ['caoshangfei', 30], info: '走路时修炼', desc: '暗合奇门五行，身形难测' },
   lianyao: { name: '炼药', cat: '生产', info: '炼药时修炼', desc: '熟练度越高，越少失败' },
-  tanzhi: { name: '弹指神通', short: '弹指', cat: '拳', tier: 2, spd: 4, rec: 3, eva: 3, acc: 5, atk: [3, 5, 3, 3], reach: 2, move: '碧海潮生', sect: 'taohua', req: ['changquan', 30], qi: 20, desc: '屈指一弹，两格外伤人' },
+  tanzhi: { name: '弹指神通', short: '弹指', cat: '暗器', tier: 2, spd: 4, rec: 3, eva: 3, acc: 5, atk: [3, 5, 3, 3], reach: 3, move: '碧海潮生', sect: 'taohua', req: ['feishi', 30], qi: 20, desc: '屈指弹出石子，三格内伤人' },
   /* 武当 */
   taijijian: { name: '太极剑', short: '太极', cat: '剑', tier: 2, spd: 3, rec: 5, eva: 5, acc: 4, atk: [4, 4, 4, 3], move: '三环套月', sect: 'wudang', req: ['huashan', 30], qi: 20, desc: '以柔克刚，后发先至' },
   taijiquan: { name: '太极拳', short: '太极', cat: '拳', tier: 2, spd: 3, rec: 5, eva: 5, acc: 4, atk: [4, 3, 4, 3], move: '揽雀尾', sect: 'wudang', req: ['changquan', 30], qi: 20, desc: '四两拨千斤，借力打力' },
   tiyunzong: { name: '梯云纵', cat: '步法', tier: 2, mv: 5, eva: 4, sect: 'wudang', req: ['caoshangfei', 30], info: '走路时修炼', desc: '武当轻功，凌空踏步直上云霄' },
   /* 唐门 */
-  mantian: { name: '漫天花雨', short: '花雨', cat: '拳', tier: 2, spd: 4, rec: 2, eva: 2, acc: 5, atk: [3, 4, 3, 3], reach: 3, poison: 0.25, move: '佛怒唐莲', sect: 'tangmen', req: ['changquan', 30], qi: 20, desc: '唐门暗器手法，三格外取人，常带毒' },
+  mantian: { name: '漫天花雨', short: '花雨', cat: '暗器', tier: 2, spd: 4, rec: 2, eva: 2, acc: 5, atk: [3, 4, 3, 3], reach: 4, poison: 0.25, move: '佛怒唐莲', sect: 'tangmen', req: ['feishi', 30], qi: 20, desc: '唐门暗器手法，四格内取人，常带毒' },
   baidu: { name: '百毒不侵功', cat: '护体', tier: 2, def: [4, 4, 4, 4], sect: 'tangmen', req: ['tiebushan', 30], qi: 25, info: '挨打时修炼', desc: '唐门护体功，周身百毒难侵' },
   /* 华山派 */
   yunv19: { name: '玉女十九剑', short: '玉女', cat: '剑', tier: 2, spd: 5, rec: 3, eva: 4, acc: 5, atk: [3, 5, 3, 2], move: '有凤来仪', sect: 'huashanpai', req: ['huashan', 30], qi: 20, desc: '华山玉女峰剑法，奇险轻灵' },
@@ -92,13 +93,16 @@ const SK = {
   longxiang: { name: '龙象般若功', short: '龙象', cat: '槌', tier: 2, spd: 2, rec: 2, eva: 1, acc: 4, atk: [5, 5, 5, 5], stun: 0.3, move: '龙象之力', req: ['kaishan', 50], qi: 40, villain: 'jinlun', desc: '金轮法王的密宗神功，一击有龙象之力' },
   dugu: { name: '独孤九剑', short: '独孤', cat: '剑', tier: 2, spd: 5, rec: 5, eva: 4, acc: 5, atk: [5, 5, 4, 4], move: '破剑式', req: ['huashan', 60], qi: 40, desc: '无招胜有招，专破天下武功' },
   yuanyue: { name: '圆月弯刀', short: '弯刀', cat: '刀', tier: 2, spd: 4, rec: 3, eva: 3, acc: 4, atk: [5, 5, 5, 5], move: '小楼一夜听春雨', req: ['wuhu', 50], qi: 40, desc: '魔刀出鞘，刀光如一弯新月' },
-  feidao: { name: '小李飞刀', short: '飞刀', cat: '刀', tier: 2, spd: 3, rec: 2, eva: 3, acc: 5, atk: [4, 5, 4, 3], reach: 3, move: '例不虚发', req: ['wuhu', 40], qi: 30, desc: '出手一刀，例不虚发，三格外取人' },
+  feidao: { name: '小李飞刀', short: '飞刀', cat: '暗器', tier: 2, spd: 3, rec: 2, eva: 3, acc: 5, atk: [4, 5, 4, 3], reach: 4, move: '例不虚发', req: ['feishi', 40], qi: 30, desc: '出手一刀，例不虚发，四格内取人' },
   lingxi: { name: '灵犀一指', short: '灵犀', cat: '拳', tier: 2, spd: 4, rec: 5, eva: 5, acc: 5, atk: [3, 4, 5, 3], move: '心有灵犀', req: ['changquan', 50], qi: 30, desc: '两指一夹，天下兵刃无所遁形' },
   anran: { name: '黯然销魂掌', short: '黯然', cat: '拳', tier: 2, spd: 3, rec: 3, eva: 3, acc: 4, atk: [5, 5, 5, 5], move: '拖泥带水', req: ['changquan', 60], qi: 40, desc: '相思越苦，掌力越强' },
   duanzao: { name: '锻造', cat: '生产', info: '打造时修炼', desc: '熟练度越高，越少失败' },
 };
-const BASIC_OF = { 拳: 'changquan', 剑: 'huashan', 刀: 'wuhu', 枪: 'yangjia', 槌: 'kaishan' };
-const CAT_ORDER = ['拳', '剑', '刀', '枪', '槌', '护体', '步法', '心法', '生产'];
+const BASIC_OF = { 拳: 'changquan', 剑: 'huashan', 刀: 'wuhu', 枪: 'yangjia', 槌: 'kaishan', 暗器: 'feishi' };
+const CAT_ORDER = ['拳', '剑', '刀', '枪', '槌', '暗器', '心法', '步法', '护体', '生产'];
+/* 给玩家看的类别名：心法就是内功、步法就是轻功 */
+const CAT_NAME = { 拳: '拳掌', 剑: '剑法', 刀: '刀法', 枪: '枪法', 槌: '锤法', 暗器: '暗器', 心法: '内功', 步法: '轻功', 护体: '护体', 生产: '技艺' };
+const CAT_TAG = { 拳: '拳', 剑: '剑', 刀: '刀', 枪: '枪', 槌: '锤', 暗器: '暗', 心法: '内', 步法: '轻', 护体: '护', 生产: '艺' };
 const SECTS = {
   quanzhen: { name: '全真教', short: '全真', uniform: 'daopao', gear: 'xuantie', camp: '正', where: '牛家村清虚观' },
   gaibang: { name: '丐帮', short: '丐帮', uniform: 'patched', gear: 'jinsijia', camp: '正', where: '牛家村池塘边' },
@@ -181,12 +185,12 @@ const EN = {
   dummy: { name: '木人桩', lv: 15, hp: 9999, atk: 0, dodge: 0, dummy: true, passive: true },
 };
 const DROPS = {
-  yuebuqun: [['book_bixie', 0.25], ['hantie', 0.8], ['hantiejian', 0.2], ['jingtie', 1]],
+  yuebuqun: [['book_bixie', 0.25], ['hantie', 0.8], ['hantiejian', 0.2], ['jingtie', 1], ['xiujian', 0.25]],
   dongfang: [['book_kuihua', 0.2], ['xuantiekuang', 1], ['xuantie', 0.1], ['yulu', 0.5]],
   zuolengchan: [['book_hanbing', 0.25], ['hantie', 1], ['xuantiekuang', 0.4], ['hantieshoutao', 0.2]],
   ouyangfeng: [['book_hama', 0.25], ['wujin', 1], ['baoming', 0.3]],
   limochou: [['book_chilian', 0.25], ['xuelian', 1], ['duanxu', 0.3]],
-  gongsun: [['book_yinyang', 0.25], ['hantie', 1], ['hantiedao', 0.2], ['xuantiekuang', 0.4], ['lingzhi', 1], ['qidan', 1]],
+  gongsun: [['book_yinyang', 0.25], ['hantie', 1], ['hantiedao', 0.2], ['hantieding', 0.2], ['xuantiekuang', 0.4], ['lingzhi', 1], ['qidan', 1]],
   jiumozhi: [['book_huoyan', 0.25], ['wujin', 0.8], ['renshen', 0.5]],
   jinlun: [['book_longxiang', 0.25], ['wujin', 0.6], ['wujinchui', 0.2]],
   xuedao: [['book_xuedao', 1]],
@@ -336,6 +340,11 @@ const EQ = {
   tieshoutao: { slot: 'weapon', type: '拳', name: '铁手套', atk: [7, 7, 7, 5], sell: 60 },
   hantieshoutao: { slot: 'weapon', type: '拳', name: '寒铁手套', atk: [10, 10, 10, 7], sell: 120 },
   tiancan: { slot: 'weapon', type: '拳', name: '天蚕手套', atk: [13, 12, 12, 10], acc: 3, sell: 200, rare: true },
+  /* 暗器：揣在腰间，三四格内取人；只打中第一个挡在前面的 */
+  feibiao: { slot: 'weapon', type: '暗器', name: '飞镖', atk: [3, 3, 3, 2], price: 50 },
+  xiujian: { slot: 'weapon', type: '暗器', name: '袖箭', atk: [6, 7, 6, 5], sell: 60 },
+  hantieding: { slot: 'weapon', type: '暗器', name: '寒铁透骨钉', atk: [9, 10, 9, 7], sell: 120 },
+  baoyu: { slot: 'weapon', type: '暗器', name: '暴雨梨花针', atk: [12, 13, 11, 10], acc: 5, sell: 200, rare: true },
 };
 const partTxt = (pre, a) => pre + a.map((n, i) => (n ? LOCS[i] + n : '')).join('');
 for (const k in EQ) {
@@ -349,6 +358,7 @@ const FORGE = {
     ['qinggang', { shengtie: 4, jingtie: 2 }, 25], ['guitou', { shengtie: 4, jingtie: 2 }, 25], ['lihua', { shengtie: 2, jingtie: 3 }, 25], ['baleng', { shengtie: 4, jingtie: 3 }, 30],
     ['hantiejian', { hantie: 3, jingtie: 2 }, 50], ['hantiedao', { hantie: 3, jingtie: 2 }, 50], ['hantieqiang', { hantie: 3, jingtie: 2 }, 50], ['wujinchui', { wujin: 2, jingtie: 3 }, 55],
     ['tieshoutao', { shengtie: 3, jingtie: 2 }, 25], ['hantieshoutao', { hantie: 3, jingtie: 2 }, 50],
+    ['xiujian', { shengtie: 2, jingtie: 2 }, 25], ['hantieding', { hantie: 2, jingtie: 2 }, 50],
     ['xuantie', { xuantiekuang: 3, hantie: 2 }, 75], ['tulong', { wujin: 3, xuantiekuang: 2 }, 80]],
 };
 const TAILOR = [['mianbu', { mianhua: 3 }, 0], ['zhanmao', { tupi: 3 }, 5], ['shoupi', { langpi: 3 }, 5], ['huqiu', { hulipi: 4 }, 15], ['xiongpijia', { xiongpi: 2, langpi: 2 }, 20], ['pishoutao', { langpi: 2 }, 5], ['xuelangqiu', { xuelangpi: 3, mianhua: 2 }, 30]];

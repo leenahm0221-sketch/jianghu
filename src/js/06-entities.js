@@ -68,7 +68,7 @@ function renderInspect() {
   const sk = Object.entries(c.skills || {}).filter(([k]) => SK[k] && SK[k].cat !== '生产').sort((a, b) => b[1] - a[1]).slice(0, 5);
   sk.forEach(([k, v], i) => {
     const y = 72 + i * 11, kd = skKind(k);
-    R(7, y, 11, 11, 3); txt({ 基础: '基', 门派: '门', 江湖: '江', 特殊: '特' }[kd], 8, y, 0);
+    R(7, y, 11, 11, 3); txt(CAT_TAG[SK[k].cat], 8, y, 0);
     txt(SK[k].name + (k === c.active || Object.values(c.passive || {}).includes(k) ? '●' : ''), 21, y, 3);
     txt(Number(v).toFixed(2), MW - 8, y, 2, 'right');
   });

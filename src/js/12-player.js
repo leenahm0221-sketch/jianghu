@@ -313,30 +313,64 @@ function attack() {
   P.atkCD = Math.round(cd);
   lastFight = frame;
   sfx(P.move2 ? 'heavy' : 'swing');
-  const [dx, dy] = DIRS[P.dir];
-  const tiles = [[P.tx + dx, P.ty + dy]];
-  for (let i = 2; i <= (sk.reach || 1); i++) tiles.push([P.tx + dx * i, P.ty + dy * i]);
-  let gained = 0;
-  for (const [x, y] of tiles) {
-    const e = enemyAt(x, y);
-    if (!e) continue;
+  const [dx, dy] = DIRS[P.dir], cat = sk.cat, m2 = P.move2;
+  /* 打到哪些格子：[x, y, 伤害倍数]。50 级第二式各系有自己的实际效果：
+     拳 掌风多打一格并震退一格；剑 连斩两下；刀 旋风斩打周身八格；枪 突刺多一格、力道更大；
+     锤 震地打落点四周一圈、容易震晕；暗器 三道齐发（正前方加左右两路） */
+  const hits = [];
+  const line = (o, len) => {   /* 暗器：沿一条直线飞，碰到墙或第一个敌人就停 */
+    const px_ = -dy * o, py_ = dx * o;
+    for (let i = 1; i <= len; i++) {
+      const x = P.tx + dx * i + px_, y = P.ty + dy * i + py_;
+      if (blocks(x, y) && !enemyAt(x, y)) return i - 1;
+      if (enemyAt(x, y)) { hits.push([x, y, o ? 0.7 : 1]); return i; }
+    }
+    return len;
+  };
+  if (cat === '暗器') { P.shot = [line(0, sk.reach || 3)]; if (m2) P.shot.push(line(-1, sk.reach || 3), line(1, sk.reach || 3)); }
+  else if (cat === '刀' && m2) { for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) if (a || b) hits.push([P.tx + a, P.ty + b, a === dx && b === dy ? 1.1 : 0.7]); }
+  else if (cat === '槌' && m2) { const fx_ = P.tx + dx, fy = P.ty + dy; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const x = fx_ + a, y = fy + b; if (x !== P.tx || y !== P.ty) hits.push([x, y, a || b ? 0.6 : 1.15]); } }
+  else {
+    const reach = (sk.reach || 1) + (m2 && (cat === '拳' || cat === '枪') ? 1 : 0);
+    for (let i = 1; i <= reach; i++) hits.push([P.tx + dx * i, P.ty + dy * i, m2 && cat === '枪' ? 1.2 : 1]);
+  }
+  let gained = 0, pushed = false;
+  const strike = (e, mult) => {
     const d = ED(e);
     let hitp = 76 + v * 0.15 + (RV[sk.acc] - 1) * 25 + ((wp && wp.acc) || 0) - d.dodge - (injured('head') ? 20 : 0);
     if (e.stunT > 0) hitp += 30;
-    if (Math.random() * 100 > clamp(hitp, 25, 97)) { floatText(e.px + 8, e.py, '闪'); e.adj = true; continue; }
+    if (Math.random() * 100 > clamp(hitp, 25, 97)) { floatText(e.px + 8, e.py, '闪'); e.adj = true; return false; }
     let r = Math.random(), loc = 0;
     while (loc < 3 && r > LOC_W[loc]) { r -= LOC_W[loc]; loc++; }
     let dmg = ((sk.tier === 2 ? 11 : 7) * RV[sk.atk[loc]] + (wp && wp.type === sk.cat ? wp.atk[loc] * enhMul() : 0)) * (1 + v / 45) * (0.85 + Math.random() * 0.3);
+    if (cat === '暗器') dmg *= 0.85;   /* 远处取人，力道比近身略轻 */
+    dmg *= mult;
     if (weak) dmg *= 0.6;
     if (injured('arm')) dmg *= 0.6;
     dmg = Math.max(1, Math.round(dmg + qi() * 0.08));
     hurtEnemy(e, dmg, loc === 1 ? `头${dmg}` : null);
-    sparks.push({ x: e.px + 8 + rnd(-2, 2), y: e.py + 8 + rnd(-3, 2), t: P.move2 ? 12 : 8, big: P.move2 });
-    if (P.move2) { hitStop = 4; shake = 5; }
+    sparks.push({ x: e.px + 8 + rnd(-2, 2), y: e.py + 8 + rnd(-3, 2), t: m2 ? 12 : 8, big: m2, cat, dx, dy });
+    if (m2) { hitStop = 4; shake = cat === '槌' ? 7 : 5; }
     if (d.dummy) tutNext(1);
-    if (sk.stun && !d.dummy && !e.dead && Math.random() < sk.stun) { e.stunT = 70; floatText(e.px + 8, e.py - 8, '晕'); }
+    const stunP = (sk.stun || 0) + (m2 && cat === '槌' ? 0.4 : 0);
+    if (stunP && !d.dummy && !e.dead && Math.random() < stunP) { e.stunT = 70; floatText(e.px + 8, e.py - 8, '晕'); }
     if (sk.poison && !d.dummy && !e.dead && Math.random() < sk.poison) { e.poisonT = 300; e.poisonD = Math.max(2, Math.round(dmg * 0.12)); floatText(e.px + 8, e.py - 8, '中毒'); }
+    /* 拳掌第二式：掌风把第一个打中的人震退一格 */
+    if (m2 && cat === '拳' && !pushed && !d.dummy && !e.dead && !d.boss) {
+      pushed = true; const nx = e.tx + dx, ny = e.ty + dy;
+      if (canMove(nx, ny, e) && !enemyAt(nx, ny) && !(nx === P.tx && ny === P.ty)) { e.tx = nx; e.ty = ny; e.moving = true; floatText(e.px + 8, e.py - 8, '退'); }
+    }
     gained = Math.max(gained, trainFactor(v, d));
+    return true;
+  };
+  const seen = new Set();
+  for (const [x, y, mult] of hits) {
+    const e = enemyAt(x, y);
+    if (!e || seen.has(e)) continue;
+    seen.add(e);
+    strike(e, mult);
+    /* 剑法第二式：同一招里再补一剑 */
+    if (m2 && cat === '剑' && !e.dead) strike(e, 0.6);
   }
   if (gained) train(id, gained);
 }
@@ -350,7 +384,7 @@ function hurtEnemy(e, dmg, label) {
   if (e.hp <= 0) killEnemy(e);
 }
 /* 阵营厮杀：杀敌对阵营弟子涨本派声望和对应指数；杀追兵了结追杀令；杀叛徒完成清理门户。都有几率掉稀有装备 */
-const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'jinsijia', 'wucanyi'];
+const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'baoyu', 'jinsijia', 'wucanyi'];
 function campKill(e, d) {
   const pc = campOf();
   if (d.camp === '正') { addAlign(0, 2); if (pc === '邪') { addSrep(3); addRep(2); } }

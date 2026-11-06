@@ -468,6 +468,28 @@ def 测试一键全满(b):
     assert not g.errs, g.errs
     g.close()
 
+@case
+def 暗器独立和第二式效果(b):
+    g = Game(b); g.new_game()
+    g.ev(f'{G}.testMaxAll()')
+    # 空手不能用暗器，装上飞镖自动换成暗器武功
+    g.ev(f"{G}.S.equip.weapon = null")
+    assert g.ev(f"({G}.attack(), {G}.SK[{G}.S.active].cat)") == '拳'
+    g.ev(f"{G}.S.equip.weapon = 'feibiao'; {G}.P2.atkCD = 0")
+    assert g.ev(f"({G}.attack(), {G}.SK[{G}.S.active].cat)") == '暗器'
+    # 刀法第二式能打到身后的敌人
+    hit = g.ev(f"""(() => {{ const G = {G}, P = G.P2; let n = 0;
+      for (let t = 0; t < 30; t++) {{ G.enemies2.length = 0; G.S.equip.weapon = 'tulong'; G.S.active = 'wuhu'; P.atkCD = 0; P.move2 = false; P.dir = 'right';
+        const e = G.makeEnemy('wolf', P.tx - 1, P.ty); e.hp = e.max = 99999; e.stunT = 500; G.enemies2.push(e); G.S.st = 999; G.attack(); if (e.hp < 99999) n++; }}
+      return n; }})()""")
+    assert hit > 10, f'旋风斩打身后只中了 {hit}/30'
+    # 老存档学过黑血神针：补基础暗器和飞镖
+    s = g.ev(f"""(() => {{ const G = {G}; const s = JSON.parse(JSON.stringify(G.S)); delete s.anqi; s.skills = {{ changquan: 40, heixue: 35 }}; s.gear = ['buyi']; s.pref = {{ 拳: 'heixue' }};
+      const m = G.migrate(s); return [m.skills.feishi, m.gear.includes('feibiao'), m.pref['拳'] || null]; }})()""")
+    assert s[0] == 30 and s[1] and s[2] is None, s
+    assert not g.errs, g.errs
+    g.close()
+
 if __name__ == '__main__':
     fails = 0
     with sync_playwright() as p:

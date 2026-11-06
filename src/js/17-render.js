@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v75 ' + FAST_NAME[FAST] : 'v75', 156, 0, 2, 'right');
+  txt(FAST ? 'v76 ' + FAST_NAME[FAST] : 'v76', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -820,6 +820,7 @@ const WEAPON_LOOK = {
   lihua: { kind: 'spear' }, hantieqiang: { kind: 'spear' }, baleng: { kind: 'hammer' }, wujinchui: { kind: 'hammer' },
   zijin: { kind: 'hammer' },
   /* 手套：戴在两只手上，颜色深浅分档 */
+  feibiao: { kind: 'dart', c: 2 }, xiujian: { kind: 'dart', c: 1 }, hantieding: { kind: 'dart', c: 0 }, baoyu: { kind: 'dart', c: 0, shine: true },
   pishoutao: { kind: 'glove', c: 2 }, tieshoutao: { kind: 'glove', c: 1 }, hantieshoutao: { kind: 'glove', c: 0 }, tiancan: { kind: 'glove', c: 0, shine: true },
 };
 function drawPerson(sx, sy, dir, step, L, flash) {
@@ -837,7 +838,7 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   const capeC = L.cape === 'white' ? 0 : L.cape === 'grey' ? 1 : 2;
   if (L.cape && !up) { p(2, 6, 12, 9, 3); p(3, 7, 10, 7, capeC); if (side) { p(0, 7, 4, 8, 3); p(1, 8, 2, 6, capeC); } }
   // 长枪、铁锤：竖在身后，比人还高 / 锤头很大
-  if (W && W.kind && W.kind !== 'glove' && !up) {
+  if (W && W.kind && W.kind !== 'glove' && W.kind !== 'dart' && !up) {
     const x = side ? 2 : 13;
     if (W.kind === 'spear') { p(x, -3, 1, 18, 3); p(x - 1, -5, 3, 2, 3); p(x, -6, 1, 1, 3); p(x - 1, -3, 3, 1, 1); }
     else { p(x, 3, 1, 10, 3); p(x - 2, -1, 5, 4, 3); p(x - 1, 0, 3, 2, 2); }
@@ -892,6 +893,12 @@ function drawPerson(sx, sy, dir, step, L, flash) {
     p(1, 8, 2, 4, 3); p(13, 8, 2, 4, 3);
     p(2, 8, 1, 3, sleeve === 3 ? 2 : sleeve); p(13, 8, 1, 3, sleeve === 3 ? 2 : sleeve);
     if (B.cuff != null) { p(1, 10, 2, 1, B.cuff); p(13, 10, 2, 1, B.cuff); }
+  }
+  /* 暗器：腰间挂一个镖囊，露出几枚镖尾 */
+  if (W && W.kind === 'dart' && !up) {
+    const bx = side ? 4 : 10, gc = L.sil ? 3 : W.c;
+    p(bx, 9, 4, 4, 3); p(bx + 1, 10, 2, 2, gc); p(bx, 8, 1, 1, 3); p(bx + 2, 7, 1, 2, 3);
+    if (W.shine && (frame >> 4) % 2) p(bx + 1, 10, 1, 1, 0);
   }
   /* 手套：手掌那一截加粗、上色，护腕一道深边 */
   if (W && W.kind === 'glove') {
@@ -1046,9 +1053,41 @@ function beam(cx, cy, dx, dy, from, len, th) {
   R(ex - 1, ey - 1, 3, 3, 3); R(ex + dx * 2 - 1, ey + dy * 2 - 1, 3, 3, 3);
 }
 function ring(cx, cy, r, sy, c) { for (let k = 0; k < 28; k++) { const q = k * Math.PI / 14; R(cx + Math.cos(q) * r, cy + Math.sin(q) * r * sy, 2, 1, c); } }
+/* 命中效果按兵器分：剑一道细斜痕，刀一个粗叉，枪一道贯穿线，锤砸出裂地碎石，拳一圈冲击波，暗器钉上一枚星点 */
+function hitMark(k, sx, sy) {
+  const life = (k.big ? 12 : 8) - k.t, B = k.big ? 1.5 : 1, dx = k.dx || 0, dy = k.dy || 0;
+  if (k.cat === '剑') {
+    const L = Math.round(Math.min(7 * B, 2 + life * 2));
+    for (let i = -L; i <= L; i++) R(sx + i, sy - i, 1, 1, Math.abs(i) < L - 1 ? 3 : 2);
+    if (k.big) for (let i = -L + 2; i <= L - 2; i++) R(sx + i + 2, sy - i + 1, 1, 1, 3);
+    R(sx - 1, sy - 1, 3, 3, 0); R(sx, sy, 1, 1, 3);
+  } else if (k.cat === '刀') {
+    const L = Math.round(Math.min(6 * B, 2 + life * 2));
+    for (let i = -L; i <= L; i++) { R(sx + i, sy - i, 2, 1, 3); R(sx + i, sy + i, 2, 1, 3); }
+    R(sx - 1, sy - 1, 4, 3, 0); R(sx, sy, 2, 1, 3);
+  } else if (k.cat === '枪') {
+    const L = Math.round(Math.min(10 * B, 3 + life * 3));
+    for (let i = -L; i <= L; i++) R(sx + dx * i, sy + dy * i, 1, 1, 3);
+    for (let i = 1; i <= 3; i++) { R(sx + dx * (L - i) - dy * i, sy + dy * (L - i) - dx * i, 1, 1, 3); R(sx + dx * (L - i) + dy * i, sy + dy * (L - i) + dx * i, 1, 1, 3); }
+    R(sx - 1, sy - 1, 3, 3, 0); R(sx, sy, 1, 1, 3);
+  } else if (k.cat === '槌') {
+    const L = Math.min(8 * B, 2 + life * 1.5), gy = sy + 6;
+    for (const q of [0.3, 1.2, 2.0, 2.9, 3.6, 4.8, 5.6]) { const ex = sx + Math.round(Math.cos(q) * L), ey = gy + Math.round(Math.sin(q) * L * 0.45); R(ex, ey, 1, 1, 3); R(Math.round((sx + ex) / 2), Math.round((gy + ey) / 2), 1, 1, 3); }
+    for (let i = 0; i < 4; i++) { const q = i * 1.6 + 0.4, h = Math.sin(life / 12 * Math.PI) * 6 * B; R(sx + Math.round(Math.cos(q) * L * 0.8), gy - h - i, 2, 2, 3); }
+    R(sx - 2, sy - 2, 5, 4, 0); R(sx - 1, sy - 1, 3, 2, 3);
+  } else if (k.cat === '拳') {
+    const rr = Math.min(7 * B, 2 + life * 1.2);
+    for (let i = 0; i < 12; i++) { const q = i * Math.PI / 6; R(sx + Math.round(Math.cos(q) * rr), sy + Math.round(Math.sin(q) * rr), 1, 1, life > 5 ? 2 : 3); }
+    R(sx - 2, sy - 2, 5, 5, 3); R(sx - 1, sy - 1, 3, 3, 0);
+  } else {
+    R(sx - 1, sy, 3, 1, 3); R(sx, sy - 1, 1, 3, 3); R(sx - dx * 2, sy - dy * 2, 1, 1, 3); R(sx - dx * 3, sy - dy * 3, 1, 1, 2);
+    if (life < 4) for (const [a, b] of [[2, 2], [-2, 2], [2, -2], [-2, -2]]) R(sx + a, sy + b, 1, 1, 3);
+  }
+}
 function drawSparks() {
   for (const k of sparks) {
     const sx = Math.round(k.x - cam.x), sy = Math.round(k.y - cam.y), life = (k.big ? 12 : 8) - k.t, L = Math.min(k.big ? 7 : 4, 2 + life);
+    if (k.cat && k.t >= 2) { hitMark(k, sx, sy); continue; }
     if (k.t < 3) { R(sx - 1, sy - 1, 3, 3, 3); continue; }
     R(sx - L, sy, L * 2 + 1, 1, 3); R(sx, sy - L, 1, L * 2 + 1, 3);
     const D = Math.floor(L * 0.6); for (const [a, b] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) R(sx + a * D, sy + b * D, 1, 1, 3);
@@ -1095,11 +1134,22 @@ function drawSlash2(cx, cy, cat, prog, dx, dy, ang) {
     }
   }
 }
+/* 暗器飞出去：一枚枚小镖沿直线飞到落点；第二式三道齐发 */
+function drawShot(cx, cy, prog, dx, dy) {
+  const shots = P.shot || [3], t = Math.min(1, prog * 1.6);
+  shots.forEach((len, j) => {
+    const o = j === 0 ? 0 : j === 1 ? -1 : 1, ox = -dy * o * T, oy = dx * o * T;
+    const dist = Math.max(10, len * T) * t, x = cx + dx * dist + ox * t, y = cy + dy * dist + oy * t;
+    for (let i = 1; i <= 3; i++) R(x - dx * i * 2, y - dy * i * 2, 1, 1, i === 3 ? 2 : 3);   /* 尾迹 */
+    R(x - 1, y - 1, 3, 3, 3); R(x, y, 1, 1, 0); R(x + dx * 2, y + dy * 2, 1, 1, 3);
+  });
+}
 function drawSlash(cx, cy) {
   const prog = 1 - P.atkT / P.atkMax;
   const cat = SK[S.active].cat;
   const [dx, dy] = DIRS[P.dir];
   const ang = ANG[P.dir];
+  if (cat === '暗器') return drawShot(cx, cy, prog, dx, dy);
   if (P.move2) return drawSlash2(cx, cy, cat, prog, dx, dy, ang);
   if (cat === '枪') return beam(cx, cy, dx, dy, 6, Math.round(26 * Math.min(1, prog * 1.6)), 3);
   if (cat === '槌') {
@@ -1430,7 +1480,7 @@ function renderSkillDetail(k) {
   const sk = SK[k], v = lv(k), atk = ATK_CATS.includes(sk.cat);
   const kd = skKind(k);
   txt(sk.name, 8, 33, 3);
-  txt(kd === '门派' ? `门派·${SECTS[sk.sect].short}` : kd === '生产' ? '副职业' : sk.villain ? `特殊·打${EN[sk.villain].name}得` : `${kd}武功`, 8 + tw(sk.name) + 6, 33, 2);
+  txt(`${CAT_NAME[sk.cat]}·` + (kd === '门派' ? `门派·${SECTS[sk.sect].short}` : kd === '生产' ? '副职业' : sk.villain ? `特殊·打${EN[sk.villain].name}得` : `${kd}`), 8 + tw(sk.name) + 6, 33, 2);
   txt(v.toFixed(2), MW - 8, 33, 2, 'right');
   txt(useLabel(sk), 8, 45, 2);
   const row = (y, x, label, r) => { txt(label, x, y, 2); txt(RT[r], x + 22, y, 3); pips(x + 44, y, r); };
@@ -1439,7 +1489,7 @@ function renderSkillDetail(k) {
     row(69, 6, '闪躲', sk.eva); row(69, MW / 2 + 2, '命中', sk.acc);
     txt('攻击', 6, 81, 2);
     sk.atk.forEach((r, i) => { txt(LOCS[i], 30 + i * 31, 81, 2); txt(RT[r], 41 + i * 31, 81, 3); });
-    const tags = [sk.reach ? `远及${'一两三'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? `每招耗体力${ST_COST[sk.cat]}内功2` : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
+    const tags = [sk.reach ? `远及${'一两三四'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? `每招耗体力${ST_COST[sk.cat]}内功2` : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
     txt(tags.length ? tags.join(' ') : '无特殊效果', 6, 93, 2);
     txt(`50级第二式「${sk.move}」${v >= 50 ? '已成' : '未成'}`, 6, 105, v >= 50 ? 3 : 2);
   } else if (sk.cat === '护体') {

@@ -32,22 +32,23 @@ const KIND_ORDER = ['基础', '门派', '江湖', '特殊', '生产'];
 /* 江湖：不属门派的上层武功（武馆、野外得秘籍）；特殊：打反派或奇人传授 */
 const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier !== 2 ? '基础' : (sk.villain || Object.values(HERMITS).some(h => h.skill === k)) ? '特殊' : '江湖'; };
 function skillList() {
-  return Object.keys(S.skills).filter(k => SK[k]).sort((a, b) => KIND_ORDER.indexOf(skKind(a)) - KIND_ORDER.indexOf(skKind(b)) || CAT_ORDER.indexOf(SK[a].cat) - CAT_ORDER.indexOf(SK[b].cat));
+  return Object.keys(S.skills).filter(k => SK[k]).sort((a, b) => CAT_ORDER.indexOf(SK[a].cat) - CAT_ORDER.indexOf(SK[b].cat) || KIND_ORDER.indexOf(skKind(a)) - KIND_ORDER.indexOf(skKind(b)));
 }
 function skillInfo(k) {
   const sk = SK[k], up = sk.tier === 2 ? '上乘' : '';
-  if (ATK_CATS.includes(sk.cat)) return `${up}${sk.cat}法 速${RT[sk.spd]} ${sk.tier === 2 ? '耗体力内功' : '耗体力'}`;
-  return `${up}${sk.cat}　按A看详情`;
+  const kd = skKind(k), from = kd === '门派' && sk.sect ? SECTS[sk.sect].short + '派' : kd;
+  if (ATK_CATS.includes(sk.cat)) return `${CAT_NAME[sk.cat]}·${from}${up} 速${RT[sk.spd]}${sk.reach ? ` 远${sk.reach}格` : ''}`;
+  return `${CAT_NAME[sk.cat]}·${from}${up}　按A看详情`;
 }
-const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '空手可用' : `需装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${sk.cat}，同时只能运用一门`);
+const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '拳掌：空手或戴手套可用' : sk.cat === '暗器' ? '暗器：要装备飞镖、袖箭等' : `${CAT_NAME[sk.cat]}：要装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${CAT_NAME[sk.cat]}，同时只能运用一门`);
 function SK_FORMER(sk) { return !!(sk.sect && S.former.includes(sk.sect)); }
 function useSkill(k) {
   const sk = SK[k];
   if (ATK_CATS.includes(sk.cat)) {
-    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : `要先装备${sk.cat}`);
+    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : sk.cat === '暗器' ? '要先装备飞镖、袖箭等暗器' : `要先装备${sk.cat}`);
     S.active = k; S.pref[sk.cat] = k; toast(`改用 ${sk.name}`); sfx('menu');
   } else if (sk.cat === '生产') toast(sk.desc);
-  else { S.passive[sk.cat] = k; toast(`${sk.cat}改用 ${sk.name}`); sfx('menu'); }
+  else { S.passive[sk.cat] = k; toast(`${CAT_NAME[sk.cat]}改用 ${sk.name}`); sfx('menu'); }
 }
 function readBook(k) {
   const id = ITEMS[k].book;
@@ -61,7 +62,7 @@ function menuItems() {
   if (menu.tab === 1) return skillList().map(k => {
     const sk = SK[k], atk = ATK_CATS.includes(sk.cat);
     const using = atk ? S.active === k : S.passive[sk.cat] === k;
-    return { tag: { 基础: '基', 门派: '门', 江湖: '江', 特殊: '特', 生产: '艺' }[skKind(k)], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
+    return { tag: CAT_TAG[sk.cat], label: sk.name + (isFormer(k) ? '·旧' : ''), right: S.skills[k].toFixed(2), mark: using, info: skillInfo(k), act: () => { menu.detail = k; sfx('menu'); } };
   });
   if (menu.tab === 2) {
     const cnt = {};
