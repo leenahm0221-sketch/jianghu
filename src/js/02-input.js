@@ -72,13 +72,18 @@ function viewSize() {
   return [w || innerWidth, h || innerHeight];
 }
 let lastView = '';
+/* 画面大小：大＝纵向 144 个像素（和 GB 一样，方块最大）；中＝180；小＝216（方块小、一屏看得多） */
+const VIEW_H = [144, 180, 216], VIEW_NAME = ['大', '中', '小'];
+let viewIdx = 0;
+try { viewIdx = Math.min(2, Math.max(0, parseInt(localStorage.getItem('jianghu-view') || '0', 10) || 0)); } catch (e) { viewIdx = 0; }
+function setView(i) { viewIdx = i; try { localStorage.setItem('jianghu-view', String(i)); } catch (e) {} resize(); }
 function resize() {
   const [vw, vh] = viewSize(); lastView = vw + 'x' + vh;
   ROT = vh > vw;
   gameEl.classList.toggle('rot', ROT);
   Object.assign(gameEl.style, ROT ? { width: vh + 'px', height: vw + 'px', left: vw + 'px', top: '0px' } : { width: vw + 'px', height: vh + 'px', left: '0px', top: '0px', position: 'fixed' });
   const W = gameEl.clientWidth || innerWidth, H = gameEl.clientHeight || innerHeight;
-  const sc0 = Math.min(W / 160, H / 144);
+  const sc0 = Math.min(W / 160, H / VIEW_H[viewIdx]);
   GW = Math.max(160, Math.round(W / sc0)); GH = Math.max(144, Math.round(H / sc0));
   world.width = GW; world.height = GH; g.imageSmoothingEnabled = false;
   screen.width = GW * SCALE; screen.height = GH * SCALE;

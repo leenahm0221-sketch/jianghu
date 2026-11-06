@@ -112,6 +112,7 @@ function menuItems() {
     ...(S.tut < TUT.length ? [{ label: '跳过新手教学', act: () => { S.tut = 99; toast('已跳过新手教学'); sfx('menu'); } }] : []),
     { label: '任务指引', right: S.showGuide === false ? '关' : '开', act: () => { S.showGuide = S.showGuide === false; sfx('menu'); } },
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
+    { label: '画面大小', right: VIEW_NAME[viewIdx], act: () => { setView((viewIdx + 1) % 3); toast(['画面大小：大（方块最大，和 GB 一样）', '画面大小：中', '画面大小：小（方块小，一屏看得多）'][viewIdx]); sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
     { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快50倍，几分钟练到顶'][FAST]); sfx('menu'); } },

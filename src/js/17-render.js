@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v82 ' + FAST_NAME[FAST] : 'v82', 156, 0, 2, 'right');
+  txt(FAST ? 'v83 ' + FAST_NAME[FAST] : 'v83', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1731,8 +1731,9 @@ function renderWpick() {
 }
 function renderMenu() {
   MW = Math.min(SAFE_W, 236); g.translate(Math.round((160 - MW) / 2), 0);
+  if (menu.tab === 5 && !menu.detail && menu.page !== 'heard') return renderWorldMap();
+  g.translate(0, Math.max(0, Math.floor((UB - 141) / 2)));   /* 画面调小以后纵向变高，菜单放在正中 */
   if (menu.page === 'heard') return renderHeard();
-  if (menu.tab === 5 && !menu.detail) return renderWorldMap();
   box(0, 12, MW, 132);
   MENU_TABS.forEach((t, i) => {
     const tw_ = (MW - 6) / MENU_TABS.length, x = Math.round(3 + i * tw_);
