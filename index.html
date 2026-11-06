@@ -2035,6 +2035,9 @@ function makeInterior(ext, b) {
 for (const extId of Object.keys(MAPS)) {
   const ext = MAPS[extId];
   if (ext.indoor) continue;
+  /* 房子占的地方一律是墙，只留正门一格：不会有路从房子中间穿过去，也就不能从后面、侧面走进门 */
+  for (const b of ext.buildings || []) for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++)
+    if (ext.rows[y] && ext.rows[y][x] !== 'H') ext.rows[y] = ext.rows[y].slice(0, x) + 'H' + ext.rows[y].slice(x + 1);
   (ext.buildings || []).forEach((b, i) => {
     if (!IN_SIZE[b.kind] || b.style === 'pagoda') return;
     const dx = b.x + Math.floor(b.w / 2), dy = b.y + b.h - 1;
@@ -4277,7 +4280,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v71 ' + FAST_NAME[FAST] : 'v71', 156, 0, 2, 'right');
+  txt(FAST ? 'v72 ' + FAST_NAME[FAST] : 'v72', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;

@@ -44,6 +44,9 @@ function makeInterior(ext, b) {
 for (const extId of Object.keys(MAPS)) {
   const ext = MAPS[extId];
   if (ext.indoor) continue;
+  /* 房子占的地方一律是墙，只留正门一格：不会有路从房子中间穿过去，也就不能从后面、侧面走进门 */
+  for (const b of ext.buildings || []) for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++)
+    if (ext.rows[y] && ext.rows[y][x] !== 'H') ext.rows[y] = ext.rows[y].slice(0, x) + 'H' + ext.rows[y].slice(x + 1);
   (ext.buildings || []).forEach((b, i) => {
     if (!IN_SIZE[b.kind] || b.style === 'pagoda') return;
     const dx = b.x + Math.floor(b.w / 2), dy = b.y + b.h - 1;

@@ -387,6 +387,8 @@ def 数据自检_掉落配方委托出口NPC都对得上(b):
       for (const [n,t] of Object.entries(G.FOLK_TASK)) {{ for (const k in t.need||{{}}) if (!has(k)) bad.push('委托 '+n+':'+k);
         if (t.kill && !Object.values(G.MAPS).some(m => (m.spawns||[]).some(s => s[0] === t.kill.kind))) bad.push('委托怪物无刷新 '+n); }}
       for (const [id,list] of Object.entries(G.NPCS)) {{ const m=G.MAPS[id]; for (const n of list) if (G.SOLID.has(m.rows[n.y][n.x])) bad.push('NPC在墙里 '+id+':'+n.name); }}
+      for (const [id,m] of Object.entries(G.MAPS)) for (const b of m.buildings||[]) {{ const dx=b.x+Math.floor(b.w/2), dy=b.y+b.h-1;
+        for (let y=b.y;y<b.y+b.h;y++) for (let x=b.x;x<b.x+b.w;x++) if (!(x===dx&&y===dy) && !G.SOLID.has(m.rows[y][x])) bad.push('房子里有路 '+id+':'+(b.label||b.kind)); }}
       for (const [id,m] of Object.entries(G.MAPS)) for (const [k,e] of Object.entries(m.exits||{{}})) {{ const t=G.MAPS[e.map];
         if (!t || G.SOLID.has(t.rows[e.y][e.x])) bad.push('出口 '+id+'→'+e.map); }}
       return bad; }})()''')
