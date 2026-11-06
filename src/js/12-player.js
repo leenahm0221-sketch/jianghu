@@ -15,6 +15,34 @@ function cycleWeapon() {
   S.equip.weapon = nx; ensureActive();
   toast(nx ? `换上${eqName(nx)}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu');
 }
+/* 换武器小框：按“换武器”弹出身上所有兵器，按类别排好；上下选，左右跳到上一类/下一类，A 换上，B 或再按换武器关掉 */
+let wpick = null;
+const WP_ORDER = ['拳', '剑', '刀', '枪', '槌', '暗器', '弓'];
+function openWpick() {
+  const ws = [...new Set(S.gear.filter(id => EQ[id].slot === 'weapon'))].sort((a, b) => WP_ORDER.indexOf(EQ[a].type) - WP_ORDER.indexOf(EQ[b].type));
+  if (!ws.length) { toast('身上没有兵器可换'); return; }
+  const list = [null, ...ws];
+  wpick = { list, sel: Math.max(0, list.indexOf(S.equip.weapon)) }; sfx('menu');
+}
+const wpCat = id => (id ? EQ[id].type : '空');
+function updWpick() {
+  const L = wpick.list, n = L.length;
+  if (pressed.b || pressed.select || pressed.start) { wpick = null; sfx('menu'); return; }
+  if (pressed.up) { wpick.sel = (wpick.sel + n - 1) % n; sfx('menu'); }
+  if (pressed.down) { wpick.sel = (wpick.sel + 1) % n; sfx('menu'); }
+  if (pressed.left || pressed.right) {   /* 跳到上一类 / 下一类的第一件 */
+    const d = pressed.left ? -1 : 1, cur = wpCat(L[wpick.sel]);
+    let i = wpick.sel;
+    if (d > 0) { while (i < n && wpCat(L[i]) === cur) i++; if (i >= n) i = 0; }
+    else { while (i > 0 && wpCat(L[i - 1]) === cur) i--; i = (i - 1 + n) % n; const c2 = wpCat(L[i]); while (i > 0 && wpCat(L[i - 1]) === c2) i--; }
+    wpick.sel = i; sfx('menu');
+  }
+  if (pressed.a) {
+    const id = L[wpick.sel]; wpick = null;
+    S.equip.weapon = id; ensureActive(); P.atkT = 0;
+    toast(id ? `换上${eqName(id)}·${SK[S.active].name}` : `空手·${SK[S.active].name}`); sfx('menu'); save();
+  }
+}
 /* 轻功主要是提高闪躲；走路只快一点点：练到顶、最好的身法也只快 15%，测试加速也不加快走路 */
 const moveSpeed = () => (1 + Math.min(1.4, pv('步法', 'mv') / 100) / 1.4 * 0.15) * (injured('leg') ? 0.6 : 1);
 function updPlayer() {
@@ -26,7 +54,7 @@ function updPlayer() {
   if (pressed.chat) { openChat(); return; }
   if (pressed.map) { tutNext(4); menu = { tab: TABS.indexOf('地图'), sel: 0, quick: true }; sfx('menu'); return; }
   if (pressed.start) { tutNext(3); menu = { tab: 0, sel: 0 }; P.sit = false; sfx('menu'); return; }
-  if (pressed.select) cycleWeapon();
+  if (pressed.select) openWpick();
   if (P.moving && stepEnt(P, moveSpeed())) onArrive();
   if (!P.moving && P.atkT <= 4) {
     const d = heldDir();

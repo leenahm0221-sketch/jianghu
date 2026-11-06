@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v79 ' + FAST_NAME[FAST] : 'v79', 156, 0, 2, 'right');
+  txt(FAST ? 'v80 ' + FAST_NAME[FAST] : 'v80', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -826,7 +826,15 @@ const WEAPON_LOOK = {
 };
 /* 拉弓：弓身横在身前和朝向垂直，前半段弦拉满、搭着箭，放箭后弦弹回 */
 function heldBow(p, W, L, side, up) {
-  const t = clamp(L.swing, 0, 1), col = L.sil ? 3 : W.c === 0 ? 3 : W.c, drawn = t < 0.5;
+  const col = L.sil ? 3 : W.c === 0 ? 3 : W.c;
+  if (L.swing == null) {   /* 平时：弓竖着握在身侧，弦是直的 */
+    const bx = side ? 11 : 14;
+    for (let y = 3; y <= 15; y++) { const b = Math.round(Math.sin((y - 3) / 12 * Math.PI) * 2); p(bx + b, y, 1, 1, y === 3 || y === 15 ? 3 : col); }
+    p(bx, 4, 1, 11, 2); p(bx + 1, 9, 1, 2, 3);
+    if (W.shine && (frame >> 4) % 2) p(bx + 2, 8, 1, 1, 0);
+    return;
+  }
+  const t = clamp(L.swing, 0, 1), drawn = t < 0.5;
   if (side) {
     const bx = 12;
     for (let y = 3; y <= 15; y++) { const b = Math.round(Math.sin((y - 3) / 12 * Math.PI) * 2); p(bx + b, y, 1, 1, y === 3 || y === 15 ? 3 : col); }
@@ -841,17 +849,26 @@ function heldBow(p, W, L, side, up) {
   }
 }
 function heldWeapon(p, W, L, side, up) {
-  const t = clamp(L.swing, 0, 1);
-  /* 握把位置和朝前的方向（左右朝向时 p 会自动镜像） */
-  const [hx, hy, fx, fy] = side ? [10, 11, 1, 0] : up ? [13, 8, 0, -1] : [13, 11, 0, 1];
-  /* 挥动：先举起（偏向上方 70 度），再挥到正前方稍过一点 */
-  const a = (-70 + t * 95) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
-  let vx = fx * ca - fy * sa, vy = fx * sa + fy * ca;
-  if (!side && !up) { vx = Math.abs(vx) * 0.5 + 0.5 * Math.abs(sa); vy = fy * Math.max(0.2, ca); }   /* 正面：从右肩斜着劈下来 */
-  if (up) { vx = 0.3 + Math.abs(sa) * 0.4; vy = -Math.max(0.3, ca); }
+  const kind = W.kind || 'blade';
+  let hx, hy, vx, vy, len = kind === 'spear' ? 15 : kind === 'hammer' ? 9 : 10;
+  if (L.swing == null) {
+    /* 平时：刀剑垂在身侧、刃尖朝前下方；枪竖着拄在手里；锤扛在肩上 */
+    [hx, hy] = side ? [11, 11] : [14, 11];
+    if (kind === 'spear') { vx = 0; vy = -1; }
+    else if (kind === 'hammer') { if (side) { hx = 9; vx = -0.9; vy = -0.75; } else { vx = 0.15; vy = -1; } }
+    else { vx = side ? 1 : 0.55; vy = side ? 0.55 : 1; len = 8; }   /* 刃尖探到身体外面，不和腿糊在一起 */
+  } else {
+    const t = clamp(L.swing, 0, 1);
+    /* 握把位置和朝前的方向（左右朝向时 p 会自动镜像） */
+    let fx, fy; [hx, hy, fx, fy] = side ? [10, 11, 1, 0] : up ? [13, 8, 0, -1] : [13, 11, 0, 1];
+    /* 挥动：先举起（偏向上方 70 度），再挥到正前方稍过一点 */
+    const a = (-70 + t * 95) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+    vx = fx * ca - fy * sa; vy = fx * sa + fy * ca;
+    if (!side && !up) { vx = Math.abs(vx) * 0.5 + 0.5 * Math.abs(sa); vy = fy * Math.max(0.2, ca); }   /* 正面：从右肩斜着劈下来 */
+    if (up) { vx = 0.3 + Math.abs(sa) * 0.4; vy = -Math.max(0.3, ca); }
+  }
   const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n;
   const dot = (x, y, c, w = 1) => p(Math.round(x), Math.round(y), w, w, c);
-  const kind = W.kind || 'blade', len = kind === 'spear' ? 15 : kind === 'hammer' ? 9 : 10;
   const nx = -vy, ny = vx;   /* 刃的横向 */
   for (let i = -1; i <= len; i++) {
     const x = hx + vx * i, y = hy + vy * i;
@@ -881,19 +898,19 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   const capeC = L.cape === 'white' ? 0 : L.cape === 'grey' ? 1 : 2;
   if (L.cape && !up) { p(2, 6, 12, 9, 3); p(3, 7, 10, 7, capeC); if (side) { p(0, 7, 4, 8, 3); p(1, 8, 2, 6, capeC); } }
   // 长枪、铁锤：竖在身后，比人还高 / 锤头很大
-  if (W && W.kind === 'bow' && L.swing == null) {   /* 弓斜背在身后：一道弯弓加一根弦 */
+  if (W && W.kind === 'bow' && L.back) {   /* 弓斜背在身后：一道弯弓加一根弦 */
     const x = side ? 3 : 12, col = L.sil ? 3 : W.c;
     for (let y = 0; y <= 13; y++) { const bulge = Math.round(Math.sin(y / 13 * Math.PI) * 2); p(x + (side ? -bulge : bulge), y, 1, 1, y === 0 || y === 13 ? 3 : col === 0 && !up ? 3 : col); }
     p(x, 0, 1, 14, up ? 2 : 1);
     if (W.shine && (frame >> 4) % 2) p(x + (side ? -2 : 2), 6, 1, 1, 0);
   }
-  if (W && W.kind && W.kind !== 'glove' && W.kind !== 'dart' && W.kind !== 'bow' && !up && L.swing == null) {
+  if (W && W.kind && W.kind !== 'glove' && W.kind !== 'dart' && W.kind !== 'bow' && !up && L.back) {
     const x = side ? 2 : 13;
     if (W.kind === 'spear') { p(x, -3, 1, 18, 3); p(x - 1, -5, 3, 2, 3); p(x, -6, 1, 1, 3); p(x - 1, -3, 3, 1, 1); }
     else { p(x, 3, 1, 10, 3); p(x - 2, -1, 5, 4, 3); p(x - 1, 0, 3, 2, 2); }
   }
   // 背上的刀剑（正面、侧面时先画，让身体挡住中段）
-  if (W && !W.kind && !up && L.swing == null) {
+  if (W && !W.kind && !up && L.back) {
     if (side) {
       p(2, 2, 1, 4, W.hilt); p(1, 6, 3, 1, W.guard);
       p(2, 7, W.broad ? 3 : 2, 6, W.line); if (!L.sil) p(3, 8, 1, 4, W.core);
@@ -944,8 +961,9 @@ function drawPerson(sx, sy, dir, step, L, flash) {
     if (B.cuff != null) { p(1, 10, 2, 1, B.cuff); p(13, 10, 2, 1, B.cuff); }
   }
   /* 出招时兵器拿在手里：从举起挥到前方；刀剑一条刃、刀更宽，枪很长带枪头，锤是长柄大锤头 */
-  if (W && L.swing != null && W.kind === 'bow') heldBow(p, W, L, side, up);
-  else if (W && L.swing != null && W.kind !== 'glove' && W.kind !== 'dart') heldWeapon(p, W, L, side, up);
+  /* 兵器一直拿在手里（平时垂在身侧，出招时挥出去）；手套戴在手上、暗器挂在腰间另画 */
+  if (W && W.kind === 'bow') heldBow(p, W, L, side, up);
+  else if (W && W.kind !== 'glove' && W.kind !== 'dart') heldWeapon(p, W, L, side, up);
   /* 暗器：腰间挂一个镖囊，露出几枚镖尾 */
   if (W && W.kind === 'dart' && !up) {
     const bx = side ? 4 : 10, gc = L.sil ? 3 : W.c;
@@ -1512,6 +1530,7 @@ function renderUI() {
   g.setTransform(1, 0, 0, 1, UX, 0);
   renderHud();
   if (menu) renderMenu();
+  if (wpick && !menu) renderWpick();
   renderInspect();
   const fm = !!(menu && menu.tab === 5 && !menu.detail); if (fm !== fullMapOn) { fullMapOn = fm; gameEl.classList.toggle('fullmap', fm); }
   /* 对手面板：正在打的怪的名字、等级、血量，固定在画面上方正中 */
@@ -1632,6 +1651,25 @@ function renderHeard() {
   txt(`在：${h.where}`, 6, 96, 3);
   g_clip(0, 108, MW, 34, () => wrap(RUMORS[k], MW - 12).slice(0, 3).forEach((l, i) => txt(l, 6, 108 + i * 11, 2)));
 }
+/* 换武器小框：画面中间一个竖条框，左边类别字，当前拿着的打 ●，光标 ▶ */
+function renderWpick() {
+  const L = wpick.list, VIS = Math.min(7, L.length), rowH = 13, w = 112, h = VIS * rowH + 24;
+  const x = Math.round((160 - w) / 2), y = Math.max(HUD_H + 2, Math.round((144 - h) / 2) - 6);
+  box(x, y, w, h);
+  txt('换兵器', x + w / 2, y + 4, 3, 'center');
+  const st = clamp(wpick.sel - Math.floor(VIS / 2), 0, Math.max(0, L.length - VIS));
+  L.slice(st, st + VIS).forEach((id, j) => {
+    const i = st + j, ry = y + 17 + j * rowH, on = S.equip.weapon === id;
+    if (i === wpick.sel) { R(x + 4, ry - 1, w - 8, rowH, 3); }
+    const fg = i === wpick.sel ? 0 : 3, bg = i === wpick.sel ? 0 : 3;
+    const tag = id ? { 拳: '套', 剑: '剑', 刀: '刀', 枪: '枪', 槌: '锤', 暗器: '暗', 弓: '弓' }[EQ[id].type] : '空';
+    R(x + 7, ry, 11, 11, bg); txt(tag, x + 8, ry, i === wpick.sel ? 3 : 0);
+    txt(id ? eqName(id) : '空手', x + 21, ry, fg);
+    if (on) txt('●', x + w - 14, ry, fg);
+  });
+  if (st > 0) { R(x + w / 2 - 3, y + 14, 6, 1, 3); R(x + w / 2 - 2, y + 13, 4, 1, 3); }
+  if (st + VIS < L.length) { R(x + w / 2 - 3, y + h - 6, 6, 1, 3); R(x + w / 2 - 2, y + h - 5, 4, 1, 3); }
+}
 function renderMenu() {
   MW = Math.min(SAFE_W, 236); g.translate(Math.round((160 - MW) / 2), 0);
   if (menu.page === 'heard') return renderHeard();
@@ -1641,7 +1679,7 @@ function renderMenu() {
     const tw_ = (MW - 6) / MENU_TABS.length, x = Math.round(3 + i * tw_);
     if (TABS[menu.tab] === t) {
       R(x, 16, Math.round(tw_), 13, 3); txt(t, x + Math.round(tw_ / 2), 17, 0, 'center');
-      if (menu.tab === 1 && (menu.focus || 'tab') === 'tab' && (frame >> 4) % 2) { const mx = x + Math.round(tw_ / 2); R(mx - 2, 26, 5, 1, 0); R(mx - 1, 27, 3, 1, 0); }   /* 光标在页签上：页签下闪一个小箭头 */
+      if ((menu.tab === 1 || menu.tab === 2) && (menu.focus || 'tab') === 'tab' && (frame >> 4) % 2) { const mx = x + Math.round(tw_ / 2); R(mx - 2, 26, 5, 1, 0); R(mx - 1, 27, 3, 1, 0); }   /* 光标在页签上：页签下闪一个小箭头 */
     }
     else txt(t, x + Math.round(tw_ / 2), 17, 2, 'center');
   });
@@ -1672,11 +1710,11 @@ function renderMenu() {
     const hs = Object.keys(S.hunted || {});
     pair(112, hs.length ? '追杀' : '门户', hs.length ? hs.map(k => `${SECTS[k].name}${S.hunted[k]}拨`).join(' ') : S.purge ? (S.purge.done ? '回师门复命' : `叛徒在${MAPS[S.purge.map].name}`) : '无');
   } else {
-    const sk = menu.tab === 1, its = menuItems(), VIS = sk ? 5 : 6, y0 = sk ? 47 : 35;
+    const sk = menu.tab === 1 || menu.tab === 2, its = menuItems(), VIS = sk ? 5 : 6, y0 = sk ? 47 : 35;
     if (sk) {   /* 类别条：当前类别反白，左右键切换 */
       const cs = skillCats(), cur = skillCatNow(), cw = Math.min(14, Math.floor((MW - 8) / cs.length)), x0 = Math.round((MW - cw * cs.length) / 2);
       cs.forEach((c, i) => {
-        const x = x0 + i * cw, lab = c === '全' ? '全' : CAT_TAG[c];
+        const x = x0 + i * cw, lab = catLabel(c);
         if (c === cur) { R(x, 32, cw, 12, 3); txt(lab, x + cw / 2, 33, 0, 'center'); } else txt(lab, x + cw / 2, 33, menu.focus === 'cat' ? 3 : 2, 'center');
       });
       if (menu.focus === 'cat') { R(x0 - 2, 31, cw * cs.length + 4, 1, 3); R(x0 - 2, 44, cw * cs.length + 4, 1, 3); }   /* 光标在类别条上：上下框线 + 箭头 */
@@ -1696,7 +1734,7 @@ function renderMenu() {
     if (cur && cur.info) txt(cur.info, MW / 2, 116, 2, 'center');
     else if (!its.length) txt(menu.tab === 3 ? '行囊空空' : '还没有装备', MW / 2, 60, 2, 'center');
   }
-  txt(menu.tab === 4 ? `A见闻${S.heard.length} 石刻${S.found.length}/${steleTotal()} ←→换页` : menu.tab === 1 ? ({ tab: '←→换页 ▼选类别', cat: `${CAT_NAME[skillCatNow()] || '全部'}${menuItems().length}门 ←→换类 ▼进列表`, list: '上下选武功 A确定 B返回' }[menu.focus || 'tab']) : '←→换页 A确定 B返回', MW / 2, 129, 2, 'center');
+  txt(menu.tab === 4 ? `A见闻${S.heard.length} 石刻${S.found.length}/${steleTotal()} ←→换页` : menu.tab === 1 || menu.tab === 2 ? ({ tab: '←→换页 ▼选类别', cat: `${catName(skillCatNow())}${menuItems().length}${menu.tab === 1 ? '门' : '件'} ←→换类 ▼进列表`, list: `上下选${menu.tab === 1 ? '武功' : '装备'} A确定 B返回` }[menu.focus || 'tab']) : '←→换页 A确定 B返回', MW / 2, 129, 2, 'center');
 }
 
 function render() {

@@ -32,7 +32,17 @@ const KIND_ORDER = ['基础', '门派', '江湖', '特殊', '生产'];
 /* 江湖：不属门派的上层武功（武馆、野外得秘籍）；特殊：打反派或奇人传授 */
 const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier !== 2 ? '基础' : (sk.villain || Object.values(HERMITS).some(h => h.skill === k)) ? '特殊' : '江湖'; };
 /* 武功页按类别分页：全部 / 拳 / 剑 / 刀 / 枪 / 锤 / 暗器 / 弓 / 内功 / 轻功 / 护体 / 技艺（只列出学过的类别） */
-function skillCats() { const have = new Set(Object.keys(S.skills).filter(k => SK[k]).map(k => SK[k].cat)); return ['全'].concat(CAT_ORDER.filter(c => have.has(c))); }
+/* 装备页同理：全 / 手套 / 剑 / 刀 / 枪 / 锤 / 暗器 / 弓 / 衣服 / 头戴 */
+const EQ_CAT_ORDER = ['拳', '剑', '刀', '枪', '槌', '暗器', '弓', '衣', '帽'];
+const EQ_CAT_TAG = { 拳: '套', 剑: '剑', 刀: '刀', 枪: '枪', 槌: '锤', 暗器: '暗', 弓: '弓', 衣: '衣', 帽: '帽' };
+const EQ_CAT_NAME = { 拳: '手套', 剑: '剑', 刀: '刀', 枪: '枪', 槌: '锤', 暗器: '暗器', 弓: '弓', 衣: '衣服', 帽: '头戴' };
+const eqCat = id => EQ[id].slot === 'weapon' ? EQ[id].type : EQ[id].slot === 'body' ? '衣' : '帽';
+const catLabel = c => c === '全' ? '全' : menu.tab === 2 ? EQ_CAT_TAG[c] : CAT_TAG[c];
+const catName = c => c === '全' ? '全部' : menu.tab === 2 ? EQ_CAT_NAME[c] : CAT_NAME[c];
+function skillCats() {
+  if (menu && menu.tab === 2) { const have = new Set(S.gear.map(eqCat)); return ['全'].concat(EQ_CAT_ORDER.filter(c => have.has(c))); }
+  const have = new Set(Object.keys(S.skills).filter(k => SK[k]).map(k => SK[k].cat)); return ['全'].concat(CAT_ORDER.filter(c => have.has(c)));
+}
 function skillCatNow() { const cs = skillCats(); if (menu.cat === 'last' || menu.cat == null || menu.cat >= cs.length) menu.cat = menu.cat === 'last' ? cs.length - 1 : Math.min(menu.cat || 0, cs.length - 1); return cs[menu.cat]; }
 function skillList() {
   const c = menu && menu.tab === 1 ? skillCatNow() : '全';
@@ -74,9 +84,10 @@ function menuItems() {
   if (menu.tab === 2) {
     const cnt = {};
     for (const id of S.gear) cnt[id] = (cnt[id] || 0) + 1;
-    return Object.keys(cnt).map(id => {
+    const c = skillCatNow();
+    return Object.keys(cnt).filter(id => c === '全' || eqCat(id) === c).sort((a, b) => EQ_CAT_ORDER.indexOf(eqCat(a)) - EQ_CAT_ORDER.indexOf(eqCat(b))).map(id => {
       const it = EQ[id], on = S.equip[it.slot] === id;
-      return { label: eqName(id) + (cnt[id] > 1 ? `×${cnt[id]}` : ''), right: on ? '装备中' : SLOT_NAME[it.slot], mark: on, info: `${SLOT_NAME[it.slot]}：${it.info}${enhLv(id) ? ` 强化+${enhLv(id)}（攻击+${Math.round(enhLv(id) * ENH_STEP * 100)}%）` : ''}`, act: () => {
+      return { tag: EQ_CAT_TAG[eqCat(id)], label: eqName(id) + (cnt[id] > 1 ? `×${cnt[id]}` : ''), right: on ? '装备中' : SLOT_NAME[it.slot], mark: on, info: `${it.info}${enhLv(id) ? ` 强化+${enhLv(id)}` : ''}`, act: () => {
         if (on) {
           if (it.slot === 'body') return toast('总不能光着身子吧');
           S.equip[it.slot] = null; ensureActive(); toast(`卸下 ${it.name}`); sfx('menu');
@@ -134,7 +145,7 @@ function updMenu() {
   const step = d => { const i = MENU_TABS.indexOf(TABS[menu.tab]), n = MENU_TABS.length; menu.tab = TABS.indexOf(MENU_TABS[(Math.max(0, i) + d + n) % n]); menu.sel = 0; menu.confirm = false; menu.cat = 0; menu.focus = 'tab'; sfx('menu'); };
   /* 武功页分三层：页签 →（下）类别条 →（下）武功列表。
      在页签上左右换页；在类别条上左右换类别；列表最上面再按上回到类别条，类别条按上回到页签 */
-  if (menu.tab === 1) {
+  if (menu.tab === 1 || menu.tab === 2) {
     const f = menu.focus || 'tab', n = skillCats().length; skillCatNow();
     if (f === 'tab') {
       if (pressed.left) step(-1); else if (pressed.right) step(1);

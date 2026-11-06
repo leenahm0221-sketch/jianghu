@@ -14,6 +14,7 @@ function update() {
   if (dlg) return updDialog();
   if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
   if (menu) return updMenu();
+  if (wpick) return updWpick();
   if (hitStop > 0) { hitStop--; return; }
   if (S.coach > 0 && --S.coach === 0) toast('陪练时间到了');
   if ((S.ageT += FAST === 2 ? 20 : FASTX(8)) >= ageFrames(S.age)) { S.ageT = 0; S.age++; toast(`你已 ${S.age} 岁，元气增长到 ${qi()}`); sfx('level'); if (TRIALS.some(t => t.age === S.age)) toast('百晓生那里有新的历练'); }
