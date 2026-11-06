@@ -2,6 +2,8 @@
    房子正门那一格变成门口（只有人能走），走进去就到这座房子的室内小地图；
    室内最下面一排正中是门，走出去回到门口外面。
    店铺、客栈、药铺这些房子的主人搬进屋里，站在柜台后面；门派大殿的掌门站在供桌前。 */
+/* 牛家村、襄阳放大后，原来那些人跟着挪过去 */
+for (const [id, [ox, oy]] of Object.entries(GROWN)) for (const n of NPCS[id] || []) { n.x += ox; n.y += oy; }
 const IN_SIZE = {
   house: [9, 7], home: [9, 7], chief: [9, 7],
   smith: [11, 8], pharmacy: [11, 8], pawn: [11, 8], bank: [11, 8], cloth: [11, 8],

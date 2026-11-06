@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v72 ' + FAST_NAME[FAST] : 'v72', 156, 0, 2, 'right');
+  txt(FAST ? 'v73 ' + FAST_NAME[FAST] : 'v73', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -176,6 +176,11 @@ function drawTile0(t, sx, sy, mx, my) {
   };
   switch (t) {
     case 'L': planks(); break;
+    case 'd':   /* 稻田：一汪浅水，一排排秧苗，风一吹轻轻晃 */
+      R(sx, sy, T, T, 1);
+      for (let y = 3; y < 16; y += 4) for (let x = 1 + ((y >> 2) % 2) * 2; x < 16; x += 4) { const w = ((frame >> 5) + x + mx) % 2; R(sx + x + w, sy + y - 2, 1, 2, 2); R(sx + x, sy + y, 2, 1, 3); }
+      R(sx + ((mx * 5) % 12) + 2, sy + ((my * 7) % 12) + 2, 2, 1, 0);
+      break;
     case 'z':   /* 集市摊子：条纹布篷、两根竹竿，下面一张摆满货的木台 */
       base();
       R(sx, sy + 1, T, 6, 3); for (let x = 1; x < 15; x += 4) R(sx + x, sy + 2, 2, 4, 0);
@@ -572,6 +577,17 @@ function drawTile0(t, sx, sy, mx, my) {
 
 /* 中式建筑：按 style 画出不同形制。hall 单檐、tall 两层楼阁、double 重檐大殿、pagoda 宝塔；kind 决定招牌与装饰；snow 雪顶 */
 function drawBuilding(b, sx, sy) {
+  if (b.style === 'bigtree') {   /* 老槐树：粗大的树干，一大团树冠盖过两格，往上伸出一截 */
+    const r = (x, y, w, h, c) => R(sx + x, sy + y, w, h, c);
+    r(12, 14, 8, 18, 3); r(14, 14, 3, 18, 2); r(9, 28, 14, 4, 3); r(6, 30, 4, 2, 3); r(22, 30, 4, 2, 3);
+    for (let y = 0; y < 26; y++) for (let x = 0; x < 36; x++) {
+      const dx = (x - 16) / 18, dy = (y - 10) / 13, d = dx * dx + dy * dy;
+      if (d < 1 && !(y > 18 && Math.abs(x - 16) < 4)) R(sx + x - 2, sy + y - 12, 1, 1, d > 0.82 ? 3 : (x * 3 + y * 5 + (x >> 2)) % 7 === 0 ? 3 : y < 6 && x < 18 ? 1 : 2);
+    }
+    r(6, 6, 6, 1, 3); r(20, 2, 5, 1, 3); r(12, -6, 4, 1, 3);
+    r(13, 26, 6, 2, 0);   /* 树下系着的红布条 */
+    return;
+  }
   const W = b.w * T, H = b.h * T, cx = W / 2;
   const r = (x, y, w, h, c) => R(sx + x, sy + y, w, h, c);
   const roof = (x0, y0, w, h) => {

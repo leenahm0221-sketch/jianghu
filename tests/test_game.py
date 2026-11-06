@@ -56,7 +56,7 @@ def 竖着拿手机也是横屏(b):
     gw, gh = g.ev(f'[{G}.cam && document.getElementById("screen").width, document.getElementById("screen").height]')
     assert gw > gh, f'画面不是横的：{gw}×{gh}'
     # 摇杆：手指在屏幕上往下推 = 游戏里往右走
-    g.ev(f'{G}.warp("village", 12, 13)'); g.pg.wait_for_timeout(2400)
+    g.ev(f'{G}.warp("village", 20, 19)'); g.pg.wait_for_timeout(2400)
     x0 = g.ev(f'{G}.P.tx')
     r = g.ev("(() => { const r = document.getElementById('dpad').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
     g.pg.mouse.move(r[0], r[1]); g.pg.mouse.down(); g.pg.mouse.move(r[0], r[1] + 45, steps=4); g.pg.wait_for_timeout(700); g.pg.mouse.up()
@@ -168,9 +168,9 @@ def 阵营主线走得完(b):
 def 新手教学六步(b):
     g = Game(b); g.new_game(); g.pg.wait_for_timeout(2200)
     for d in ['down', 'down', 'down', 'up']: g.tap(d, 200)
-    g.ev(f'{G}.warp("village", 4, 8)'); g.pg.wait_for_timeout(2400)
+    g.ev(f'{G}.warp("village", 12, 14)'); g.pg.wait_for_timeout(2400)
     for _ in range(8): g.tap('a', 60); g.pg.wait_for_timeout(350)
-    g.ev(f'{G}.warp("village", 12, 13)'); g.pg.wait_for_timeout(2400)
+    g.ev(f'{G}.warp("village", 20, 19)'); g.pg.wait_for_timeout(2400)
     g.tap('b'); g.pg.wait_for_timeout(200); g.tap('b')
     g.tap('start'); g.tap('b'); g.tap('map'); g.pg.wait_for_timeout(150); g.tap('map')
     assert g.ev(f'{G}.S.tut') == 5, f'教学停在第 {g.ev(G + ".S.tut")} 步'
@@ -367,7 +367,7 @@ def 花银子_强化兵器和坐车(b):
     assert g.ev(f'{G}.S.silver') == 980 and g.ev(f'{G}.S.items.shengtie') == 9, '强化扣的银子或材料不对'
     g.ev(f'{G}.dlg = null')
     # 坐车：牛家村 → 洛阳
-    g.ev(f'{G}.warp("village", 11, 9)'); g.pg.wait_for_timeout(300)
+    g.ev(f'{G}.warp("village", 19, 15)'); g.pg.wait_for_timeout(300)
     g.ev(f'''(()=>{{const G={G}, n=G.npcs.find(n=>n.name==="车夫"); G.P.tx=n.x;G.P.ty=n.y+1;G.P.px=n.x*16;G.P.py=(n.y+1)*16;G.P.dir='up';}})()''')
     g.tap('a'); g.pg.wait_for_timeout(300); opts = g.talk()
     i = [k for k, o in enumerate(opts) if o.startswith('洛阳')][0]

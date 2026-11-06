@@ -11,7 +11,7 @@ let frame = 0, shake = 0, cam = { x: 0, y: 0 }, lastFight = -999, saveTimer = 0,
 const P = { target: null, tx: 0, ty: 0, px: 0, py: 0, dir: 'down', moving: false, atkT: 0, atkMax: 1, atkCD: 0, hurtT: 0, sit: false, dead: false };
 
 function newState() {
-  return { map: 'village', x: 11, y: 7, dir: 'down', hp: 60, mp: 20, silver: 20, age: 16, ageT: 0,
+  return { map: 'village', x: 19, y: 13, grown: 1, dir: 'down', hp: 60, mp: 20, silver: 20, age: 16, ageT: 0,
     skills: { changquan: 0, tiebushan: 0, caoshangfei: 0 }, active: 'changquan', pref: {},
     passive: { 护体: 'tiebushan', 步法: 'caoshangfei', 心法: null },
     items: { yao: 2 }, gear: ['buyi'], equip: { weapon: null, body: 'buyi', head: null },
@@ -33,6 +33,10 @@ function migrate(s) {
     delete s.quest;
     s.side = {}; s.sect = null; s.parts = null;
     if (s.map === 'village') { s.x = 11; s.y = 7; }
+  }
+  if (!s.grown) {   /* 牛家村、襄阳放大以前的存档：人站的位置跟着挪 */
+    const g = GROWN[s.map]; if (g) { s.x += g[0]; s.y += g[1]; }
+    s.grown = 1;
   }
   if (s.bank == null) s.bank = 0;
   if (!s.former) s.former = [];

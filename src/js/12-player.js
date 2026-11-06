@@ -488,7 +488,7 @@ function die(headHit) {
   say(null, [headHit ? '头部受了重击，你眼前一黑……' : '你力竭倒地，昏了过去……', `醒来时，已躺在客栈的床上。${lost ? `（丢了 ${lost} 两银子）` : ''}`], () => {
     P.dead = false; S.hp = Math.ceil(maxHP() * 0.6); S.st = maxST();
     for (const k of ['head', 'arm', 'leg']) S.parts[k] = Math.max(S.parts[k], Math.ceil(maxPart() * 0.5));
-    enterMap('village', 5, 6, 'down'); save();
+    enterMap('village', 13, 12, 'down'); save();
   });
 }
 

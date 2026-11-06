@@ -71,6 +71,80 @@ function genXiangyang() {
   placeBuildings(m, XY_BUILDINGS);
   return m.map(r => r.join(''));
 }
+/* ---- 牛家村、襄阳放大：原来的样子整块挪到中间，四周加新地方 ---- */
+const GROWN = { village: [8, 6, 40, 30], xiangyang: [10, 8, 52, 40] };
+const shiftKeys = (o, ox, oy) => Object.fromEntries(Object.entries(o).map(([k, v]) => { const [x, y] = k.split(',').map(Number); return [`${x + ox},${y + oy}`, v]; }));
+function embed(rows, id, edge, fl) {
+  const [ox, oy, W, H] = GROWN[id], m = blank(W, H, edge, fl);
+  rows.forEach((r, y) => [...r].forEach((c, x) => { m[y + oy][x + ox] = c; }));
+  return m;
+}
+function growVillage(rows0) {
+  const [ox, oy, W, H] = GROWN.village, h0 = rows0.length, w0 = rows0[0].length;
+  const m = embed(rows0, 'village', 'M', '.');
+  const set = (x, y, c) => { if (x > 0 && y > 0 && x < W - 1 && y < H - 1) m[y][x] = c; };
+  /* 原来那圈山拆掉，村子往外长 */
+  for (let y = oy; y < oy + h0; y++) for (let x = ox; x < ox + w0; x++) if ((y === oy || y === oy + h0 - 1 || x === ox || x === ox + w0 - 1) && (m[y][x] === 'M' || m[y][x] === 'E')) m[y][x] = m[y][x] === 'E' ? '=' : '.';
+  /* 四条路通到新的村口 */
+  for (let x = 1; x < ox; x++) m[oy + 6][x] = '='; m[oy + 6][0] = 'E';
+  for (let x = ox + w0; x < W - 1; x++) m[oy + 6][x] = '='; m[oy + 6][W - 1] = 'E';
+  for (let y = 1; y < oy; y++) m[y][ox + 15] = '='; m[0][ox + 15] = 'E';
+  for (let y = oy + h0; y < H - 1; y++) m[y][ox + 11] = '='; m[H - 1][ox + 11] = 'E';
+  /* 稻田：村东南一片水田，田埂隔开 */
+  for (let y = 22; y < 28; y++) for (let x = 22; x < 38; x++) set(x, y, (x - 22) % 5 === 4 || y === 25 ? '.' : 'd');
+  /* 村西南：一片菜地、几户人家门前的柴堆就用树和花点缀 */
+  for (let y = 23; y < 28; y++) for (let x = 2; x < 16; x++) if (m[y][x] === '.' && (x * 7 + y * 3) % 11 === 0) set(x, y, 'T');
+  for (let y = 23; y < 28; y++) for (let x = 2; x < 16; x++) if (m[y][x] === '.' && (x * 5 + y) % 13 === 0) set(x, y, 'f');
+  /* 北边、东边空地种些树，留出路 */
+  for (let y = 1; y < oy; y++) for (let x = 1; x < W - 1; x++) if (m[y][x] === '.' && (x * 13 + y * 7) % 9 === 0) set(x, y, 'T');
+  for (let y = oy; y < oy + h0; y++) for (let x = ox + w0; x < W - 1; x++) if (m[y][x] === '.' && (x * 11 + y * 5) % 8 === 0) set(x, y, 'T');
+  for (let y = oy; y < oy + h0; y++) for (let x = 1; x < ox; x++) if (m[y][x] === '.' && (x * 3 + y * 11) % 7 === 0) set(x, y, 'T');
+  /* 池塘放大：村南路边一口大塘，塘边几棵柳树 */
+  for (let y = 23; y < 28; y++) for (let x = 13; x < 19; x++) { const dx = (x - 15.5) / 3, dy = (y - 25) / 2.4; if (dx * dx + dy * dy < 1) set(x, y, '~'); }
+  for (const [x, y] of [[12, 23], [19, 23], [12, 27], [19, 27]]) set(x, y, 'T');
+  set(20, 25, 'S');
+  /* 原来的东西挪过去 */
+  for (const b of VILLAGE_BUILDINGS) { b.x += ox; b.y += oy; }
+  /* 老槐树：村西口路边一棵三百岁的大槐树 */
+  const tree = { x: 3, y: 15, w: 2, h: 2, style: 'bigtree', kind: 'bigtree', label: '老槐树' };
+  for (let y = tree.y; y < tree.y + 2; y++) for (let x = tree.x; x < tree.x + 2; x++) m[y][x] = 'H';
+  VILLAGE_BUILDINGS.push(tree); set(5, 17, 'S'); for (const [x, y] of [[2, 14], [3, 14], [4, 14], [5, 14], [2, 17], [3, 17], [4, 17], [5, 15], [5, 16], [2, 15], [2, 16]]) if (m[y][x] === 'T') m[y][x] = '.';
+  return m.map(r => r.join(''));
+}
+function growXiangyang(rows0) {
+  const [ox, oy, W, H] = GROWN.xiangyang, h0 = rows0.length, w0 = rows0[0].length;
+  const m = embed(rows0, 'xiangyang', 'T', '.');
+  const set = (x, y, c) => { if (x > 0 && y > 0 && x < W - 1 && y < H - 1) m[y][x] = c; };
+  /* 高大的城墙：原来的城墙外再砌一层，两层厚 */
+  for (let y = oy - 1; y <= oy + h0; y++) for (let x = ox - 1; x <= ox + w0; x++) if (y === oy - 1 || y === oy + h0 || x === ox - 1 || x === ox + w0) m[y][x] = 'W';
+  /* 东西城门洞：两层城墙都打通，门洞两边是城墩 */
+  const gy = oy + 12;
+  for (const x of [ox - 1, ox, ox + w0 - 1, ox + w0]) { m[gy][x] = '_'; m[gy - 1][x] = 'Q'; m[gy + 1][x] = 'Q'; }
+  /* 出城的官道，一直通到新的城门外 */
+  for (let x = 1; x < ox - 1; x++) m[gy][x] = '='; m[gy][0] = 'E';
+  for (let x = ox + w0 + 1; x < W - 1; x++) m[gy][x] = '='; m[gy][W - 1] = 'E';
+  /* 城外：东西两片树林、农田和护城河 */
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    if (m[y][x] !== '.') continue;
+    const inCity = x >= ox - 1 && x <= ox + w0 && y >= oy - 1 && y <= oy + h0;
+    if (inCity) continue;
+    const moat = (x === ox - 3 || x === ox + w0 + 2) && y >= oy - 2 && y <= oy + h0 + 1 || (y === oy - 3 || y === oy + h0 + 2) && x >= ox - 3 && x <= ox + w0 + 2;
+    if (moat) { m[y][x] = y === gy ? 'B' : '~'; continue; }
+    if ((x * 13 + y * 7) % 10 === 0) m[y][x] = 'T'; else if ((x * 5 + y * 11) % 17 === 0) m[y][x] = 'f';
+  }
+  for (const x of [ox - 3, ox + w0 + 2]) m[gy][x] = 'B';
+  /* 城北城南的农田 */
+  for (let y = 2; y < oy - 4; y++) for (let x = ox + 2; x < ox + w0 - 2; x++) m[y][x] = (x - ox) % 6 === 5 ? '.' : 'd';
+  for (let y = oy + h0 + 4; y < H - 2; y++) for (let x = ox + 2; x < ox + w0 - 2; x++) m[y][x] = (x - ox) % 6 === 5 ? '.' : 'd';
+  for (const b of XY_BUILDINGS) { b.x += ox; b.y += oy; }
+  /* 东西两座城楼：骑在城门上方的城墙上 */
+  for (const [x, lbl] of [[ox - 2, '西城楼'], [ox + w0 - 1, '东城楼']]) {
+    const b = { x, y: gy - 4, w: 3, h: 3, style: 'tall', label: lbl, kind: 'tower' };
+    for (let y = b.y; y < b.y + b.h; y++) for (let xx = b.x; xx < b.x + b.w; xx++) m[y][xx] = 'H';
+    XY_BUILDINGS.push(b);
+  }
+  return m.map(r => r.join(''));
+}
 /* 嵩山：竹林、山岩、石阶一路盘上山顶的少林寺 */
 function genSongshan() {
   const W = 24, H = 30, m = blank(W, H, 'c', '.');
@@ -167,8 +241,8 @@ const LINKS = [
 /* 洞口在山里的位置 */
 const CAVE_AT = { heimuya: { U: [18, 3] }, wild: { U: [12, 30] }, caoyuan: { U: [50, 30] }, forest: { U: [42, 30] }, huashan: { U: [34, 22] }, shudao: { U: [38, 34] }, damo: { U: [52, 10] } };
 /* 手工画的地图，出口坐标固定 */
-const HAND_EXITS = { village: { N: [15, 0], E: [23, 6], S: [11, 17], W: [0, 6] }, xiangyang: { E: [31, 12], W: [0, 12] }, songshan: { S: [12, 29], W: [0, 20], N: [20, 0] }, emei: { E: [29, 12], W: [0, 10] }, heimuya: { N: [8, 0], W: [0, 5] }, taohua: {} };
-const HAND_SIZE = { village: [24, 18], xiangyang: [32, 24], songshan: [24, 30], emei: [30, 22], heimuya: [26, 22], taohua: [26, 20] };
+const HAND_EXITS = { village: { N: [23, 0], E: [39, 12], S: [19, 29], W: [0, 12] }, xiangyang: { E: [51, 20], W: [0, 20] }, songshan: { S: [12, 29], W: [0, 20], N: [20, 0] }, emei: { E: [29, 12], W: [0, 10] }, heimuya: { N: [8, 0], W: [0, 5] }, taohua: {} };
+const HAND_SIZE = { village: [40, 30], xiangyang: [52, 40], songshan: [24, 30], emei: [30, 22], heimuya: [26, 22], taohua: [26, 20] };
 function exitInner(ex, W, H) {
   if (ex.x > 0 && ex.y > 0 && ex.x < W - 1 && ex.y < H - 1) return [ex.x, ex.y + 1, 'down'];  // 地图中间的洞口：出来站在洞口下面
   if (ex.y === 0) return [ex.x, 1, 'down'];
@@ -701,13 +775,13 @@ for (const id in W_SPECS) GEN[id] = genArea(id, W_SPECS[id]);
 for (const id in T_SPECS) GEN[id] = genTown(id, T_SPECS[id]);
 const MAPS = {
   village: {
-    name: '牛家村', rows: genVillage(), buildings: VILLAGE_BUILDINGS,
-    signs: { '1,5': '路牌：往西是襄阳城。\n城里有钱庄、当铺、镖局、武馆、酒楼。', '16,1': '路牌：往北是洛阳，丐帮总舵在那里。\n洛阳往西上山，就是嵩山少林寺。', '22,5': '路牌：往东出村是伏牛山脚。\n野狼、山贼出没，行人小心。', '10,16': '路牌：往南是兔儿坡。\n野兔、狐狸、草药，新手练功好去处。', '2,7': '木人桩：不会还手，随便打。\n（武功练到三十级以后，就打不出长进了）' },
-    spawns: [['dummy', 3, 8], ['dummy', 6, 8]],
+    name: '牛家村', rows: growVillage(genVillage()), buildings: VILLAGE_BUILDINGS,
+    signs: { ...shiftKeys({ '1,5': '路牌：往西是襄阳城。\n城里有钱庄、当铺、镖局、武馆、酒楼。', '16,1': '路牌：往北是洛阳，丐帮总舵在那里。\n洛阳往西上山，就是嵩山少林寺。', '22,5': '路牌：往东出村是伏牛山脚。\n野狼、山贼出没，行人小心。', '10,16': '路牌：往南是兔儿坡。\n野兔、狐狸、草药，新手练功好去处。', '2,7': '木人桩：不会还手，随便打。\n（武功练到三十级以后，就打不出长进了）' }, 8, 6), '20,25': '池塘。塘里有鱼，老渔翁在村里卖鱼竿。', '5,17': '老槐树。村里最老的树，三百多岁了。\n逢年过节，村里人都来树下烧香。' },
+    spawns: [['dummy', 11, 14], ['dummy', 14, 14]],
   },
   xiangyang: {
-    name: '襄阳城', rows: genXiangyang(), buildings: XY_BUILDINGS, hfloor: '_',
-    signs: { '29,10': '襄阳城东门。往东回牛家村。', '2,10': '襄阳城西门。往西出潼关，是终南山、华山。\n再往南走蜀道，可到峨眉山。' },
+    name: '襄阳城', rows: growXiangyang(genXiangyang()), buildings: XY_BUILDINGS, hfloor: '_',
+    signs: shiftKeys({ '29,10': '襄阳城东门。往东回牛家村。', '2,10': '襄阳城西门。往西出潼关，是终南山、华山。\n再往南走蜀道，可到峨眉山。' }, 10, 8),
     spawns: [],
   },
   songshan: {
