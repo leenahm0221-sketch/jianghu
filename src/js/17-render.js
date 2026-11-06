@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v66 ' + FAST_NAME[FAST] : 'v66', 156, 0, 2, 'right');
+  txt(FAST ? 'v67 ' + FAST_NAME[FAST] : 'v67', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1278,6 +1278,7 @@ function foeInFocus() {
   for (const e of enemies) if (fighting(e)) { const d = Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty); if (d < bd) { bd = d; best = e; } }
   return best;
 }
+let foeShown = false;
 function renderHeadTags() {
   if (S.showTag === false || dlg) return;
   for (const e of enemies) {
@@ -1331,7 +1332,7 @@ function renderUI() {
   renderInspect();
   const fm = !!(menu && menu.tab === 5 && !menu.detail); if (fm !== fullMapOn) { fullMapOn = fm; gameEl.classList.toggle('fullmap', fm); }
   /* 对手面板：正在打的怪的名字、等级、血量，固定在画面上方正中 */
-  const foe = !menu && !dlg ? foeInFocus() : null;
+  const foe = !menu && !dlg ? foeInFocus() : null; foeShown = !!foe;
   if (foe) {
     const d = ED(foe), name = `${foe.name || d.name}${d.dummy ? '' : '  ' + d.lv + '级'}`, hpTxt = d.dummy ? '' : `${Math.max(0, Math.ceil(foe.hp))}/${foe.max}`;
     const w = Math.max(96, tw(name) + tw(hpTxt) + 18), x = Math.round(80 - w / 2), y = HUD_H + 3;
@@ -1345,7 +1346,9 @@ function renderUI() {
   }
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   if (!dlg && !menu) toasts.slice(-2).reverse().forEach((t, i) => {
-    const w = Math.min(158, tw(t.text) + 8), y = 131 - (guideShown ? 15 : 0) - i * 13;
+    /* 窄屏时两侧按键会盖住画面下半截，提示改到上方显示 */
+    const cramped = SAFE_W < 180, top = HUD_H - (UB - 144) + (foeShown ? 30 : 4);
+    const w = Math.min(158, tw(t.text) + 8), y = cramped ? top + i * 13 : 131 - (guideShown ? 15 : 0) - i * 13;
     R(80 - w / 2, y, w, 12, 3); txt(t.text, 80, y + 1, 0, 'center');
   });
   if (dlg) renderDialog();

@@ -101,3 +101,11 @@ function coachMenu(who, back) {
     say(who, [`好，接下来 ${Math.ceil(coachLeft() / 3600)} 分钟，我盯着你练！`, '（练功经验翻倍，左上角会显示剩余时间）'], back);
   });
 }
+/* 保险：野外地图放大后，树、石头可能长到 NPC 脚下，把 NPC 站的那一格清成本图地面 */
+for (const [id, list] of Object.entries(NPCS)) {
+  const m = MAPS[id]; if (!m) continue;
+  for (const n of list) {
+    const c = m.rows[n.y] && m.rows[n.y][n.x];
+    if (c && SOLID.has(c) && c !== 'H') { const f = m.indoor ? 'L' : (m.floor || '.'); m.rows[n.y] = m.rows[n.y].slice(0, n.x) + f + m.rows[n.y].slice(n.x + 1); }
+  }
+}

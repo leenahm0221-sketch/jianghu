@@ -1658,7 +1658,10 @@ function train(id, amt) {
     const cross = n => v < n && nv >= n;
     if (ATK_CATS.includes(SK[id].cat) && cross(50)) { toast(`${SK[id].name}练成第二式「${SK[id].move}」`); floatText(P.px + 8, P.py - 10, SK[id].move + '！', true); }
     if (SK[id].tier === 1 && ATK_CATS.includes(SK[id].cat) && cross(5) && S.skills.quanzhen == null) toast('清虚道长似乎有话对你说');
-    for (const k in SK) { const r = SK[k].req; if (r && r[0] === id && cross(r[1]) && S.skills[k] == null) toast(`已达到修习${SK[k].name}的门槛`); }
+    /* 只提醒你真能去学的：本门派的武功，或行囊里有秘籍的；别的门派的武功不提，免得满屏提示 */
+    const ready = Object.keys(SK).filter(k => { const r = SK[k].req; return r && r[0] === id && cross(r[1]) && S.skills[k] == null &&
+      ((SK[k].sect && SK[k].sect === S.sect) || Object.entries(ITEMS).some(([b, it]) => it.book === k && S.items[b])); });
+    if (ready.length) toast(`已达到修习${ready.map(k => SK[k].name).join('、')}的门槛`);
   }
 }
 /* 打比自己弱太多的对手长进很少，打强敌长进更快 */
@@ -2935,6 +2938,14 @@ function coachMenu(who, back) {
     say(who, [`好，接下来 ${Math.ceil(coachLeft() / 3600)} 分钟，我盯着你练！`, '（练功经验翻倍，左上角会显示剩余时间）'], back);
   });
 }
+/* 保险：野外地图放大后，树、石头可能长到 NPC 脚下，把 NPC 站的那一格清成本图地面 */
+for (const [id, list] of Object.entries(NPCS)) {
+  const m = MAPS[id]; if (!m) continue;
+  for (const n of list) {
+    const c = m.rows[n.y] && m.rows[n.y][n.x];
+    if (c && SOLID.has(c) && c !== 'H') { const f = m.indoor ? 'L' : (m.floor || '.'); m.rows[n.y] = m.rows[n.y].slice(0, n.x) + f + m.rows[n.y].slice(n.x + 1); }
+  }
+}
 /* ---------------- 任务指引 ---------------- */
 const KIND_MAP = { yuebuqun: 'siguo', dongfang: 'chengde', zuolengchan: 'jianzhong', ouyangfeng: 'digong', limochou: 'jueqing', jiumozhi: 'miaojiang', jinlun: 'yanmen', jinmao: 'guangming', caobang: 'forest', kuangfei: 'kuangdong', kuangba: 'kuangdong', dongxiong: 'heifeng', xiongwang: 'heifeng', jianmo: 'siguo', jianling: 'jianzhong', jianshou: 'jianzhong2', shiwei: 'digong', shiwang: 'digong2', wddizi: 'wudang', xxdizi: 'damo', wdjz: 'miaojiang', shanfei: 'shudao', baozi: 'shudao', qzdizi: 'zhongnan', mjzhong: 'guangming', mazei: 'yanmen', shalang: 'damo', shafei: 'damo', cylang: 'caoyuan', menggu: 'caoyuan', langwang: 'caoyuan', hsjianke: 'huashan', jqdizi: 'jueqing', gongsun: 'jueqing', xuedao: 'forest', rabbit: 'meadow', fox: 'meadow', wolf: 'wild', bandit: 'wild', boss: 'wild', bear: 'forest', tiger: 'forest', boar: 'songshan', snowwolf: 'emei', wuseng: 'songshan', emeidizi: 'emei', jiaozhong: 'heimuya', taohuadizi: 'taohua' };
 const FERRY = { hangzhou: { to: 'taohua', x: 19, y: 16 }, taohua: { to: 'hangzhou', x: 11, y: 16 } };
@@ -4184,7 +4195,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v66 ' + FAST_NAME[FAST] : 'v66', 156, 0, 2, 'right');
+  txt(FAST ? 'v67 ' + FAST_NAME[FAST] : 'v67', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -5406,6 +5417,7 @@ function foeInFocus() {
   for (const e of enemies) if (fighting(e)) { const d = Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty); if (d < bd) { bd = d; best = e; } }
   return best;
 }
+let foeShown = false;
 function renderHeadTags() {
   if (S.showTag === false || dlg) return;
   for (const e of enemies) {
@@ -5459,7 +5471,7 @@ function renderUI() {
   renderInspect();
   const fm = !!(menu && menu.tab === 5 && !menu.detail); if (fm !== fullMapOn) { fullMapOn = fm; gameEl.classList.toggle('fullmap', fm); }
   /* 对手面板：正在打的怪的名字、等级、血量，固定在画面上方正中 */
-  const foe = !menu && !dlg ? foeInFocus() : null;
+  const foe = !menu && !dlg ? foeInFocus() : null; foeShown = !!foe;
   if (foe) {
     const d = ED(foe), name = `${foe.name || d.name}${d.dummy ? '' : '  ' + d.lv + '级'}`, hpTxt = d.dummy ? '' : `${Math.max(0, Math.ceil(foe.hp))}/${foe.max}`;
     const w = Math.max(96, tw(name) + tw(hpTxt) + 18), x = Math.round(80 - w / 2), y = HUD_H + 3;
@@ -5473,7 +5485,9 @@ function renderUI() {
   }
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   if (!dlg && !menu) toasts.slice(-2).reverse().forEach((t, i) => {
-    const w = Math.min(158, tw(t.text) + 8), y = 131 - (guideShown ? 15 : 0) - i * 13;
+    /* 窄屏时两侧按键会盖住画面下半截，提示改到上方显示 */
+    const cramped = SAFE_W < 180, top = HUD_H - (UB - 144) + (foeShown ? 30 : 4);
+    const w = Math.min(158, tw(t.text) + 8), y = cramped ? top + i * 13 : 131 - (guideShown ? 15 : 0) - i * 13;
     R(80 - w / 2, y, w, 12, 3); txt(t.text, 80, y + 1, 0, 'center');
   });
   if (dlg) renderDialog();
@@ -5652,7 +5666,7 @@ addEventListener('pagehide', () => { if (mode === 'play') save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') save(); });
 window.claude?.hot?.snapshot?.(() => (mode === 'play' && S ? { S: { ...S, x: P.tx, y: P.ty, dir: P.dir } } : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__game = { drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
+window.__game = { toast: t => toast(t), killEnemy: e => killEnemy(e), EQ, MAIN, FOLK_TASK, COOK, BREW_ALL: () => ({ BREW, FORGE, WEAVE: typeof WEAVE !== "undefined" ? WEAVE : null, COOK }), RES_BONUS, VILLAIN_WHERE: () => VILLAIN_WHERE, save: () => save(), loadSave: () => loadSave(), stationSpot, drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
 })();
 </script>
 

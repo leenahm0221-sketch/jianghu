@@ -377,6 +377,23 @@ def 花银子_强化兵器和坐车(b):
     g.close()
 
 @case
+def 数据自检_掉落配方委托出口NPC都对得上(b):
+    g = Game(b); g.new_game()
+    bad = g.ev(f'''(() => {{ const G={G}, bad=[]; const has = k => !!(G.ITEMS[k] || G.EQ[k]);
+      for (const [e,l] of Object.entries(G.DROPS)) {{ if (!G.EN[e]) bad.push('掉落怪物 '+e); for (const [it] of l) if (!has(it)) bad.push('掉落物品 '+e+':'+it); }}
+      for (const [k,v] of Object.entries(G.ITEMS)) if (v.book && !G.SK[v.book]) bad.push('秘籍 '+k);
+      const R = G.BREW_ALL(), chk = (n, l) => (l||[]).forEach(([o, need]) => {{ if (!has(o)) bad.push(n+' '+o); for (const k in need) if (!has(k)) bad.push(n+' '+o+':'+k); }});
+      chk('COOK', R.COOK); chk('BREW', R.BREW); for (const [c,l] of Object.entries(R.FORGE)) chk('FORGE', l);
+      for (const [n,t] of Object.entries(G.FOLK_TASK)) {{ for (const k in t.need||{{}}) if (!has(k)) bad.push('委托 '+n+':'+k);
+        if (t.kill && !Object.values(G.MAPS).some(m => (m.spawns||[]).some(s => s[0] === t.kill.kind))) bad.push('委托怪物无刷新 '+n); }}
+      for (const [id,list] of Object.entries(G.NPCS)) {{ const m=G.MAPS[id]; for (const n of list) if (G.SOLID.has(m.rows[n.y][n.x])) bad.push('NPC在墙里 '+id+':'+n.name); }}
+      for (const [id,m] of Object.entries(G.MAPS)) for (const [k,e] of Object.entries(m.exits||{{}})) {{ const t=G.MAPS[e.map];
+        if (!t || G.SOLID.has(t.rows[e.y][e.x])) bad.push('出口 '+id+'→'+e.map); }}
+      return bad; }})()''')
+    assert not bad, '；'.join(bad[:20])
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

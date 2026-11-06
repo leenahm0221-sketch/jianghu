@@ -164,7 +164,10 @@ function train(id, amt) {
     const cross = n => v < n && nv >= n;
     if (ATK_CATS.includes(SK[id].cat) && cross(50)) { toast(`${SK[id].name}练成第二式「${SK[id].move}」`); floatText(P.px + 8, P.py - 10, SK[id].move + '！', true); }
     if (SK[id].tier === 1 && ATK_CATS.includes(SK[id].cat) && cross(5) && S.skills.quanzhen == null) toast('清虚道长似乎有话对你说');
-    for (const k in SK) { const r = SK[k].req; if (r && r[0] === id && cross(r[1]) && S.skills[k] == null) toast(`已达到修习${SK[k].name}的门槛`); }
+    /* 只提醒你真能去学的：本门派的武功，或行囊里有秘籍的；别的门派的武功不提，免得满屏提示 */
+    const ready = Object.keys(SK).filter(k => { const r = SK[k].req; return r && r[0] === id && cross(r[1]) && S.skills[k] == null &&
+      ((SK[k].sect && SK[k].sect === S.sect) || Object.entries(ITEMS).some(([b, it]) => it.book === k && S.items[b])); });
+    if (ready.length) toast(`已达到修习${ready.map(k => SK[k].name).join('、')}的门槛`);
   }
 }
 /* 打比自己弱太多的对手长进很少，打强敌长进更快 */
