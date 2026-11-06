@@ -413,7 +413,7 @@ const W_SPECS = {
   meadow: { W: 44, H: 32, seed: 11, edge: 'T', floor: '.', patches: [[',', 7, 4]], obst: [['T', 5], ['f', 3], ['r', 1]], density: 0.12, fillOn: [','],
     res: { '*': 16, m: 9, O: 4 }, chests: 1, zones: [{ kind: 'rabbit', n: 16, area: [0, 0, 1, 0.55] }, { kind: 'fox', n: 12, area: [0, 0.45, 1, 1] }] },
   wild: { W: 56, H: 40, seed: 23, peddler: true, edge: 'T', floor: '.', patches: [[',', 8, 4]], obst: [['T', 6], ['r', 2], ['f', 1]], density: 0.16, fillOn: [','], river: 0.55,
-    res: { '*': 8, O: 7 }, chests: 2, hub: [24, 22],
+    res: { '*': 8, O: 7, '&': 1, m: 3 }, chests: 2, hub: [24, 22],   /* 伏牛山脚：也有少量灵芝、棉花，新手不用远跑 */
     build(c) {
       /* 黑风寨：河东北角，木栅栏围起来，南边开寨门 */
       const x0 = c.W - 16, y0 = 2, w = 13, h = 10;
@@ -439,7 +439,7 @@ const W_SPECS = {
     build(c) { passWall(c, 'v', Math.round(c.W * 0.42), '潼关'); },
     zones: [{ kind: 'mazei', n: 4, area: [0, 0, 0.35, 1] }, { kind: 'qzdizi', n: 2, area: [0.5, 0, 1, 1] }, { kind: 'wuseng', n: 2, area: [0.5, 0, 1, 1] }, { kind: 'jiaozhong', n: 2, area: [0, 0, 0.4, 1] }, { kind: 'mjzhong', n: 2, area: [0, 0, 0.4, 1] }] },
   zhongnan: { W: 38, H: 34, seed: 61, edge: 'T', floor: '.', road: '^', plaza: '_', obst: [['T', 6], ['c', 2], ['f', 1]], density: 0.24, hfloor: '_', hub: [19, 18],
-    res: { '*': 6, '&': 2 }, chests: 1,
+    res: { '*': 6, '&': 2, m: 3 }, chests: 1,
     build(c) {
       const [dx, dy] = c.bld({ x: 15, y: 3, w: 7, h: 4, style: 'double', label: '重阳宫', kind: 'hall', owner: 'qzzong' });
       c.bld({ x: 26, y: 4, w: 2, h: 4, style: 'pagoda', kind: 'pagoda' });

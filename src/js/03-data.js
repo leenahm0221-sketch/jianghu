@@ -253,7 +253,7 @@ const ITEMS = {
   shengtie: { name: '生铁', info: '锻造材料', buy: 8, sell: 3, buyer: 'smith' },
   sanqi: { name: '三七', info: '止血良药，蜀道、苗疆采草药时偶得', sell: 8, buyer: 'doctor' },
   fengmi: { name: '玉蜂蜜', info: '终南山、武当山采草药时偶得', sell: 10, buyer: 'doctor' },
-  renshen: { name: '老山参', info: '黑松林、塞外草原采草药时偶得', sell: 30, buyer: 'doctor' },
+  renshen: { name: '老山参', info: '黑松林、塞外草原、苗疆等地的草药和灵芝里偶有，黑风洞最多', sell: 30, buyer: 'doctor' },
   xuelian: { name: '天山雪莲', info: '峨眉雪山采灵芝时偶得', sell: 40, buyer: 'doctor' },
   jingtie: { name: '精铁', info: '华山、嵩山、潼关、雁门挖矿偶得', sell: 10, buyer: 'smith' },
   hantie: { name: '寒铁', info: '光明顶、雪山挖矿偶得，打造寒铁兵器', sell: 30, buyer: 'smith' },

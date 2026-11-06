@@ -145,8 +145,8 @@ function actB() {
 /* 同样是草药丛、灵芝、矿石，不同地方能多采到当地特产 */
 const RES_BONUS = {
   '*': { shudao: ['sanqi', 0.35], miaojiang: ['sanqi', 0.4], zhongnan: ['fengmi', 0.3], wudang: ['fengmi', 0.3], forest: ['renshen', 0.15], caoyuan: ['renshen', 0.2], jueqing: ['sanqi', 0.25] },
-  '&': { heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 0.35], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
-  'O': { chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.15], forest: ['jingtie', 0.15] },
+  '&': { heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 1], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
+  'O': { chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.06], forest: ['jingtie', 0.15] },
 };
 /* 地方的“档次”：看这里的怪有多厉害 */
 function mapTier(id) {
@@ -216,7 +216,7 @@ function gather(x, y, t) {
   } else { toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin'); }
 }
 /* 钓鱼：甩竿 → 等待 → 浮标一沉头上冒“!”，这时按 A 才钓得上。熟练度越高，咬钩窗口越宽、稀有鱼越多 */
-const FISH = { hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]], wild: [['jiyu', 40], ['liyu', 60]], emei: [['bingyu', 100]] };
+const FISH = { shanhai: [['jiyu', 70], ['liyu', 30]], jueqing: [['liyu', 70], ['jiyu', 30]], hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]], wild: [['jiyu', 40], ['liyu', 60]], emei: [['bingyu', 100]] };
 function startFish(x, y) {
   if (!S.items.yugan) return say(null, '要有鱼竿才能钓鱼。牛家村池塘边的老渔翁有卖。');
   if (S.skills.diaoyu == null) learn('diaoyu');

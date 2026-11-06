@@ -787,7 +787,7 @@ const ITEMS = {
   shengtie: { name: '生铁', info: '锻造材料', buy: 8, sell: 3, buyer: 'smith' },
   sanqi: { name: '三七', info: '止血良药，蜀道、苗疆采草药时偶得', sell: 8, buyer: 'doctor' },
   fengmi: { name: '玉蜂蜜', info: '终南山、武当山采草药时偶得', sell: 10, buyer: 'doctor' },
-  renshen: { name: '老山参', info: '黑松林、塞外草原采草药时偶得', sell: 30, buyer: 'doctor' },
+  renshen: { name: '老山参', info: '黑松林、塞外草原、苗疆等地的草药和灵芝里偶有，黑风洞最多', sell: 30, buyer: 'doctor' },
   xuelian: { name: '天山雪莲', info: '峨眉雪山采灵芝时偶得', sell: 40, buyer: 'doctor' },
   jingtie: { name: '精铁', info: '华山、嵩山、潼关、雁门挖矿偶得', sell: 10, buyer: 'smith' },
   hantie: { name: '寒铁', info: '光明顶、雪山挖矿偶得，打造寒铁兵器', sell: 30, buyer: 'smith' },
@@ -1295,7 +1295,7 @@ const W_SPECS = {
   meadow: { W: 44, H: 32, seed: 11, edge: 'T', floor: '.', patches: [[',', 7, 4]], obst: [['T', 5], ['f', 3], ['r', 1]], density: 0.12, fillOn: [','],
     res: { '*': 16, m: 9, O: 4 }, chests: 1, zones: [{ kind: 'rabbit', n: 16, area: [0, 0, 1, 0.55] }, { kind: 'fox', n: 12, area: [0, 0.45, 1, 1] }] },
   wild: { W: 56, H: 40, seed: 23, peddler: true, edge: 'T', floor: '.', patches: [[',', 8, 4]], obst: [['T', 6], ['r', 2], ['f', 1]], density: 0.16, fillOn: [','], river: 0.55,
-    res: { '*': 8, O: 7 }, chests: 2, hub: [24, 22],
+    res: { '*': 8, O: 7, '&': 1, m: 3 }, chests: 2, hub: [24, 22],   /* 伏牛山脚：也有少量灵芝、棉花，新手不用远跑 */
     build(c) {
       /* 黑风寨：河东北角，木栅栏围起来，南边开寨门 */
       const x0 = c.W - 16, y0 = 2, w = 13, h = 10;
@@ -1321,7 +1321,7 @@ const W_SPECS = {
     build(c) { passWall(c, 'v', Math.round(c.W * 0.42), '潼关'); },
     zones: [{ kind: 'mazei', n: 4, area: [0, 0, 0.35, 1] }, { kind: 'qzdizi', n: 2, area: [0.5, 0, 1, 1] }, { kind: 'wuseng', n: 2, area: [0.5, 0, 1, 1] }, { kind: 'jiaozhong', n: 2, area: [0, 0, 0.4, 1] }, { kind: 'mjzhong', n: 2, area: [0, 0, 0.4, 1] }] },
   zhongnan: { W: 38, H: 34, seed: 61, edge: 'T', floor: '.', road: '^', plaza: '_', obst: [['T', 6], ['c', 2], ['f', 1]], density: 0.24, hfloor: '_', hub: [19, 18],
-    res: { '*': 6, '&': 2 }, chests: 1,
+    res: { '*': 6, '&': 2, m: 3 }, chests: 1,
     build(c) {
       const [dx, dy] = c.bld({ x: 15, y: 3, w: 7, h: 4, style: 'double', label: '重阳宫', kind: 'hall', owner: 'qzzong' });
       c.bld({ x: 26, y: 4, w: 2, h: 4, style: 'pagoda', kind: 'pagoda' });
@@ -3547,8 +3547,8 @@ function actB() {
 /* 同样是草药丛、灵芝、矿石，不同地方能多采到当地特产 */
 const RES_BONUS = {
   '*': { shudao: ['sanqi', 0.35], miaojiang: ['sanqi', 0.4], zhongnan: ['fengmi', 0.3], wudang: ['fengmi', 0.3], forest: ['renshen', 0.15], caoyuan: ['renshen', 0.2], jueqing: ['sanqi', 0.25] },
-  '&': { heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 0.35], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
-  'O': { chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.15], forest: ['jingtie', 0.15] },
+  '&': { heifeng: ['renshen', 0.4], jianzhong: ['xuelian', 0.3], jianzhong2: ['xuelian', 0.4], digong2: ['renshen', 0.3], emei: ['xuelian', 1], huashan: ['xuelian', 0.15], miaojiang: ['renshen', 0.2], forest: ['renshen', 0.1] },
+  'O': { chengde: ['hantie', 0.4], kuangdong: ['jingtie', 0.6], langxue: ['jingtie', 0.3], heifeng: ['hantie', 0.4], siguo: ['jingtie', 0.5], jianzhong: ['hantie', 0.5], jianzhong2: ['xuantiekuang', 0.3], digong: ['wujin', 0.4], digong2: ['xuantiekuang', 0.3], huashan: ['jingtie', 0.4], songshan: ['jingtie', 0.3], tongguan: ['jingtie', 0.3], yanmen: ['jingtie', 0.35], guangming: ['hantie', 0.3], shanhai: ['jingtie', 0.3], damo: ['wujin', 0.06], forest: ['jingtie', 0.15] },
 };
 /* 地方的“档次”：看这里的怪有多厉害 */
 function mapTier(id) {
@@ -3618,7 +3618,7 @@ function gather(x, y, t) {
   } else { toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin'); }
 }
 /* 钓鱼：甩竿 → 等待 → 浮标一沉头上冒“!”，这时按 A 才钓得上。熟练度越高，咬钩窗口越宽、稀有鱼越多 */
-const FISH = { hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]], wild: [['jiyu', 40], ['liyu', 60]], emei: [['bingyu', 100]] };
+const FISH = { shanhai: [['jiyu', 70], ['liyu', 30]], jueqing: [['liyu', 70], ['jiyu', 30]], hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]], wild: [['jiyu', 40], ['liyu', 60]], emei: [['bingyu', 100]] };
 function startFish(x, y) {
   if (!S.items.yugan) return say(null, '要有鱼竿才能钓鱼。牛家村池塘边的老渔翁有卖。');
   if (S.skills.diaoyu == null) learn('diaoyu');
@@ -4277,7 +4277,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v69 ' + FAST_NAME[FAST] : 'v69', 156, 0, 2, 'right');
+  txt(FAST ? 'v70 ' + FAST_NAME[FAST] : 'v70', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -5748,7 +5748,7 @@ addEventListener('pagehide', () => { if (mode === 'play') save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') save(); });
 window.claude?.hot?.snapshot?.(() => (mode === 'play' && S ? { S: { ...S, x: P.tx, y: P.ty, dir: P.dir } } : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__game = { toast: t => toast(t), killEnemy: e => killEnemy(e), EQ, MAIN, FOLK_TASK, COOK, BREW_ALL: () => ({ BREW, FORGE, WEAVE: typeof WEAVE !== "undefined" ? WEAVE : null, COOK }), RES_BONUS, VILLAIN_WHERE: () => VILLAIN_WHERE, save: () => save(), loadSave: () => loadSave(), stationSpot, drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
+window.__game = { FISH, resSpecial: (x, y, t) => resSpecial(x, y, t), toast: t => toast(t), killEnemy: e => killEnemy(e), EQ, MAIN, FOLK_TASK, COOK, BREW_ALL: () => ({ BREW, FORGE, WEAVE: typeof WEAVE !== "undefined" ? WEAVE : null, COOK }), RES_BONUS, VILLAIN_WHERE: () => VILLAIN_WHERE, save: () => save(), loadSave: () => loadSave(), stationSpot, drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
 })();
 </script>
 
