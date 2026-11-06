@@ -1388,12 +1388,12 @@ function passWall(c, axis, at, label) {
   if (ok) c.bld({ x: tx, y: ty, w: 5, h: 4, style: 'tall', label, kind: 'tower' });
   c.sign(axis === 'v' ? at + 1 : g + 2, axis === 'v' ? g + 2 : at + 1, `${label}。边关要地。\n正邪两派在此狭路相逢，各自小心。`);
 }
-/* 野外地图放大：人多了不挤，坐车才有意义。山洞放大四分之一，其余野外放大六成；怪物、草药矿石、木箱跟着加 */
+/* 野外地图放大：人多了不挤，坐车才有意义。野外长宽放大到 2.4 倍，山洞 1.6 倍；怪物、草药矿石、木箱跟着加 */
 for (const id in W_SPECS) {
-  const sp = W_SPECS[id], k = sp.ground === 'cave' ? 1.25 : 1.6, n = k * k;
+  const sp = W_SPECS[id], k = sp.ground === 'cave' ? 1.6 : 2.4, n = k * k;
   sp.W = Math.round(sp.W * k); sp.H = Math.round(sp.H * k);
-  for (const z of sp.zones || []) z.n = Math.round(z.n * n * 0.8);
-  for (const r in sp.res || {}) sp.res[r] = Math.round(sp.res[r] * n);
+  for (const z of sp.zones || []) z.n = Math.round(z.n * n * 0.6);
+  for (const r in sp.res || {}) sp.res[r] = Math.round(sp.res[r] * n * 0.8);
   if (sp.chests) sp.chests = Math.round(sp.chests * n);
   for (const pt of sp.patches || []) pt[1] = Math.round(pt[1] * n);
 }
@@ -4277,7 +4277,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v70 ' + FAST_NAME[FAST] : 'v70', 156, 0, 2, 'right');
+  txt(FAST ? 'v71 ' + FAST_NAME[FAST] : 'v71', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
