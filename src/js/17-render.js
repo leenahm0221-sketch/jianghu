@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v81 ' + FAST_NAME[FAST] : 'v81', 156, 0, 2, 'right');
+  txt(FAST ? 'v82 ' + FAST_NAME[FAST] : 'v82', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -848,6 +848,41 @@ function heldBow(p, W, L, side, up) {
     if (drawn) { p(8, up ? by - 6 : by - 3, 1, 9, 3); }
   }
 }
+/* 兵器像素图：每把兵器单独画。刀剑刃尖朝下画、枪锤头朝上画，H 是手握的位置。
+   # 深色描边  + 中灰  - 浅灰  o 最亮  c 本兵器的刃色  . 透明。画的时候按朝向和挥动角度整体旋转 */
+const WART = {
+  tiejian: ['..#..', '..H..', '#####', '.#c#.', '.#c#.', '.#c#.', '.#c#.', '.#c#.', '.#c#.', '..#..'],
+  qinggang: ['..#+.', '..H+.', '#####', '.#o#.', '.#o#.', '.#o#.', '.#o#.', '.#o#.', '.#o#.', '.#o#.', '..#..'],
+  hantiejian: ['..#..', '..H..', '##+##', '.#o#.', '.#-#.', '.#o#.', '.#-#.', '.#o#.', '.#-#.', '.#o#.', '..#..'],
+  xuantie: ['...#...', '...H...', '#######', '.#+++#.', '.#+#+#.', '.#+++#.', '.#+#+#.', '.#+++#.', '.#+++#.', '.#####.'],
+  dao: ['..#..', '..H..', '.###.', '.#c#.', '.#c#.', '.#cc#', '.#cc#', '..#c#', '...##'],
+  gangdao: ['..#..', '..H..', '#####', '.#o#.', '.#o#.', '.#oo#', '.#oo#', '.#oo#', '..#o#', '...##'],
+  hantiedao: ['..#..', '..H..', '##+##', '.#o#.', '.#-#.', '.#oo#', '.#-o#', '.#oo#', '..#o#', '...##'],
+  guitou: ['..#...', '..H...', '#####.', '.#-#..', '.#--#.', '.#-+-#', '.#--o#', '.#-oo#', '#-ooo#', '.####.'],
+  tulong: ['...#..', '...H..', '.#####', '##+++#', '#+#oo#', '#++oo#', '#+#oo#', '#++oo#', '#+#oo#', '#++oo#', '.#+oo#', '..####'],
+  changqiang: ['..#..', '.#o#.', '.#o#.', '#ooo#', '.#o#.', '.+#+.', '+.#.+', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..H..', '..#..', '..#..'],
+  lihua: ['..#..', '.#o#.', '#ooo#', '#ooo#', '.#o#.', '.+#+.', '++#++', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..H..', '..#..', '..#..'],
+  hantieqiang: ['..#..', '.#o#.', '.#-#.', '#o-o#', '.#o#.', '..#..', '.###.', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..H..', '..#..', '..#..'],
+  bawang: ['...#...', '..#o#..', '.#ooo#.', '##ooo##', '#.#o#.#', '...#...', '..+#+..', '.+.#.+.', '...#...', '...#...', '...#...', '...#...', '...#...', '...#...', '...H...', '...#...', '...#...'],
+  tiechui: ['.###.', '#---#', '#-o-#', '#---#', '.###.', '..#..', '..#..', '..#..', '..H..', '..#..'],
+  baleng: ['#.#.#', '.###.', '#+-+#', '#-#-#', '#+-+#', '.###.', '#.#.#', '..#..', '..#..', '..H..', '..#..'],
+  wujinchui: ['.###.', '#+++#', '#+#+#', '#+++#', '#+++#', '.###.', '..#..', '..#..', '..H..', '..#..'],
+  zijin: ['..###..', '.#ooo#.', '#oo-oo#', '#o-ooo#', '#oooo-#', '.#ooo#.', '..###..', '...#...', '...#...', '...#...', '...H...', '...#...'],
+};
+/* 把像素图按方向旋转后画出：用反向取样，任何角度都不会出现漏洞 */
+function drawWart(p, art, core, sil, hx, hy, vx, vy, tipUp) {
+  let ax = 0, ay = 0; art.forEach((r, y) => { const x = r.indexOf('H'); if (x >= 0) { ax = x; ay = y; } });
+  if (tipUp) { vx = -vx; vy = -vy; }   /* 枪锤的图头朝上：把“朝下”的方向换成反向 */
+  const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n;
+  const RR = Math.max(art.length, art[0].length) + 1;
+  const col = ch => sil ? 3 : ch === '#' || ch === 'H' ? 3 : ch === '+' ? 2 : ch === '-' ? 1 : ch === 'o' ? 0 : ch === 'c' ? core : null;
+  for (let ty = -RR; ty <= RR; ty++) for (let tx = -RR; tx <= RR; tx++) {
+    const sx = Math.round(tx * vy - ty * vx) + ax, sy = Math.round(tx * vx + ty * vy) + ay;
+    const ch = art[sy] && art[sy][sx];
+    if (!ch || ch === '.') continue;
+    const c = col(ch); if (c != null) p(hx + tx, hy + ty, 1, 1, c);
+  }
+}
 function heldWeapon(p, W, L, side, up) {
   const kind = W.kind || 'blade';
   let hx, hy, vx, vy, len = kind === 'spear' ? 16 : kind === 'hammer' ? 9 : W.broad ? 8 : 9;
@@ -865,6 +900,12 @@ function heldWeapon(p, W, L, side, up) {
     vx = fx * ca - fy * sa; vy = fx * sa + fy * ca;
     if (!side && !up) { vx = Math.abs(vx) * 0.5 + 0.5 * Math.abs(sa); vy = fy * Math.max(0.2, ca); }   /* 正面：从右肩斜着劈下来 */
     if (up) { vx = 0.3 + Math.abs(sa) * 0.4; vy = -Math.max(0.3, ca); }
+  }
+  const art = WART[L.weapon];
+  if (art) {
+    const tipUp = kind === 'spear' || kind === 'hammer';
+    if (L.swing == null && !tipUp && side) { vx = 1; vy = 0; }   /* 侧面平端，刀剑朝前 */
+    return drawWart(p, art, W.core != null ? W.core : 1, L.sil, hx, hy, vx, vy, tipUp);
   }
   const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n;
   const nx = -vy, ny = vx;   /* 横向 */
