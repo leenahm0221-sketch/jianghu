@@ -131,13 +131,29 @@ function updMenu() {
   if (menu.tab === 4 && pressed.a) { menu.page = 'heard'; menu.sel = 0; sfx('menu'); return; }
   if (pressed.chat) { openChat(); return; }
   if (pressed.start || pressed.b || pressed.map) { menu = null; sfx('menu'); return; }
-  const step = d => { const i = MENU_TABS.indexOf(TABS[menu.tab]), n = MENU_TABS.length; menu.tab = TABS.indexOf(MENU_TABS[(Math.max(0, i) + d + n) % n]); menu.sel = 0; menu.confirm = false; menu.cat = d > 0 ? 0 : 'last'; sfx('menu'); };
-  /* 武功页：←→先在类别之间跳，跳到头再换到别的页 */
-  if (menu.tab === 1 && (pressed.left || pressed.right)) {
-    skillCatNow(); const n = skillCats().length, d = pressed.left ? -1 : 1;
-    if (menu.cat + d >= 0 && menu.cat + d < n) { menu.cat += d; menu.sel = 0; sfx('menu'); }
-    else step(d);
-    pressed.left = pressed.right = false;
+  const step = d => { const i = MENU_TABS.indexOf(TABS[menu.tab]), n = MENU_TABS.length; menu.tab = TABS.indexOf(MENU_TABS[(Math.max(0, i) + d + n) % n]); menu.sel = 0; menu.confirm = false; menu.cat = 0; menu.focus = 'tab'; sfx('menu'); };
+  /* 武功页分三层：页签 →（下）类别条 →（下）武功列表。
+     在页签上左右换页；在类别条上左右换类别；列表最上面再按上回到类别条，类别条按上回到页签 */
+  if (menu.tab === 1) {
+    const f = menu.focus || 'tab', n = skillCats().length; skillCatNow();
+    if (f === 'tab') {
+      if (pressed.left) step(-1); else if (pressed.right) step(1);
+      else if (pressed.down || pressed.a) { menu.focus = 'cat'; sfx('menu'); }
+      return;
+    }
+    if (f === 'cat') {
+      if (pressed.left || pressed.right) { menu.cat = (menu.cat + (pressed.left ? -1 : 1) + n) % n; menu.sel = 0; sfx('menu'); }
+      else if (pressed.up) { menu.focus = 'tab'; sfx('menu'); }
+      else if ((pressed.down || pressed.a) && menuItems().length) { menu.focus = 'list'; menu.sel = 0; sfx('menu'); }
+      return;
+    }
+    const its = menuItems();
+    if (menu.sel >= its.length) menu.sel = Math.max(0, its.length - 1);
+    if (pressed.left || pressed.right) { menu.cat = (menu.cat + (pressed.left ? -1 : 1) + n) % n; menu.sel = 0; sfx('menu'); return; }
+    if (pressed.up) { if (menu.sel > 0) menu.sel--; else menu.focus = 'cat'; sfx('menu'); return; }
+    if (pressed.down) { if (menu.sel < its.length - 1) { menu.sel++; sfx('menu'); } return; }
+    if (pressed.a && its.length) its[menu.sel].act();
+    return;
   }
   if (menu.tab === TABS.indexOf('地图')) { if (pressed.a) { menu = null; sfx('menu'); } return; }  // 大地图：只看，不换页
   if (pressed.left) step(-1);

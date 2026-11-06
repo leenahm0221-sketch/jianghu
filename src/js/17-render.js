@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v78 ' + FAST_NAME[FAST] : 'v78', 156, 0, 2, 'right');
+  txt(FAST ? 'v79 ' + FAST_NAME[FAST] : 'v79', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1639,7 +1639,10 @@ function renderMenu() {
   box(0, 12, MW, 132);
   MENU_TABS.forEach((t, i) => {
     const tw_ = (MW - 6) / MENU_TABS.length, x = Math.round(3 + i * tw_);
-    if (TABS[menu.tab] === t) { R(x, 16, Math.round(tw_), 13, 3); txt(t, x + Math.round(tw_ / 2), 17, 0, 'center'); }
+    if (TABS[menu.tab] === t) {
+      R(x, 16, Math.round(tw_), 13, 3); txt(t, x + Math.round(tw_ / 2), 17, 0, 'center');
+      if (menu.tab === 1 && (menu.focus || 'tab') === 'tab' && (frame >> 4) % 2) { const mx = x + Math.round(tw_ / 2); R(mx - 2, 26, 5, 1, 0); R(mx - 1, 27, 3, 1, 0); }   /* 光标在页签上：页签下闪一个小箭头 */
+    }
     else txt(t, x + Math.round(tw_ / 2), 17, 2, 'center');
   });
   R(4, 30, MW - 8, 1, 3);
@@ -1674,14 +1677,15 @@ function renderMenu() {
       const cs = skillCats(), cur = skillCatNow(), cw = Math.min(14, Math.floor((MW - 8) / cs.length)), x0 = Math.round((MW - cw * cs.length) / 2);
       cs.forEach((c, i) => {
         const x = x0 + i * cw, lab = c === '全' ? '全' : CAT_TAG[c];
-        if (c === cur) { R(x, 32, cw, 12, 3); txt(lab, x + cw / 2, 33, 0, 'center'); } else txt(lab, x + cw / 2, 33, 2, 'center');
+        if (c === cur) { R(x, 32, cw, 12, 3); txt(lab, x + cw / 2, 33, 0, 'center'); } else txt(lab, x + cw / 2, 33, menu.focus === 'cat' ? 3 : 2, 'center');
       });
+      if (menu.focus === 'cat') { R(x0 - 2, 31, cw * cs.length + 4, 1, 3); R(x0 - 2, 44, cw * cs.length + 4, 1, 3); }   /* 光标在类别条上：上下框线 + 箭头 */
       R(4, 45, MW - 8, 1, 2);
     }
     const st = clamp(menu.sel - VIS + 1, 0, Math.max(0, its.length - VIS));
     its.slice(st, st + VIS).forEach((it, j) => {
       const i = st + j, y = y0 + j * 13;
-      if (i === menu.sel) txt('▶', 7, y, 3);
+      if (i === menu.sel && (!sk || menu.focus === 'list')) txt('▶', 7, y, 3);
       if (it.tag) { R(17, y, 11, 11, 3); txt(it.tag, 18, y, 0); txt(it.label + (it.mark ? '●' : ''), 31, y, 3); }
       else txt(it.label + (it.mark ? '●' : ''), 18, y, 3);
       if (it.right) txt(it.right, MW - 9, y, 2, 'right');
@@ -1692,7 +1696,7 @@ function renderMenu() {
     if (cur && cur.info) txt(cur.info, MW / 2, 116, 2, 'center');
     else if (!its.length) txt(menu.tab === 3 ? '行囊空空' : '还没有装备', MW / 2, 60, 2, 'center');
   }
-  txt(menu.tab === 4 ? `A见闻${S.heard.length} 石刻${S.found.length}/${steleTotal()} ←→换页` : menu.tab === 1 ? `${CAT_NAME[skillCatNow()] || '全部'}${menuItems().length}门 ←→换类 A确定` : '←→换页 A确定 B返回', MW / 2, 129, 2, 'center');
+  txt(menu.tab === 4 ? `A见闻${S.heard.length} 石刻${S.found.length}/${steleTotal()} ←→换页` : menu.tab === 1 ? ({ tab: '←→换页 ▼选类别', cat: `${CAT_NAME[skillCatNow()] || '全部'}${menuItems().length}门 ←→换类 ▼进列表`, list: '上下选武功 A确定 B返回' }[menu.focus || 'tab']) : '←→换页 A确定 B返回', MW / 2, 129, 2, 'center');
 }
 
 function render() {
