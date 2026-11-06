@@ -3,3 +3,9 @@ node_modules/
 build/
 tests/_page.html
 __pycache__/
+
+# 调试截图
+/l_*.png
+/s_*.png
+/in_*.png
+/layout_sheet.png
