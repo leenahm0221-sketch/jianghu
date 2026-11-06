@@ -456,6 +456,18 @@ def 同级战斗打得赢(b):
     assert not g.errs, g.errs
     g.close()
 
+@case
+def 测试一键全满(b):
+    g = Game(b); g.new_game()
+    g.ev(f'{G}.testMaxAll()')
+    bad = g.ev(f"Object.keys({G}.SK).filter(k => !({G}.S.skills[k] >= 49.99))")
+    assert not bad, bad
+    miss = g.ev(f"Object.entries({G}.EQ).filter(([k,e]) => e.slot==='weapon' && (!{G}.S.gear.includes(k) || {G}.S.enh[k] !== 10)).map(([k])=>k)")
+    assert not miss, miss
+    for _ in range(120): g.ev(f'{G}.tick()')
+    assert not g.errs, g.errs
+    g.close()
+
 if __name__ == '__main__':
     fails = 0
     with sync_playwright() as p:

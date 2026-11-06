@@ -3591,6 +3591,7 @@ function menuItems() {
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
     { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快50倍，几分钟练到顶'][FAST]); sfx('menu'); } },
+    ...(FAST ? [{ label: '测试：武功兵器全满', act: () => testMaxAll() }] : []),
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }
@@ -3630,6 +3631,14 @@ function updMenu() {
   }
 }
 
+
+/* 测试用（正式测试时和加速一起去掉）：所有武功练满，所有兵器拿到手并强化到 +10 */
+function testMaxAll() {
+  for (const k of Object.keys(SK)) S.skills[k] = skillCap(k);
+  let n = 0;
+  for (const [id, e] of Object.entries(EQ)) if (e.slot === 'weapon') { if (!S.gear.includes(id)) { S.gear.push(id); n++; } (S.enh = S.enh || {})[id] = ENH_MAX; }
+  save(); sfx('level'); toast(`${Object.keys(SK).length} 门武功已练满，兵器 +${n} 件，全部强化 +10`);
+}
 /* ---------------- player ---------------- */
 function stepEnt(e, spd) {
   const tx = e.tx * T, ty = e.ty * T;
@@ -4507,7 +4516,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v73 ' + FAST_NAME[FAST] : 'v73', 156, 0, 2, 'right');
+  txt(FAST ? 'v74 ' + FAST_NAME[FAST] : 'v74', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -6006,7 +6015,7 @@ addEventListener('pagehide', () => { if (mode === 'play') save(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'play') save(); });
 window.claude?.hot?.snapshot?.(() => (mode === 'play' && S ? { S: { ...S, x: P.tx, y: P.ty, dir: P.dir } } : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__game = { FISH, resSpecial: (x, y, t) => resSpecial(x, y, t), toast: t => toast(t), killEnemy: e => killEnemy(e), EQ, MAIN, FOLK_TASK, COOK, BREW_ALL: () => ({ BREW, FORGE, WEAVE: typeof WEAVE !== "undefined" ? WEAVE : null, COOK }), RES_BONUS, VILLAIN_WHERE: () => VILLAIN_WHERE, save: () => save(), loadSave: () => loadSave(), stationSpot, drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
+window.__game = { testMaxAll: () => testMaxAll(), FISH, resSpecial: (x, y, t) => resSpecial(x, y, t), toast: t => toast(t), killEnemy: e => killEnemy(e), EQ, MAIN, FOLK_TASK, COOK, BREW_ALL: () => ({ BREW, FORGE, WEAVE: typeof WEAVE !== "undefined" ? WEAVE : null, COOK }), RES_BONUS, VILLAIN_WHERE: () => VILLAIN_WHERE, save: () => save(), loadSave: () => loadSave(), stationSpot, drawPerson: (...a) => drawPerson(...a), R: (...a) => R(...a), craftMenu: (k) => k === "brew" ? craft("孙郎中", BREW, "lianyao", () => {}) : craft("铁匠", FORGE["兵器"], "duanzao", () => {}), drawTile: (t, x, y, mx, my) => drawTile(t, x, y, mx, my), get g() { return g; }, get UX() { return UX; }, get FAST() { return FAST; }, set FAST(v) { FAST = v; }, SK, DROPS, maxHP: () => maxHP(), defense: (i) => defense(i), tick: () => update(), get P2() { return P; }, set dlg(v) { dlg = v; }, get mus() { return mus; }, get acState() { return ac && ac.state; }, foeOf, newSectTask, storyTalk, navGoal, cqStep, makeEnemy: (k,x,y)=>makeEnemy(k,x,y), envoyTalk, get safeSpots() { return safeSpots; }, mapLevels, dangerOf, levelRange, ED, netSaveNow, ITEMS, readStele, openChest, peddlerTalk, NET, get inspect() { return inspect; }, NPCS, SOLID, SECTS, RUMORS, HERMITS, sectTalk, tellRumor, hermitTalk, innTalk, makeEnemy, get enemies2() { return enemies; }, get cam() { return cam; }, get dlg() { return dlg; }, get menu() { return menu; }, get S() { return S; }, MAPS, P, SK, EN, train, qi, lv, get map() { return map; }, set S(v) { S = v; }, get enemies() { return enemies; }, get npcs() { return npcs; }, press, release, warp: (m, x, y) => enterMap(m, x, y, 'down'), navGoal, goalPoint, nextHop, ageFrames, ageQi, get frame() { return frame; }, set frame(v) { frame = v; } };
 })();
 </script>
 

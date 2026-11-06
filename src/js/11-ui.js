@@ -96,6 +96,7 @@ function menuItems() {
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
     { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快50倍，几分钟练到顶'][FAST]); sfx('menu'); } },
+    ...(FAST ? [{ label: '测试：武功兵器全满', act: () => testMaxAll() }] : []),
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {
       if (!menu.confirm) { menu.confirm = true; return; }
@@ -135,3 +136,11 @@ function updMenu() {
   }
 }
 
+
+/* 测试用（正式测试时和加速一起去掉）：所有武功练满，所有兵器拿到手并强化到 +10 */
+function testMaxAll() {
+  for (const k of Object.keys(SK)) S.skills[k] = skillCap(k);
+  let n = 0;
+  for (const [id, e] of Object.entries(EQ)) if (e.slot === 'weapon') { if (!S.gear.includes(id)) { S.gear.push(id); n++; } (S.enh = S.enh || {})[id] = ENH_MAX; }
+  save(); sfx('level'); toast(`${Object.keys(SK).length} 门武功已练满，兵器 +${n} 件，全部强化 +10`);
+}
