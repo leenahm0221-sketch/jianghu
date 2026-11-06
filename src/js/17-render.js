@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v80 ' + FAST_NAME[FAST] : 'v80', 156, 0, 2, 'right');
+  txt(FAST ? 'v81 ' + FAST_NAME[FAST] : 'v81', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -809,16 +809,16 @@ const WEAPON_LOOK = {
   qinggang: { line: 3, core: 0, hilt: 1, guard: 3, tassel: true, broad: false },
   dao: { line: 3, core: 2, hilt: 3, guard: 3, tassel: false, broad: true },
   gangdao: { line: 3, core: 0, hilt: 3, guard: 3, tassel: false, broad: true },
-  changqiang: { kind: 'spear' },
-  tiechui: { kind: 'hammer' },
+  changqiang: { kind: 'spear', head: 1, tassel: true },
+  tiechui: { kind: 'hammer', head: 1 },
   xuantie: { line: 3, core: 3, hilt: 3, guard: 3, tassel: true, broad: true },
   tulong: { line: 3, core: 1, hilt: 3, guard: 3, tassel: true, broad: true },
-  bawang: { kind: 'spear' },
+  bawang: { kind: 'spear', head: 0, tassel: true },
   guitou: { line: 3, core: 2, hilt: 3, guard: 3, tassel: true, broad: true },
   hantiedao: { line: 3, core: 0, hilt: 3, guard: 3, tassel: false, broad: true },
   hantiejian: { line: 3, core: 0, hilt: 3, guard: 3, tassel: false, broad: false },
-  lihua: { kind: 'spear' }, hantieqiang: { kind: 'spear' }, baleng: { kind: 'hammer' }, wujinchui: { kind: 'hammer' },
-  zijin: { kind: 'hammer' },
+  lihua: { kind: 'spear', head: 0, tassel: true }, hantieqiang: { kind: 'spear', head: 0 }, baleng: { kind: 'hammer', head: 2, spikes: true }, wujinchui: { kind: 'hammer', head: 2 },
+  zijin: { kind: 'hammer', head: 0, big: true },
   /* 手套：戴在两只手上，颜色深浅分档 */
   liegong: { kind: 'bow', c: 2 }, niujiao: { kind: 'bow', c: 1 }, tietai: { kind: 'bow', c: 3 }, sheri: { kind: 'bow', c: 0, shine: true },
   feibiao: { kind: 'dart', c: 2 }, xiujian: { kind: 'dart', c: 1 }, hantieding: { kind: 'dart', c: 0 }, baoyu: { kind: 'dart', c: 0, shine: true },
@@ -828,7 +828,7 @@ const WEAPON_LOOK = {
 function heldBow(p, W, L, side, up) {
   const col = L.sil ? 3 : W.c === 0 ? 3 : W.c;
   if (L.swing == null) {   /* 平时：弓竖着握在身侧，弦是直的 */
-    const bx = side ? 11 : 14;
+    const bx = side ? 13 : 14;
     for (let y = 3; y <= 15; y++) { const b = Math.round(Math.sin((y - 3) / 12 * Math.PI) * 2); p(bx + b, y, 1, 1, y === 3 || y === 15 ? 3 : col); }
     p(bx, 4, 1, 11, 2); p(bx + 1, 9, 1, 2, 3);
     if (W.shine && (frame >> 4) % 2) p(bx + 2, 8, 1, 1, 0);
@@ -850,13 +850,12 @@ function heldBow(p, W, L, side, up) {
 }
 function heldWeapon(p, W, L, side, up) {
   const kind = W.kind || 'blade';
-  let hx, hy, vx, vy, len = kind === 'spear' ? 15 : kind === 'hammer' ? 9 : 10;
+  let hx, hy, vx, vy, len = kind === 'spear' ? 16 : kind === 'hammer' ? 9 : W.broad ? 8 : 9;
   if (L.swing == null) {
-    /* 平时：刀剑垂在身侧、刃尖朝前下方；枪竖着拄在手里；锤扛在肩上 */
-    [hx, hy] = side ? [11, 11] : [14, 11];
-    if (kind === 'spear') { vx = 0; vy = -1; }
-    else if (kind === 'hammer') { if (side) { hx = 9; vx = -0.9; vy = -0.75; } else { vx = 0.15; vy = -1; } }
-    else { vx = side ? 1 : 0.55; vy = side ? 0.55 : 1; len = 8; }   /* 刃尖探到身体外面，不和腿糊在一起 */
+    /* 平时：刀剑握在身侧、刃尖朝前（侧面）或朝下（正面、背面）；枪竖着拄着；锤竖着提着，锤头在肩旁 */
+    if (kind === 'spear') { [hx, hy, vx, vy] = side ? [13, 13, 0, -1] : [15, 13, 0, -1]; }
+    else if (kind === 'hammer') { [hx, hy, vx, vy] = side ? [14, 12, 0, -1] : [15, 12, 0, -1]; }
+    else { [hx, hy, vx, vy] = side ? [11, 11, 1, -0.25] : [15, 11, 0, 1]; len -= 1; }
   } else {
     const t = clamp(L.swing, 0, 1);
     /* 握把位置和朝前的方向（左右朝向时 p 会自动镜像） */
@@ -868,20 +867,39 @@ function heldWeapon(p, W, L, side, up) {
     if (up) { vx = 0.3 + Math.abs(sa) * 0.4; vy = -Math.max(0.3, ca); }
   }
   const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n;
-  const dot = (x, y, c, w = 1) => p(Math.round(x), Math.round(y), w, w, c);
-  const nx = -vy, ny = vx;   /* 刃的横向 */
-  for (let i = -1; i <= len; i++) {
-    const x = hx + vx * i, y = hy + vy * i;
-    if (i <= 1) { dot(x, y, 3); continue; }   /* 握把 */
-    if (kind === 'spear') { dot(x, y, 3); if (i >= len - 2) { dot(x + nx, y + ny, 3); dot(x - nx, y - ny, 3); } continue; }
-    if (kind === 'hammer') { dot(x, y, 3); continue; }
-    const core = L.sil ? 3 : (W.core != null ? W.core : 1);
-    if (W.broad) { dot(x, y, 3); if (i < len) dot(x + nx, y + ny, i < len - 1 ? core : 3); if (i < len - 1) dot(x + nx * 2, y + ny * 2, 3); }
-    else { dot(x, y, 3); if (i > 2 && i < len - 1) dot(x + nx, y + ny, core === 3 ? 2 : core); }
+  const nx = -vy, ny = vx;   /* 横向 */
+  /* 先把每个像素的颜色算好再一次画出：深色描边在下、亮色刃芯在上，斜着也是干净的一条 */
+  const px = new Map(), K = (x, y) => Math.round(x) + ',' + Math.round(y);
+  const put = (x, y, c, force) => { const k = K(x, y); if (force || !px.has(k)) px.set(k, c); };
+  const ring = (x, y) => { for (let a2 = -1; a2 <= 1; a2++) for (let b2 = -1; b2 <= 1; b2++) if (a2 || b2) put(x + a2, y + b2, 3); };
+  const at = i => [hx + vx * i, hy + vy * i];
+  const core = c => (L.sil ? 3 : c);
+  if (kind === 'blade') {
+    const cc = W.core != null ? W.core : 1, wide = W.broad;
+    for (let i = 2; i <= len; i++) { const [x, y] = at(i); ring(x, y); if (wide && i < len) ring(x + nx, y + ny); }
+    for (let i = 2; i < len; i++) { const [x, y] = at(i); put(x, y, core(cc === 3 ? 2 : cc), true); if (wide && i < len - 1) put(x + nx, y + ny, core(i % 3 ? (cc === 3 ? 2 : cc) : 1), true); }
+    const [tx, ty] = at(len); put(tx, ty, 3, true); put(...at(len + 1), 3, true);
+    for (const s2 of [-2, -1, 1, 2]) put(hx + vx + nx * s2, hy + vy + ny * s2, 3, true);   /* 护手 */
+    if (!L.sil && W.guard != null && W.guard !== 3) put(hx + vx, hy + vy, W.guard, true);
+    for (let i = -1; i <= 0; i++) put(...at(i), 3, true);   /* 握把 */
+    if (W.tassel && !L.sil) { const [x, y] = at(-2); put(x, y + 1, 2, true); put(x + 1, y + 2, 2, true); put(x, y + 3, 2, true); }   /* 剑穗 */
+  } else if (kind === 'spear') {
+    const hc = W.head != null ? W.head : 1;
+    for (let i = -2; i <= len - 3; i++) put(...at(i), 3, true);   /* 枪杆 */
+    for (let i = len - 2; i <= len; i++) ring(...at(i));
+    for (let i = len - 2; i <= len - 1; i++) put(...at(i), core(hc), true);
+    put(...at(len + 1), 3, true);
+    if (W.tassel && !L.sil) { const [x, y] = at(len - 3); put(x + nx, y + ny, 2, true); put(x - nx, y - ny, 2, true); put(x + nx * 2 - vx, y + ny * 2 - vy, 2, true); }   /* 红缨 */
+  } else {
+    const hc = W.head != null ? W.head : 1, big = W.big ? 1 : 0;
+    for (let i = -1; i <= len - 2; i++) put(...at(i), 3, true);   /* 锤柄 */
+    for (let a2 = -2 - big; a2 <= 2 + big; a2++) for (let b2 = -1; b2 <= 2 + big; b2++) {
+      const edge = Math.abs(a2) === 2 + big || b2 === -1 || b2 === 2 + big;
+      put(hx + vx * (len + b2) + nx * a2, hy + vy * (len + b2) + ny * a2, edge ? 3 : core(hc), true);
+    }
+    if (W.spikes) for (const s2 of [-1, 1]) put(hx + vx * (len + 1) + nx * s2 * (4 + big), hy + vy * (len + 1) + ny * s2 * (4 + big), 3, true);
   }
-  if (!kind || kind === 'blade') { dot(hx + vx * 2 + nx * 1.5, hy + vy * 2 + ny * 1.5, W.guard != null ? W.guard : 3); dot(hx + vx * 2 - nx * 1.5, hy + vy * 2 - ny * 1.5, W.guard != null ? W.guard : 3); }
-  if (kind === 'hammer') { const x = hx + vx * len, y = hy + vy * len; for (let a2 = -2; a2 <= 2; a2++) for (let b2 = -1; b2 <= 2; b2++) dot(x + nx * a2 + vx * b2, y + ny * a2 + vy * b2, Math.abs(a2) < 2 && b2 > -1 && b2 < 2 && !L.sil ? 2 : 3); }
-  if (kind === 'spear' && !L.sil) dot(hx + vx * (len - 3) + nx, hy + vy * (len - 3) + ny, 1);
+  px.forEach((c, k) => { const [x, y] = k.split(',').map(Number); p(x, y, 1, 1, c); });
 }
 function drawPerson(sx, sy, dir, step, L, flash) {
   if (flash) return;
@@ -1004,11 +1022,11 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   if (L.mask && !up) p(5, 5, 6, 2, 2);
   if (L.beard && !up) { p(6, 6, 4, 3, 0); p(5, 7, 1, 2, 3); p(10, 7, 1, 2, 3); p(7, 9, 2, 1, 0); }
   // 背面：整把兵器斜挎在背上
-  if (W && W.kind && up) {
+  if (W && W.kind && up && L.back) {
     if (W.kind === 'spear') { for (let t = 0; t <= 16; t++) p(13 - Math.floor(t * 0.6), -4 + t, 1, 1, 3); p(12, -6, 3, 2, 3); }
     else { for (let t = 0; t <= 9; t++) p(11 - Math.floor(t * 0.7), 3 + t, 1, 1, 3); p(9, -1, 5, 4, 3); p(10, 0, 3, 2, 2); }
   }
-  if (W && !W.kind && up) {
+  if (W && !W.kind && up && L.back) {
     for (let t = 0; t <= 9; t++) { p(11 - t, 3 + t, W.broad ? 3 : 2, 1, W.line); if (!L.sil && t > 1 && t < 9) p(12 - t, 3 + t, 1, 1, W.core); }
     p(11, 0, 1, 3, W.hilt); p(10, 3, 4, 1, W.guard);
     if (W.tassel) { p(12, -1, 1, 1, 3); p(13, 0, 1, 3, 3); }
