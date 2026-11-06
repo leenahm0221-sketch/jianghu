@@ -31,7 +31,14 @@ const MENU_TABS = TABS.filter(t => t !== '地图');
 const KIND_ORDER = ['基础', '门派', '江湖', '特殊', '生产'];
 /* 江湖：不属门派的上层武功（武馆、野外得秘籍）；特殊：打反派或奇人传授 */
 const skKind = k => { const sk = SK[k]; return sk.cat === '生产' ? '生产' : sk.sect ? '门派' : sk.tier !== 2 ? '基础' : (sk.villain || Object.values(HERMITS).some(h => h.skill === k)) ? '特殊' : '江湖'; };
+/* 武功页按类别分页：全部 / 拳 / 剑 / 刀 / 枪 / 锤 / 暗器 / 弓 / 内功 / 轻功 / 护体 / 技艺（只列出学过的类别） */
+function skillCats() { const have = new Set(Object.keys(S.skills).filter(k => SK[k]).map(k => SK[k].cat)); return ['全'].concat(CAT_ORDER.filter(c => have.has(c))); }
+function skillCatNow() { const cs = skillCats(); if (menu.cat === 'last' || menu.cat == null || menu.cat >= cs.length) menu.cat = menu.cat === 'last' ? cs.length - 1 : Math.min(menu.cat || 0, cs.length - 1); return cs[menu.cat]; }
 function skillList() {
+  const c = menu && menu.tab === 1 ? skillCatNow() : '全';
+  return skillListAll().filter(k => c === '全' || SK[k].cat === c);
+}
+function skillListAll() {
   return Object.keys(S.skills).filter(k => SK[k]).sort((a, b) => CAT_ORDER.indexOf(SK[a].cat) - CAT_ORDER.indexOf(SK[b].cat) || KIND_ORDER.indexOf(skKind(a)) - KIND_ORDER.indexOf(skKind(b)));
 }
 function skillInfo(k) {
@@ -124,7 +131,14 @@ function updMenu() {
   if (menu.tab === 4 && pressed.a) { menu.page = 'heard'; menu.sel = 0; sfx('menu'); return; }
   if (pressed.chat) { openChat(); return; }
   if (pressed.start || pressed.b || pressed.map) { menu = null; sfx('menu'); return; }
-  const step = d => { const i = MENU_TABS.indexOf(TABS[menu.tab]), n = MENU_TABS.length; menu.tab = TABS.indexOf(MENU_TABS[(Math.max(0, i) + d + n) % n]); menu.sel = 0; menu.confirm = false; sfx('menu'); };
+  const step = d => { const i = MENU_TABS.indexOf(TABS[menu.tab]), n = MENU_TABS.length; menu.tab = TABS.indexOf(MENU_TABS[(Math.max(0, i) + d + n) % n]); menu.sel = 0; menu.confirm = false; menu.cat = d > 0 ? 0 : 'last'; sfx('menu'); };
+  /* 武功页：←→先在类别之间跳，跳到头再换到别的页 */
+  if (menu.tab === 1 && (pressed.left || pressed.right)) {
+    skillCatNow(); const n = skillCats().length, d = pressed.left ? -1 : 1;
+    if (menu.cat + d >= 0 && menu.cat + d < n) { menu.cat += d; menu.sel = 0; sfx('menu'); }
+    else step(d);
+    pressed.left = pressed.right = false;
+  }
   if (menu.tab === TABS.indexOf('地图')) { if (pressed.a) { menu = null; sfx('menu'); } return; }  // 大地图：只看，不换页
   if (pressed.left) step(-1);
   if (pressed.right) step(1);

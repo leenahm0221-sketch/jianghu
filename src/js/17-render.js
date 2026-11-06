@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v77 ' + FAST_NAME[FAST] : 'v77', 156, 0, 2, 'right');
+  txt(FAST ? 'v78 ' + FAST_NAME[FAST] : 'v78', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1669,22 +1669,30 @@ function renderMenu() {
     const hs = Object.keys(S.hunted || {});
     pair(112, hs.length ? '追杀' : '门户', hs.length ? hs.map(k => `${SECTS[k].name}${S.hunted[k]}拨`).join(' ') : S.purge ? (S.purge.done ? '回师门复命' : `叛徒在${MAPS[S.purge.map].name}`) : '无');
   } else {
-    const its = menuItems(), VIS = 6;
+    const sk = menu.tab === 1, its = menuItems(), VIS = sk ? 5 : 6, y0 = sk ? 47 : 35;
+    if (sk) {   /* 类别条：当前类别反白，左右键切换 */
+      const cs = skillCats(), cur = skillCatNow(), cw = Math.min(14, Math.floor((MW - 8) / cs.length)), x0 = Math.round((MW - cw * cs.length) / 2);
+      cs.forEach((c, i) => {
+        const x = x0 + i * cw, lab = c === '全' ? '全' : CAT_TAG[c];
+        if (c === cur) { R(x, 32, cw, 12, 3); txt(lab, x + cw / 2, 33, 0, 'center'); } else txt(lab, x + cw / 2, 33, 2, 'center');
+      });
+      R(4, 45, MW - 8, 1, 2);
+    }
     const st = clamp(menu.sel - VIS + 1, 0, Math.max(0, its.length - VIS));
     its.slice(st, st + VIS).forEach((it, j) => {
-      const i = st + j, y = 35 + j * 13;
+      const i = st + j, y = y0 + j * 13;
       if (i === menu.sel) txt('▶', 7, y, 3);
       if (it.tag) { R(17, y, 11, 11, 3); txt(it.tag, 18, y, 0); txt(it.label + (it.mark ? '●' : ''), 31, y, 3); }
       else txt(it.label + (it.mark ? '●' : ''), 18, y, 3);
       if (it.right) txt(it.right, MW - 9, y, 2, 'right');
     });
-    if (st > 0) { R(77, 32, 6, 1, 3); R(78, 31, 4, 1, 3); R(79, 30, 2, 1, 3); }
+    if (st > 0) { const ay = y0 - 3; R(77, ay, 6, 1, 3); R(78, ay - 1, 4, 1, 3); R(79, ay - 2, 2, 1, 3); }
     if (st + VIS < its.length) { R(77, 112, 6, 1, 3); R(78, 113, 4, 1, 3); R(79, 114, 2, 1, 3); }
     const cur = its[menu.sel];
     if (cur && cur.info) txt(cur.info, MW / 2, 116, 2, 'center');
     else if (!its.length) txt(menu.tab === 3 ? '行囊空空' : '还没有装备', MW / 2, 60, 2, 'center');
   }
-  txt(menu.tab === 4 ? `A见闻${S.heard.length} 石刻${S.found.length}/${steleTotal()} ←→换页` : '←→换页 A确定 B返回', MW / 2, 129, 2, 'center');
+  txt(menu.tab === 4 ? `A见闻${S.heard.length} 石刻${S.found.length}/${steleTotal()} ←→换页` : menu.tab === 1 ? `${CAT_NAME[skillCatNow()] || '全部'}${menuItems().length}门 ←→换类 A确定` : '←→换页 A确定 B返回', MW / 2, 129, 2, 'center');
 }
 
 function render() {
