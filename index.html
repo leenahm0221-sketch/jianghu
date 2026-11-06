@@ -4668,7 +4668,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v86 ' + FAST_NAME[FAST] : 'v86', 156, 0, 2, 'right');
+  txt(FAST ? 'v87 ' + FAST_NAME[FAST] : 'v87', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -5464,26 +5464,15 @@ function heldBow(p, W, L, side, up) {
     return sideBow(p, W, L, drawn ? 4 : 0, 14);
   }
   if (L.swing == null) return sideBow(p, W, L, 0, 14);   /* 正面、背面平时：弓竖着握在右手边 */
-  if (L.swing == null) {   /* 平时：弓竖着握在身侧，弦是直的 */
-    const bx = 14;
-    for (let y = 3; y <= 15; y++) { const b = Math.round(Math.sin((y - 3) / 12 * Math.PI) * 2); p(bx + b, y, 1, 1, y === 3 || y === 15 ? 3 : col); }
-    p(bx, 4, 1, 11, 2); p(bx + 1, 9, 1, 2, 3);
-    if (W.shine && (frame >> 4) % 2) p(bx + 2, 8, 1, 1, 0);
-    return;
+  /* 正面、背面出招：弓横在身前（和侧面一样只有半人宽），往朝向那边弯，弦往身上拉，箭朝外 */
+  const drawn = L.swing < 0.5, d = up ? -1 : 1, by = up ? 4 : 12, x0 = 4, x1 = 12, core = L.sil ? 3 : W.c === 0 ? 0 : W.c;
+  for (let x = x0; x <= x1; x++) {
+    const off = Math.round(Math.sin((x - x0) / (x1 - x0) * Math.PI) * 2), y = by + d * off;
+    p(x, y + d, 1, 1, 3); p(x, y, 1, 1, x === x0 || x === x1 ? 3 : core); if (x > x0 && x < x1) p(x, y - d, 1, 1, 3);
   }
-  const t = clamp(L.swing, 0, 1), drawn = t < 0.5;
-  if (side) {
-    const bx = 12;
-    for (let y = 3; y <= 15; y++) { const b = Math.round(Math.sin((y - 3) / 12 * Math.PI) * 2); p(bx + b, y, 1, 1, y === 3 || y === 15 ? 3 : col); }
-    const sx = drawn ? 8 : bx; p(sx, 4, 1, 1, 3); p(sx, 14, 1, 1, 3);
-    for (let y = 4; y <= 14; y++) { const k = drawn ? Math.round((1 - Math.abs(y - 9) / 5) * (bx - 8)) : 0; p(bx - k, y, 1, 1, 2); }
-    if (drawn) { p(8, 9, 9, 1, 3); p(16, 8, 2, 3, 3); p(7, 8, 1, 3, 2); }
-  } else {
-    const by = up ? 4 : 13;
-    for (let x = 1; x <= 15; x++) { const b = Math.round(Math.sin((x - 1) / 14 * Math.PI) * 2); p(x, by + (up ? -b : b), 1, 1, x === 1 || x === 15 ? 3 : col); }
-    for (let x = 2; x <= 14; x++) p(x, by - (up ? -1 : 1) * (drawn ? Math.round((1 - Math.abs(x - 8) / 6) * 3) : 0), 1, 1, 2);
-    if (drawn) { p(8, up ? by - 6 : by - 3, 1, 9, 3); }
-  }
+  const pull = drawn ? 3 : 0;
+  for (let x = x0 + 1; x < x1; x++) { const k = 1 - Math.abs(x - 8) / 4; p(x, by - d * Math.round(pull * k), 1, 1, 2); }
+  if (drawn) { const ay = by - d * pull; for (let i = 0; i <= 8; i++) p(8, ay + d * i, 1, 1, 3); p(7, ay + d * 8, 3, 1, 3); p(8, ay + d * 9, 1, 1, 3); }
 }
 /* 兵器像素图：每把兵器单独画。刀剑刃尖朝下画、枪锤头朝上画，H 是手握的位置。
    # 深色描边  + 中灰  - 浅灰  o 最亮  c 本兵器的刃色  . 透明。画的时候按朝向和挥动角度整体旋转 */
