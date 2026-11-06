@@ -394,6 +394,22 @@ def 数据自检_掉落配方委托出口NPC都对得上(b):
     g.close()
 
 @case
+def 正派阵营主线_能接能做完(b):
+    g = Game(b); g.new_game(); g.ev(f'{G}.S.tut = 9; {G}.S.sect = "shaolin"; {G}.S.q.main = 5')
+    g.ev(f'{G}.storyTalk("正")'); opts = g.talk(); assert opts and opts[0] == '接下', opts
+    g.choose(0); g.talk()
+    assert g.ev(f'{G}.S.cq && {G}.S.cq.line') == '正', '没接到正派主线'
+    for step in range(4):
+        g.ev(f'{G}.S.cq.cnt = 99'); g.ev(f'{G}.storyTalk("正")'); g.talk(); g.ev(f'{G}.dlg = null')
+    assert g.ev(f'{G}.S.cq.step') == 4, g.ev(f'{G}.S.cq.step')
+    g.ev(f'{G}.warp("damo", -1, -1)'); g.pg.wait_for_timeout(300)
+    assert g.ev(f'{G}.enemies.some(e => e.kind === "dingchunqiu")'), '大漠没刷出丁春秋'
+    g.ev(f'{G}.S.flags.dingchunqiu = true'); g.ev(f'{G}.storyTalk("正")'); g.talk()
+    assert g.ev(f'{G}.S.cq.done'), '正派主线没有完结'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
 def 菜单各页能打开(b):
     g = Game(b); g.new_game()
     g.ev(f'(() => {{ const S = {G}.S; S.skills.taijijian = 12; S.items.caoyao = 3; }})()')

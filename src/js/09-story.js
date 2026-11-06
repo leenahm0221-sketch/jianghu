@@ -7,6 +7,13 @@ const STORY = {
     { text: '大漠追查叛教密使', kind: 'shafei', need: 4, map: 'damo', say: ['马贼招了：货运往大漠，接货的是沙匪。', '沙匪背后有人。去大漠打四个沙匪，顺藤摸瓜。'] },
     { text: '光明顶擒拿叛徒金毛使者', flag: 'jinmao', map: 'guangming', say: ['原来是明教的金毛使者！他勾结正派，想挑起神教和明教火并。', '他躲在光明顶。去把他拿下！'] },
   ], end: ['金毛使者伏诛，神教上下都承你的情。', '—— 神教密令 完 ——'] },
+  正: { name: '正气长存', giver: 'envoy_zheng', steps: [
+    { text: '黑木崖击退日月教众', kind: 'jiaozhong', need: 5, map: 'heimuya', say: ['日月神教的人最近频频下山，在边关一带滋事。', '先去黑木崖，打退五个日月教众，挫挫他们的锐气。'] },
+    { text: '光明顶打退明教教众', kind: 'mjzhong', need: 4, map: 'guangming', say: ['教众招了：有人在暗中挑拨各派，想让正邪两道大打一场。', '明教那边也有人被收买。去光明顶，打退四个明教教众问个明白。'] },
+    { text: '苗疆剿除五毒教众', kind: 'wdjz', need: 3, map: 'miaojiang', say: ['明教的人说，挑拨的人用的是五毒教的毒。', '去苗疆，剿除三个五毒教众，查出毒是给谁的。'] },
+    { text: '大漠击退星宿弟子', kind: 'xxdizi', need: 3, map: 'damo', say: ['毒药是卖给星宿派的！', '去大漠星宿海，打退三个星宿弟子，逼出幕后主使。'] },
+    { text: '大漠讨伐星宿老怪丁春秋', flag: 'dingchunqiu', map: 'damo', say: ['原来一切都是星宿老怪丁春秋在搞鬼！他想让正邪两败俱伤，好坐收渔利。', '他就在大漠星宿海。去为天下除此大害！'] },
+  ], end: ['丁春秋伏诛，一场正邪大战消弭于无形。', '武林各派都记住了你的名字。', '—— 正气长存 完 ——'] },
   中: { name: '江南风云', giver: 'envoy_zhong', steps: [
     { text: '伏牛山脚惩治山贼', kind: 'bandit', need: 5, map: 'wild', say: ['最近往来扬州的商队屡屡被劫。', '先去伏牛山脚，惩治五个山贼。'] },
     { text: '黑松林打黑熊取熊胆', kind: 'bear', need: 3, map: 'forest', say: ['山贼说，劫来的货都运进了黑松林。', '林子里黑熊挡道，打三头，探探路。'] },
@@ -27,7 +34,7 @@ function storyTalk(camp) {
     const nx = L.steps[cq.step];
     if (!nx) {
       cq.done = true; S.cqDone = (S.cqDone || []).concat(camp); const g = RARE[rnd(0, RARE.length - 1)]; S.gear.push(g); addRep(25); S.silver += 200;
-      if (camp === '邪') addAlign(0, 10); else addAlign(3, 3);
+      if (camp === '邪') addAlign(0, 10); else if (camp === '正') addAlign(10, 0); else addAlign(3, 3);
       save(); say(who, [...L.end, `（银两+${reward + 200} 江湖声望+25 得到${EQ[g].name}）`]); return true;
     }
     say(who, [`（银两+${reward}）`, ...nx.say], () => toast(`${L.name}：${nx.text}`)); return true;
