@@ -47,6 +47,7 @@ function navGoal() {
     if (st.type === 'collect') return goalItem(st.item, st.text);
     if (st.type === 'patrol') return { map: st.foe === '邪' ? 'heimuya' : 'songshan', text: st.text };
   }
+  if (!S.champion && !ljReady().length) return goalNpc('lunjian_host', '华山论剑：找');   /* 大结局 */
   const t = curTrial();
   if (t) {
     if (trialDone(t)) return goalNpc('baixiao', '交历练找');

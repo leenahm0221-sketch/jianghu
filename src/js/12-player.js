@@ -412,9 +412,10 @@ function spawnMainBoss() {
 }
 function killEnemy(e) {
   const d = ED(e);
-  e.dead = true; e.respawn = (d.boss || d.once) ? Infinity : (d.resp || 1800);
+  e.dead = true; e.respawn = (d.boss || d.once || d.lunjian) ? Infinity : (d.resp || 1800);
   if (d.camp || d.hunter) campKill(e, d);
   folkKill(e.kind);
+  if (d.lunjian && map.arena) return lunjianWin(e);
   for (const [k, p] of DROPS[e.kind] || []) {
     if (Math.random() >= p) continue;
     if (EQ[k]) { S.gear.push(k); toast(`得到 ${EQ[k].name}！`); sfx('level'); continue; }
@@ -478,6 +479,10 @@ function hurtPlayer(dmg, src) {
 }
 function die(headHit) {
   S.hp = 0; P.dead = true; P.sit = false; P.target = null; sfx('die');
+  if (map && map.arena) {   /* 论剑台上输了：只是被打下台，不丢银子，回华山之巅 */
+    S.lj.round = 0; const ex = map.exits['6,10'];
+    return say(null, ['你被一掌震下了论剑台……', '（论剑输了不丢东西，养好伤再来）'], () => { P.dead = false; S.hp = Math.ceil(maxHP() * 0.6); S.st = maxST(); enterMap('huashan', ex.x, ex.y, 'down'); save(); });
+  }
   const lost = Math.floor(S.silver * 0.2); S.silver -= lost;
   if (lost) toast('身上的银子丢了些。存进钱庄就不会丢');
   say(null, [headHit ? '头部受了重击，你眼前一黑……' : '你力竭倒地，昏了过去……', `醒来时，已躺在客栈的床上。${lost ? `（丢了 ${lost} 两银子）` : ''}`], () => {

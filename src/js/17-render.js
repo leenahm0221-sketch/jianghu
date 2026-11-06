@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v68 ' + FAST_NAME[FAST] : 'v68', 156, 0, 2, 'right');
+  txt(FAST ? 'v69 ' + FAST_NAME[FAST] : 'v69', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1291,7 +1291,7 @@ function renderHeadTags() {
   for (const o of NET.others.values()) headTag(Math.round(o.px) + 8 - cam.x, Math.round(o.py) - cam.y - (o.sit ? 11 : 14), o.name, o.sect && SECTS[o.sect] ? SECTS[o.sect].short : null, o.camp, o.title);
   if (P.dead) return;
   const rt = titleOf(REP_TITLES, S.rep);
-  headTag(P.px + 8 - cam.x, P.py - cam.y - (P.sit ? 11 : 14), S.name, S.sect ? SECTS[S.sect].short : null, campOf(), S.rep >= 20 ? rt : null);
+  headTag(P.px + 8 - cam.x, P.py - cam.y - (P.sit ? 11 : 14), S.name, S.sect ? SECTS[S.sect].short : null, campOf(), S.champion ? '天下第一' : S.rep >= 20 ? rt : null);
 }
 /* 说话气泡：显示在名字上方，几秒后消失 */
 function renderSay() {

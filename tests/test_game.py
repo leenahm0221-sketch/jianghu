@@ -92,7 +92,7 @@ def 地图连通_出口_NPC_怪物都走得到(b):
     bad = g.ev(f'''(() => {{
       const G = {G}, out = [];
       const ids = Object.keys(G.MAPS);
-      for (const id of ids) if (id !== 'village' && !G.nextHop('village', id)) out.push('到不了 ' + id);
+      for (const id of ids) if (id !== 'village' && !G.MAPS[id].arena && !G.nextHop('village', id)) out.push('到不了 ' + id);
       for (const id of ids) {{
         const m = G.MAPS[id], ks = Object.keys(m.exits);
         for (const k of ks) {{ const d = m.exits[k], t = G.MAPS[d.map]; if (G.SOLID.has(t.rows[d.y][d.x])) out.push('出口落在障碍上 ' + id + '→' + d.map); }}
@@ -406,6 +406,30 @@ def 正派阵营主线_能接能做完(b):
     assert g.ev(f'{G}.enemies.some(e => e.kind === "dingchunqiu")'), '大漠没刷出丁春秋'
     g.ev(f'{G}.S.flags.dingchunqiu = true'); g.ev(f'{G}.storyTalk("正")'); g.talk()
     assert g.ev(f'{G}.S.cq.done'), '正派主线没有完结'
+    assert not g.errs, g.errs
+    g.close()
+
+@case
+def 华山论剑_五场连胜得天下第一(b):
+    g = Game(b); g.new_game(); g.ev(f'{G}.S.tut = 9')
+    # 条件不够时主持会说还差什么
+    g.ev(f'{G}.warp("huashan", 23, 10)'); g.pg.wait_for_timeout(300)
+    g.ev(f'''(()=>{{const G={G}, n=G.npcs.find(n=>n.id==="lunjian_host"); n.talk(n);}})()''')
+    assert '火候' in g.ev(f'{G}.dlg.pages.map(p=>p.lines.join("")).join("")'), '条件不够时主持没提示'
+    g.ev(f'{G}.dlg = null')
+    g.ev(f'{G}.S.q.main = {G}.MAIN.length - 1; {G}.S.cqDone = ["正"]; {G}.S.skills.changquan = 80')
+    g.ev(f'''(()=>{{const G={G}, n=G.npcs.find(n=>n.id==="lunjian_host"); n.talk(n);}})()''')
+    opts = g.talk(); assert opts and opts[0] == '登上论剑台', opts
+    g.choose(0); g.pg.wait_for_timeout(400)
+    assert g.ev(f'{G}.map.id') == 'lunjian', '没上论剑台'
+    for i in range(5):
+        g.ev(f'{G}.dlg = null')
+        k = g.ev(f'(()=>{{const e={G}.enemies.find(e=>!e.dead && {G}.ED(e).lunjian); return e && e.kind;}})()')
+        assert k, f'第{i+1}场没有对手'
+        g.ev(f'(()=>{{const G={G}; const e=G.enemies.find(e=>!e.dead && G.ED(e).lunjian); G.killEnemy(e);}})()')
+        g.pg.wait_for_timeout(1800)
+    g.talk()
+    assert g.ev(f'{G}.S.champion'), '五场赢了没得天下第一'
     assert not g.errs, g.errs
     g.close()
 

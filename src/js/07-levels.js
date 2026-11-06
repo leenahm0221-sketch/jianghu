@@ -77,6 +77,7 @@ function enterMap(id, x, y, dir) {
   } else enemies = map.spawns.filter(([k, ex, ey]) => !(k === 'boss' && S.flags.boss) && !(inSafe(ex, ey) && !EN[k].boss && !EN[k].dboss)).map(([k, ex, ey]) => makeEnemy(k, ex, ey));
   if (S.purge !== undefined) spawnSpecial();
   spawnMainBoss();
+  if (map.arena) arenaSpawn();   /* 论剑台：放出这一场的宗师 */
   fx = [];
   const lr = levelRange(id);
   banner = { text: lr ? `${map.name}　怪物${lr[0] === lr[1] ? lr[0] : lr[0] + '～' + lr[1]}级` : map.name, t: 130 };
