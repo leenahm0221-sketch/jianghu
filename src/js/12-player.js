@@ -90,9 +90,18 @@ function nearestEnemy(maxD, o = {}) {
 }
 const dirOf = (dx, dy) => Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
 function faceTo(e) { P.dir = dirOf(e.tx - P.tx, e.ty - P.ty); }
+/* 远程（暗器、弓箭）：不用站成一条直线，射程内、中间没有墙挡着就能自动瞄准；只能站定了出手 */
+const isRanged = c => c === '暗器' || c === '弓';
+function losFree(x0, y0, x1, y1) {   /* 两点之间的格子（不含两头）有没有墙、树、NPC 挡着 */
+  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+  for (let i = 1; i < n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); if ((blocks(x, y) && !enemyAt(x, y)) || npcAt(x, y)) return false; }
+  return true;
+}
+function rangedIn(e, R) { const dx = e.tx - P.tx, dy = e.ty - P.ty; return Math.hypot(dx, dy) <= R + 0.5 && losFree(P.tx, P.ty, e.tx, e.ty); }
 function inReach(e) {
   const d = distTo(e);
   if (d === 1) return true;
+  if (isRanged(SK[S.active].cat)) return rangedIn(e, SK[S.active].reach || 3);
   const rc = SK[S.active].reach || 1;
   if (d <= rc && (e.tx === P.tx || e.ty === P.ty)) {
     const sx = Math.sign(e.tx - P.tx), sy = Math.sign(e.ty - P.ty);
@@ -124,10 +133,12 @@ function pathStep(e) {
 }
 /* 怪物只在窝边这么远内追人；人追怪也只追这么远，打架就地解决，不满地图跑 */
 const LEASH = 5, CHASE = 4;
+/* 锁定距离：近战 4 格；远程按射程算（斜着也能射，所以按步数要放宽一些） */
+const chaseR = () => { const sk = SK[S.active]; return sk && isRanged(sk.cat) ? Math.ceil((sk.reach || 3) * 1.5) : CHASE; };
 function autoFight() {
   let e = P.target;
-  if (e && !e.dead && distTo(e) > CHASE) { P.target = null; P.waitT = 0; toast(`${e.name || ED(e).name}跑远了`); return; }
-  if (!e || e.dead) { e = P.target = nearestEnemy(1, { passive: true }); P.waitT = 0; if (!e) return; }
+  if (e && !e.dead && distTo(e) > chaseR()) { P.target = null; P.waitT = 0; toast(`${e.name || ED(e).name}跑远了`); return; }
+  if (!e || e.dead) { const sk = SK[S.active], rg = sk && isRanged(sk.cat); e = P.target = rg ? nearestEnemy(Math.ceil((sk.reach || 3) * 1.5)) : nearestEnemy(1, { passive: true }); if (e && rg && !inReach(e)) e = P.target = null; P.waitT = 0; if (!e) return; }
   if (inReach(e)) { P.waitT = 0; faceTo(e); if (P.atkCD <= 0) attack(); return; }
   const d0 = ED(e), comes = !d0.passive && !d0.dummy && (isAggro(e) || e.adj) && (!d0.camp || campHostile(d0.camp) || foeOf(e.kind) || e.provoked) && distTo(e) <= 2;
   if (comes && (P.waitT = (P.waitT || 0) + 1) < 45) { faceTo(e); return; }
@@ -304,7 +315,7 @@ function actA() {
   if (front) { P.target = front; P.sit = false; attack(); return; }
   const op = otherAt(fx_, fy) || [...DIRS_LIST].map(([a, b]) => otherAt(P.tx + a, P.ty + b)).find(Boolean);
   if (op && !nearestEnemy(1)) return inspectPlayer(op);
-  const e = nearestEnemy(CHASE, { passive: true }) || nearestEnemy(1, { camp: true });
+  ensureActive(); const e = nearestEnemy(chaseR(), { passive: true }) || nearestEnemy(1, { camp: true });
   if (e) { P.target = e; P.sit = false; if (inReach(e)) { faceTo(e); attack(); } else autoFight(); return; }
   for (const [k, [ddx, ddy]] of Object.entries(DIRS)) {
     const m = npcAt(P.tx + ddx, P.ty + ddy) || (tileAt(P.tx + ddx, P.ty + ddy) === 'n' ? npcAt(P.tx + ddx * 2, P.ty + ddy * 2) : null);
@@ -355,7 +366,29 @@ function attack() {
     }
     return len;
   };
-  if (cat === '暗器') { P.shot = [line(0, sk.reach || 3)]; if (m2) P.shot.push(line(-1, sk.reach || 3), line(1, sk.reach || 3)); }
+  P.shotTo = null;
+  /* 远程自动瞄准：先打锁定的目标，没有就打射程内最近的；第二式暗器多打目标身边两个，弓箭一箭穿过一路的人 */
+  const RR = (sk.reach || 3) + (m2 && cat === '弓' ? 1 : 0);
+  const okFoe = e => !e.dead && !ED(e).passive && !(ED(e).camp && !campHostile(ED(e).camp) && !foeOf(e.kind) && !e.provoked) || e === P.target || ED(e).dummy;
+  let tg = isRanged(cat) && P.target && !P.target.dead && enemies.includes(P.target) && rangedIn(P.target, RR) ? P.target : null;
+  if (isRanged(cat) && !tg) tg = enemies.filter(e => !e.dead && okFoe(e) && rangedIn(e, RR)).sort((a, b) => distTo(a) - distTo(b))[0] || null;
+  if (tg) {
+    P.target = tg; faceTo(tg);
+    const ex = tg.tx - P.tx, ey = tg.ty - P.ty, n = Math.max(Math.abs(ex), Math.abs(ey));
+    const path = []; for (let i = 1; i <= (cat === '弓' && m2 ? RR : n); i++) { const k = i / n; path.push([P.tx + Math.round(ex * k), P.ty + Math.round(ey * k)]); }
+    let end = [ex, ey];
+    if (cat === '弓' && m2) {   /* 穿云：一路上的人都中，碰墙停 */
+      for (const [x, y] of path) { if (blocks(x, y) && !enemyAt(x, y)) break; end = [x - P.tx, y - P.ty]; if (enemyAt(x, y)) hits.push([x, y, 1.2]); }
+    } else {
+      for (const [x, y] of path) { const e = enemyAt(x, y); if (e) { hits.push([x, y, 1]); end = [x - P.tx, y - P.ty]; break; } }
+    }
+    P.shotTo = [end];
+    if (cat === '暗器' && m2) {   /* 三道齐发：目标身边两格内再挑两个人 */
+      enemies.filter(e => e !== tg && !e.dead && okFoe(e) && Math.abs(e.tx - tg.tx) + Math.abs(e.ty - tg.ty) <= 2 && rangedIn(e, RR + 1)).slice(0, 2)
+        .forEach(e => { hits.push([e.tx, e.ty, 0.7]); P.shotTo.push([e.tx - P.tx, e.ty - P.ty]); });
+    }
+  }
+  else if (cat === '暗器') { P.shot = [line(0, sk.reach || 3)]; if (m2) P.shot.push(line(-1, sk.reach || 3), line(1, sk.reach || 3)); }
   else if (cat === '弓') {
     const len = (sk.reach || 5) + (m2 ? 1 : 0);
     if (m2) {   /* 弓箭第二式：一箭穿过去，一路上的人都中 */
@@ -385,7 +418,7 @@ function attack() {
     if (injured('arm')) dmg *= 0.6;
     dmg = Math.max(1, Math.round(dmg + qi() * 0.08));
     hurtEnemy(e, dmg, loc === 1 ? `头${dmg}` : null);
-    sparks.push({ x: e.px + 8 + rnd(-2, 2), y: e.py + 8 + rnd(-3, 2), t: m2 ? 12 : 8, big: m2, cat, dx, dy });
+    sparks.push({ x: e.px + 8 + rnd(-2, 2), y: e.py + 8 + rnd(-3, 2), t: m2 ? 12 : 8, big: m2, cat, dx: isRanged(cat) ? Math.sign(e.tx - P.tx) : dx, dy: isRanged(cat) ? Math.sign(e.ty - P.ty) : dy });
     if (m2) { hitStop = 4; shake = cat === '槌' ? 7 : 5; }
     if (d.dummy) tutNext(1);
     const stunP = (sk.stun || 0) + (m2 && cat === '槌' ? 0.4 : 0);

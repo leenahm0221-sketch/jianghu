@@ -498,6 +498,21 @@ def 暗器独立和第二式效果(b):
     assert not g.errs, g.errs
     g.close()
 
+@case
+def 远程自动瞄准原地出手(b):
+    g = Game(b); g.new_game()
+    g.ev(f'{G}.testMaxAll()')
+    r = g.ev(f"""(() => {{ const G = {G}, P = G.P2; let hit = 0, moved = 0;
+      for (let t = 0; t < 20; t++) {{
+        G.enemies2.length = 0; G.S.equip.weapon = 'liegong'; G.S.active = 'gongjian'; P.atkCD = 0; P.target = null; P.dir = 'up';
+        const x0 = P.tx, y0 = P.ty;
+        const e = G.makeEnemy('wolf', P.tx + 3, P.ty + 2); e.hp = e.max = 99999; e.stunT = 500; G.enemies2.push(e);
+        G.S.st = 999; G.attack(); if (e.hp < 99999) hit++; if (P.tx !== x0 || P.ty !== y0) moved++; }}
+      return [hit, moved]; }})()""")
+    assert r[0] > 8 and r[1] == 0, r
+    assert not g.errs, g.errs
+    g.close()
+
 if __name__ == '__main__':
     fails = 0
     with sync_playwright() as p:

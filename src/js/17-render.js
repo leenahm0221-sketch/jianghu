@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v87 ' + FAST_NAME[FAST] : 'v87', 156, 0, 2, 'right');
+  txt(FAST ? 'v88 ' + FAST_NAME[FAST] : 'v88', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1301,6 +1301,15 @@ function drawSlash2(cx, cy, cat, prog, dx, dy, ang) {
 }
 /* 暗器飞出去：一枚枚小镖沿直线飞到落点；第二式三道齐发 */
 function drawShot(cx, cy, prog, dx, dy) {
+  if (P.shotTo) {   /* 自动瞄准：每枚暗器各自飞向自己的目标 */
+    const t = Math.min(1, prog * 1.6);
+    for (const [tx, ty] of P.shotTo) {
+      const L = Math.hypot(tx, ty) || 1, ux = tx / L, uy = ty / L, x = Math.round(cx + tx * T * t), y = Math.round(cy + ty * T * t);
+      for (let i = 1; i <= 3; i++) R(Math.round(x - ux * i * 2), Math.round(y - uy * i * 2), 1, 1, i === 3 ? 2 : 3);
+      R(x - 1, y - 1, 3, 3, 3); R(x, y, 1, 1, 0);
+    }
+    return;
+  }
   const shots = P.shot || [3], t = Math.min(1, prog * 1.6);
   shots.forEach((len, j) => {
     const o = j === 0 ? 0 : j === 1 ? -1 : 1, ox = -dy * o * T, oy = dx * o * T;
@@ -1312,6 +1321,15 @@ function drawShot(cx, cy, prog, dx, dy) {
 /* 箭：拉弓的前半段不飞，放箭后一支带尾羽的长箭直飞到落点；第二式箭身带一道破空的气线 */
 function drawArrow(cx, cy, prog, dx, dy) {
   if (prog < 0.35) return;
+  if (P.shotTo) {   /* 自动瞄准：箭沿着人和目标的连线飞 */
+    const [tx, ty] = P.shotTo[0], L = Math.hypot(tx, ty) || 1, ux = tx / L, uy = ty / L, t = Math.min(1, (prog - 0.35) * 2.2);
+    const x = cx + tx * T * t, y = cy + ty * T * t, P_ = (a, b, c) => R(Math.round(a), Math.round(b), 1, 1, c);
+    if (P.move2) for (let i = 4; i < L * T * t; i += 2) P_(cx + ux * i, cy + uy * i, 2);
+    for (let i = 0; i < 9; i++) P_(x - ux * i, y - uy * i, 3);
+    P_(x + ux * 2, y + uy * 2, 3); P_(x + ux - uy * 1.5, y + uy + ux * 1.5, 3); P_(x + ux + uy * 1.5, y + uy - ux * 1.5, 3);
+    for (const s2 of [-1, 1]) P_(x - ux * 8 - uy * s2 * 2, y - uy * 8 + ux * s2 * 2, 3);
+    return;
+  }
   const len = (P.shot && P.shot[0]) || 5, t = Math.min(1, (prog - 0.35) * 2.2), dist = Math.max(10, len * T) * t;
   const x = cx + dx * dist, y = cy + dy * dist;
   if (P.move2) for (let i = 4; i < dist; i += 2) R(cx + dx * i, cy + dy * i, 1, 1, 2);
@@ -1394,7 +1412,8 @@ function renderWorld() {
       let ox = 0, oy = 0;
       if (P.atkT > 0) {
         const [dx, dy] = DIRS[P.dir], t = P.atkT / P.atkMax, cat = SK[S.active].cat;
-        if (P.move2 && (cat === '槌' || cat === '刀')) oy = -Math.round(Math.sin(t * Math.PI) * 4);
+        if (cat === '暗器' || cat === '弓') { /* 远程原地出手，身子不往前冲 */ }
+        else if (P.move2 && (cat === '槌' || cat === '刀')) oy = -Math.round(Math.sin(t * Math.PI) * 4);
         else { const push = P.move2 ? 3 : 2; ox = Math.round(dx * push * Math.sin(t * Math.PI)); oy = Math.round(dy * push * Math.sin(t * Math.PI)); }
       }
       if (P.move2 && P.atkT > P.atkMax * 0.35) {
