@@ -183,7 +183,7 @@ const EN = {
 const DROPS = {
   yuebuqun: [['book_bixie', 0.25], ['hantie', 0.8], ['hantiejian', 0.2], ['jingtie', 1]],
   dongfang: [['book_kuihua', 0.2], ['xuantiekuang', 1], ['xuantie', 0.1], ['yulu', 0.5]],
-  zuolengchan: [['book_hanbing', 0.25], ['hantie', 1], ['xuantiekuang', 0.4]],
+  zuolengchan: [['book_hanbing', 0.25], ['hantie', 1], ['xuantiekuang', 0.4], ['hantieshoutao', 0.2]],
   ouyangfeng: [['book_hama', 0.25], ['wujin', 1], ['baoming', 0.3]],
   limochou: [['book_chilian', 0.25], ['xuelian', 1], ['duanxu', 0.3]],
   gongsun: [['book_yinyang', 0.25], ['hantie', 1], ['hantiedao', 0.2], ['xuantiekuang', 0.4], ['lingzhi', 1], ['qidan', 1]],
@@ -191,7 +191,7 @@ const DROPS = {
   jinlun: [['book_longxiang', 0.25], ['wujin', 0.6], ['wujinchui', 0.2]],
   xuedao: [['book_xuedao', 1]],
   kuangfei: [['shengtie', 0.6], ['jingtie', 0.25], ['yao', 0.3]],
-  kuangba: [['book_leiting', 0.12], ['jingtie', 1], ['jingtie', 0.8], ['guitou', 0.25], ['baleng', 0.25], ['book_hujia', 0.15]],
+  kuangba: [['book_leiting', 0.12], ['jingtie', 1], ['jingtie', 0.8], ['guitou', 0.25], ['baleng', 0.25], ['tieshoutao', 0.25], ['book_hujia', 0.15]],
   dongxiong: [['book_guixi', 0.1], ['xiongpi', 0.5], ['xiongdan', 0.25], ['renshen', 0.1]],
   xiongwang: [['xiongdan', 1], ['hantie', 0.8], ['renshen', 0.5], ['wujinchui', 0.2], ['xiongpi', 1]],
   jianmo: [['jingtie', 1], ['hantie', 0.5], ['hantiejian', 0.25], ['xuantie', 0.06], ['book_shenxing', 0.15]],
@@ -246,7 +246,7 @@ const ITEMS = {
   mianhua: { name: '棉花', info: '纺织材料，兔儿坡有', sell: 1, buyer: 'tailor' },
   tupi: { name: '兔皮', info: '可做毡帽', sell: 1, buyer: 'smith' },
   hulipi: { name: '狐皮', info: '可做狐裘', sell: 4, buyer: 'smith' },
-  langpi: { name: '狼皮', info: '可做兽皮袄', sell: 6, buyer: 'smith' },
+  langpi: { name: '狼皮', info: '可做兽皮袄、皮手套', sell: 6, buyer: 'smith' },
   shougu: { name: '兽骨', info: '炼续骨膏的药引', sell: 3, buyer: 'doctor' },
   xiongpi: { name: '熊皮', info: '可做熊皮甲', sell: 15, buyer: 'smith' },
   xiongdan: { name: '熊胆', info: '名贵药材，药铺高价收', sell: 25, buyer: 'doctor' },
@@ -331,6 +331,11 @@ const EQ = {
   hantiedao: { slot: 'weapon', type: '刀', name: '寒铁刀', atk: [12, 9, 12, 8], sell: 120 },
   hantieqiang: { slot: 'weapon', type: '枪', name: '寒铁枪', atk: [10, 7, 8, 12], sell: 120 },
   wujinchui: { slot: 'weapon', type: '槌', name: '乌金锤', atk: [14, 12, 9, 9], spdMod: 0.9, sell: 130 },
+  /* 手套：戴着也算空手，拳掌、暗器类武功都能用，出手快、加成比刀剑略低 */
+  pishoutao: { slot: 'weapon', type: '拳', name: '皮手套', atk: [3, 3, 3, 2], price: 45 },
+  tieshoutao: { slot: 'weapon', type: '拳', name: '铁手套', atk: [7, 7, 7, 5], sell: 60 },
+  hantieshoutao: { slot: 'weapon', type: '拳', name: '寒铁手套', atk: [10, 10, 10, 7], sell: 120 },
+  tiancan: { slot: 'weapon', type: '拳', name: '天蚕手套', atk: [13, 12, 12, 10], acc: 3, sell: 200, rare: true },
 };
 const partTxt = (pre, a) => pre + a.map((n, i) => (n ? LOCS[i] + n : '')).join('');
 for (const k in EQ) {
@@ -343,9 +348,10 @@ const FORGE = {
   兵器: [['tiejian', { shengtie: 3 }, 0], ['gangdao', { shengtie: 4 }, 5], ['changqiang', { shengtie: 3 }, 5], ['tiechui', { shengtie: 5 }, 10],
     ['qinggang', { shengtie: 4, jingtie: 2 }, 25], ['guitou', { shengtie: 4, jingtie: 2 }, 25], ['lihua', { shengtie: 2, jingtie: 3 }, 25], ['baleng', { shengtie: 4, jingtie: 3 }, 30],
     ['hantiejian', { hantie: 3, jingtie: 2 }, 50], ['hantiedao', { hantie: 3, jingtie: 2 }, 50], ['hantieqiang', { hantie: 3, jingtie: 2 }, 50], ['wujinchui', { wujin: 2, jingtie: 3 }, 55],
+    ['tieshoutao', { shengtie: 3, jingtie: 2 }, 25], ['hantieshoutao', { hantie: 3, jingtie: 2 }, 50],
     ['xuantie', { xuantiekuang: 3, hantie: 2 }, 75], ['tulong', { wujin: 3, xuantiekuang: 2 }, 80]],
 };
-const TAILOR = [['mianbu', { mianhua: 3 }, 0], ['zhanmao', { tupi: 3 }, 5], ['shoupi', { langpi: 3 }, 5], ['huqiu', { hulipi: 4 }, 15], ['xiongpijia', { xiongpi: 2, langpi: 2 }, 20], ['xuelangqiu', { xuelangpi: 3, mianhua: 2 }, 30]];
+const TAILOR = [['mianbu', { mianhua: 3 }, 0], ['zhanmao', { tupi: 3 }, 5], ['shoupi', { langpi: 3 }, 5], ['huqiu', { hulipi: 4 }, 15], ['xiongpijia', { xiongpi: 2, langpi: 2 }, 20], ['pishoutao', { langpi: 2 }, 5], ['xuelangqiu', { xuelangpi: 3, mianhua: 2 }, 30]];
 const COOK = [['kaoyu', { jiyu: 1 }, 0], ['yutang', { jiyu: 1, caoyao: 1 }, 10], ['hongshao', { liyu: 1 }, 20]];
 const BREW = [['yao', { caoyao: 2 }, 0], ['qingxin', { caoyao: 2 }, 0], ['dieda', { caoyao: 1, shougu: 1 }, 0],
   ['baiyao', { caoyao: 2, sanqi: 1 }, 20], ['xugu', { caoyao: 2, shougu: 1, sanqi: 1 }, 20], ['qidan', { caoyao: 1, lingzhi: 1 }, 20],

@@ -10,7 +10,7 @@ function enhTier(id) {
   const e = EQ[id];
   if (e.rare) return 4;
   if (/^(hantie|wujin)/.test(id)) return 3;
-  if (['qinggang', 'guitou', 'lihua', 'baleng'].includes(id)) return 2;
+  if (['qinggang', 'guitou', 'lihua', 'baleng', 'tieshoutao'].includes(id)) return 2;
   return 1;
 }
 function enhCost(id, L) {

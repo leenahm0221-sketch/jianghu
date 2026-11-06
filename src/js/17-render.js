@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v74 ' + FAST_NAME[FAST] : 'v74', 156, 0, 2, 'right');
+  txt(FAST ? 'v75 ' + FAST_NAME[FAST] : 'v75', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -819,6 +819,8 @@ const WEAPON_LOOK = {
   hantiejian: { line: 3, core: 0, hilt: 3, guard: 3, tassel: false, broad: false },
   lihua: { kind: 'spear' }, hantieqiang: { kind: 'spear' }, baleng: { kind: 'hammer' }, wujinchui: { kind: 'hammer' },
   zijin: { kind: 'hammer' },
+  /* 手套：戴在两只手上，颜色深浅分档 */
+  pishoutao: { kind: 'glove', c: 2 }, tieshoutao: { kind: 'glove', c: 1 }, hantieshoutao: { kind: 'glove', c: 0 }, tiancan: { kind: 'glove', c: 0, shine: true },
 };
 function drawPerson(sx, sy, dir, step, L, flash) {
   if (flash) return;
@@ -835,7 +837,7 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   const capeC = L.cape === 'white' ? 0 : L.cape === 'grey' ? 1 : 2;
   if (L.cape && !up) { p(2, 6, 12, 9, 3); p(3, 7, 10, 7, capeC); if (side) { p(0, 7, 4, 8, 3); p(1, 8, 2, 6, capeC); } }
   // 长枪、铁锤：竖在身后，比人还高 / 锤头很大
-  if (W && W.kind && !up) {
+  if (W && W.kind && W.kind !== 'glove' && !up) {
     const x = side ? 2 : 13;
     if (W.kind === 'spear') { p(x, -3, 1, 18, 3); p(x - 1, -5, 3, 2, 3); p(x, -6, 1, 1, 3); p(x - 1, -3, 3, 1, 1); }
     else { p(x, 3, 1, 10, 3); p(x - 2, -1, 5, 4, 3); p(x - 1, 0, 3, 2, 2); }
@@ -890,6 +892,15 @@ function drawPerson(sx, sy, dir, step, L, flash) {
     p(1, 8, 2, 4, 3); p(13, 8, 2, 4, 3);
     p(2, 8, 1, 3, sleeve === 3 ? 2 : sleeve); p(13, 8, 1, 3, sleeve === 3 ? 2 : sleeve);
     if (B.cuff != null) { p(1, 10, 2, 1, B.cuff); p(13, 10, 2, 1, B.cuff); }
+  }
+  /* 手套：手掌那一截加粗、上色，护腕一道深边 */
+  if (W && W.kind === 'glove') {
+    const gc = L.sil ? 3 : W.c;
+    if (side) { const sw = step ? 1 : 0; p(7, 11 + sw, 3, 3, 3); p(8, 12 + sw, 1, 1, gc); if (W.shine && (frame >> 4) % 2) p(9, 12 + sw, 1, 1, 0); }
+    else {
+      p(0, 11, 4, 3, 3); p(12, 11, 4, 3, 3); p(1, 12, 2, 1, gc); p(13, 12, 2, 1, gc);
+      if (W.shine && (frame >> 4) % 2) { p(1, 12, 1, 1, 0); p(14, 12, 1, 1, 0); }
+    }
   }
   // 头
   p(4, 1, 8, 7, 3); p(5, 2, 6, 5, 0);

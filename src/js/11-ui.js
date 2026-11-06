@@ -44,7 +44,7 @@ function SK_FORMER(sk) { return !!(sk.sect && S.former.includes(sk.sect)); }
 function useSkill(k) {
   const sk = SK[k];
   if (ATK_CATS.includes(sk.cat)) {
-    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手才能用拳法' : `要先装备${sk.cat}`);
+    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : `要先装备${sk.cat}`);
     S.active = k; S.pref[sk.cat] = k; toast(`改用 ${sk.name}`); sfx('menu');
   } else if (sk.cat === '生产') toast(sk.desc);
   else { S.passive[sk.cat] = k; toast(`${sk.cat}改用 ${sk.name}`); sfx('menu'); }

@@ -413,7 +413,7 @@ function smithTalk() {
   opts.push('离开');
   ask('张铁匠', '叮——当！刀剑枪锤、衣帽铁料，都有。', opts, i => {
     const o = opts[i];
-    if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui'], smithTalk);
+    if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui', 'pishoutao'], smithTalk);
     else if (o === '买衣帽铁料') buy('张铁匠', ['jinzhuang', 'changpao', 'douli', 'shengtie'], smithTalk);
     else if (o === '卖东西') sellMenu('张铁匠', 'smith', smithTalk);
     else if (o === '强化兵器') enhanceTalk('铁匠', smithTalk);

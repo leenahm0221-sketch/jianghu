@@ -350,7 +350,7 @@ function hurtEnemy(e, dmg, label) {
   if (e.hp <= 0) killEnemy(e);
 }
 /* 阵营厮杀：杀敌对阵营弟子涨本派声望和对应指数；杀追兵了结追杀令；杀叛徒完成清理门户。都有几率掉稀有装备 */
-const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'jinsijia', 'wucanyi'];
+const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'jinsijia', 'wucanyi'];
 function campKill(e, d) {
   const pc = campOf();
   if (d.camp === '正') { addAlign(0, 2); if (pc === '邪') { addSrep(3); addRep(2); } }
