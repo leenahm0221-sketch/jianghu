@@ -74,8 +74,8 @@ function viewSize() {
 let lastView = '';
 /* 画面大小：大＝纵向 144 个像素（和 GB 一样，方块最大）；中＝180；小＝216（方块小、一屏看得多） */
 const VIEW_H = [144, 180, 216], VIEW_NAME = ['大', '中', '小'];
-let viewIdx = 0;
-try { viewIdx = Math.min(2, Math.max(0, parseInt(localStorage.getItem('jianghu-view') || '0', 10) || 0)); } catch (e) { viewIdx = 0; }
+let viewIdx = 1;   /* 默认“中” */
+try { viewIdx = Math.min(2, Math.max(0, parseInt(localStorage.getItem('jianghu-view') || '1', 10) || 0)); } catch (e) { viewIdx = 1; }
 function setView(i) { viewIdx = i; try { localStorage.setItem('jianghu-view', String(i)); } catch (e) {} resize(); }
 function resize() {
   const [vw, vh] = viewSize(); lastView = vw + 'x' + vh;

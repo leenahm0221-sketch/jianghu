@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v85 ' + FAST_NAME[FAST] : 'v85', 156, 0, 2, 'right');
+  txt(FAST ? 'v86 ' + FAST_NAME[FAST] : 'v86', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -826,30 +826,30 @@ const WEAPON_LOOK = {
 };
 /* 拉弓：弓身横在身前和朝向垂直，前半段弦拉满、搭着箭，放箭后弦弹回 */
 function sideBow(p, W, L, pull, bx = 13) {
-  const top = 1, bot = 14, mid = 7.5, core = L.sil ? 3 : W.c === 0 ? 0 : W.c;
+  const top = 5, bot = 13, mid = 9, core = L.sil ? 3 : W.c === 0 ? 0 : W.c;
   for (let y = top; y <= bot; y++) {
-    const off = Math.round(Math.sin((y - top) / (bot - top) * Math.PI) * 4), x = bx + off;
+    const off = Math.round(Math.sin((y - top) / (bot - top) * Math.PI) * 3), x = bx + off;
     p(x + 1, y, 1, 1, 3);                                  /* 弓背描边 */
     p(x, y, 1, 1, y === top || y === bot ? 3 : core);     /* 弓芯 */
     if (y > top && y < bot) p(x - 1, y, 1, 1, 3);           /* 弓腹描边 */
   }
   p(bx - 1, top, 1, 1, 3); p(bx - 1, bot, 1, 1, 3);           /* 弓梢 */
-  p(bx + 3, 7, 3, 2, 3);                                       /* 握把 */
-  if (W.shine && !L.sil && (frame >> 4) % 2) p(bx + 3, 4, 1, 1, 0);
+  p(bx + 2, 8, 3, 2, 3);                                       /* 握把 */
+  if (W.shine && !L.sil && (frame >> 4) % 2) p(bx + 2, 6, 1, 1, 0);
   /* 弦：从两头弓梢连到拉弦点 */
   const sx = bx - pull;
   for (let y = top + 1; y < bot; y++) { const k = 1 - Math.abs(y - mid) / (mid - top); p(Math.round(bx - pull * k), y, 1, 1, 2); }
   if (pull) {   /* 搭箭：箭杆、箭头、尾羽 */
-    p(sx - 1, 7, bx + 9 - sx, 1, 3);
-    p(bx + 8, 6, 1, 3, 3); p(bx + 9, 7, 1, 1, 3);
-    p(sx - 2, 6, 1, 1, 2); p(sx - 2, 8, 1, 1, 2);
+    p(sx - 1, 9, bx + 7 - sx, 1, 3);
+    p(bx + 6, 8, 1, 3, 3); p(bx + 7, 9, 1, 1, 3);
+    p(sx - 2, 8, 1, 1, 2); p(sx - 2, 10, 1, 1, 2);
   }
 }
 function heldBow(p, W, L, side, up) {
   const col = L.sil ? 3 : W.c === 0 ? 3 : W.c;
   if (side) {   /* 侧面：粗弓身向前弯，描边加弓芯，弦拉开时搭着箭；弓在身体前面，不和身子糊在一起 */
     const drawn = L.swing != null && L.swing < 0.5;
-    return sideBow(p, W, L, drawn ? 5 : 0, 14);
+    return sideBow(p, W, L, drawn ? 4 : 0, 14);
   }
   if (L.swing == null) return sideBow(p, W, L, 0, 14);   /* 正面、背面平时：弓竖着握在右手边 */
   if (L.swing == null) {   /* 平时：弓竖着握在身侧，弦是直的 */
