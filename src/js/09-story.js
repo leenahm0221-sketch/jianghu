@@ -259,7 +259,7 @@ function questText() {
 }
 const reqFail = k => {
   const sk = SK[k];
-  if (sk.req && lv(sk.req[0]) < sk.req[1]) return `${SK[sk.req[0]].name}要练到 ${sk.req[1]} 级（现在 ${lv(sk.req[0]).toFixed(2)}）。${sk.req[0] === 'feishi' && S.skills.feishi == null ? '张铁匠那里有飞镖卖，装上就能练。' : ''}`;
+  if (sk.req && lv(sk.req[0]) < sk.req[1]) return `${SK[sk.req[0]].name}要练到 ${sk.req[1]} 级（现在 ${lv(sk.req[0]).toFixed(2)}）。${sk.req[0] === 'feishi' && S.skills.feishi == null ? '张铁匠那里有飞镖卖，装上就能练。' : sk.req[0] === 'gongjian' && S.skills.gongjian == null ? '张铁匠那里有猎弓卖，装上就能练。' : ''}`;
   if (sk.qi && qi() < sk.qi) return `元气要到 ${sk.qi}（现在 ${qi()}）。年纪渐长、心法精进，元气自然增长。`;
   return null;
 };
@@ -413,7 +413,7 @@ function smithTalk() {
   opts.push('离开');
   ask('张铁匠', '叮——当！刀剑枪锤、衣帽铁料，都有。', opts, i => {
     const o = opts[i];
-    if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui', 'pishoutao', 'feibiao'], smithTalk);
+    if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui', 'pishoutao', 'feibiao', 'liegong'], smithTalk);
     else if (o === '买衣帽铁料') buy('张铁匠', ['jinzhuang', 'changpao', 'douli', 'shengtie'], smithTalk);
     else if (o === '卖东西') sellMenu('张铁匠', 'smith', smithTalk);
     else if (o === '强化兵器') enhanceTalk('铁匠', smithTalk);

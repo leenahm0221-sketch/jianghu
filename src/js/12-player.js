@@ -164,7 +164,7 @@ function openChest(key) {
   const meds = [['yao', 3], ['qingxin', 2], ['baiyao', 2], ['yulu', 1]][tier]; S.items[meds[0]] = (S.items[meds[0]] || 0) + meds[1]; got.push(`${ITEMS[meds[0]].name}${meds[1]}份`);
   const mats = localMats(map.id); if (mats.length) { const m = mats[rnd(0, mats.length - 1)], n = rnd(1, 2); S.items[m] = (S.items[m] || 0) + n; got.push(`${ITEMS[m].name}${n}份`); }
   /* 野外木箱里可能有江湖散学的秘籍，越险的地方越容易有 */
-  const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
+  const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi', 'book_shediao', 'book_lianzhu'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
   if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); mins *= 2; }
   S.flags[f] = Date.now() + mins * 60000 / FASTX(4);   /* 开出好东西的箱子要等更久才再装满 */
   sfx('coin'); save();
@@ -328,6 +328,13 @@ function attack() {
     return len;
   };
   if (cat === '暗器') { P.shot = [line(0, sk.reach || 3)]; if (m2) P.shot.push(line(-1, sk.reach || 3), line(1, sk.reach || 3)); }
+  else if (cat === '弓') {
+    const len = (sk.reach || 5) + (m2 ? 1 : 0);
+    if (m2) {   /* 弓箭第二式：一箭穿过去，一路上的人都中 */
+      let i = 1; for (; i <= len; i++) { const x = P.tx + dx * i, y = P.ty + dy * i; if (blocks(x, y) && !enemyAt(x, y)) break; if (enemyAt(x, y)) hits.push([x, y, 1.2]); }
+      P.shot = [i - 1];
+    } else P.shot = [line(0, len)];
+  }
   else if (cat === '刀' && m2) { for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) if (a || b) hits.push([P.tx + a, P.ty + b, a === dx && b === dy ? 1.1 : 0.7]); }
   else if (cat === '槌' && m2) { const fx_ = P.tx + dx, fy = P.ty + dy; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const x = fx_ + a, y = fy + b; if (x !== P.tx || y !== P.ty) hits.push([x, y, a || b ? 0.6 : 1.15]); } }
   else {
@@ -344,6 +351,7 @@ function attack() {
     while (loc < 3 && r > LOC_W[loc]) { r -= LOC_W[loc]; loc++; }
     let dmg = ((sk.tier === 2 ? 11 : 7) * RV[sk.atk[loc]] + (wp && wp.type === sk.cat ? wp.atk[loc] * enhMul() : 0)) * (1 + v / 45) * (0.85 + Math.random() * 0.3);
     if (cat === '暗器') dmg *= 0.85;   /* 远处取人，力道比近身略轻 */
+    if (cat === '弓' && Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty) <= 1) dmg *= 0.5;   /* 贴身拉不开弓 */
     dmg *= mult;
     if (weak) dmg *= 0.6;
     if (injured('arm')) dmg *= 0.6;
@@ -384,7 +392,7 @@ function hurtEnemy(e, dmg, label) {
   if (e.hp <= 0) killEnemy(e);
 }
 /* 阵营厮杀：杀敌对阵营弟子涨本派声望和对应指数；杀追兵了结追杀令；杀叛徒完成清理门户。都有几率掉稀有装备 */
-const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'baoyu', 'jinsijia', 'wucanyi'];
+const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'baoyu', 'sheri', 'jinsijia', 'wucanyi'];
 function campKill(e, d) {
   const pc = campOf();
   if (d.camp === '正') { addAlign(0, 2); if (pc === '邪') { addSrep(3); addRep(2); } }

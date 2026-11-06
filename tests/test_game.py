@@ -477,6 +477,14 @@ def 暗器独立和第二式效果(b):
     assert g.ev(f"({G}.attack(), {G}.SK[{G}.S.active].cat)") == '拳'
     g.ev(f"{G}.S.equip.weapon = 'feibiao'; {G}.P2.atkCD = 0")
     assert g.ev(f"({G}.attack(), {G}.SK[{G}.S.active].cat)") == '暗器'
+    g.ev(f"{G}.S.equip.weapon = 'liegong'; {G}.P2.atkCD = 0")
+    assert g.ev(f"({G}.attack(), {G}.SK[{G}.S.active].cat)") == '弓'
+    # 弓箭五格外能射中
+    far = g.ev(f"""(() => {{ const G = {G}, P = G.P2; let n = 0;
+      for (let t = 0; t < 20; t++) {{ G.enemies2.length = 0; G.S.active = 'gongjian'; P.atkCD = 0; P.move2 = true; P.dir = 'right';
+        const e = G.makeEnemy('wolf', P.tx + 5, P.ty); e.hp = e.max = 99999; e.stunT = 500; G.enemies2.push(e); G.S.st = 999; G.attack(); if (e.hp < 99999) n++; }}
+      return n; }})()""")
+    assert far > 8, f'弓箭五格只中了 {far}/20'
     # 刀法第二式能打到身后的敌人
     hit = g.ev(f"""(() => {{ const G = {G}, P = G.P2; let n = 0;
       for (let t = 0; t < 30; t++) {{ G.enemies2.length = 0; G.S.equip.weapon = 'tulong'; G.S.active = 'wuhu'; P.atkCD = 0; P.move2 = false; P.dir = 'right';

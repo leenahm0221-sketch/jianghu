@@ -546,7 +546,7 @@ const RES_TILES = {
 let depleted = {};
 
 /* 武功：cat 决定用途；tier 2 是上乘武功，威力大、成长慢，要门派或秘籍才能学 */
-const ATK_CATS = ['拳', '剑', '刀', '枪', '槌', '暗器'];
+const ATK_CATS = ['拳', '剑', '刀', '枪', '槌', '暗器', '弓'];
 /* 六档评级，和千年一样：特差 差 可 中 佳 优 */
 const RT = ['特差', '差', '可', '中', '佳', '优'];
 const RV = [0.6, 0.8, 0.95, 1.05, 1.2, 1.4];
@@ -558,6 +558,9 @@ const SK = {
   wuhu: { name: '基础刀法', short: '刀法', cat: '刀', tier: 1, spd: 2, rec: 1, eva: 1, acc: 2, atk: [4, 3, 4, 2], move: '猛虎下山', desc: '入门刀法，大开大合，收招慢' },
   yangjia: { name: '基础枪法', short: '枪法', cat: '枪', tier: 1, spd: 2, rec: 3, eva: 2, acc: 3, atk: [3, 2, 2, 4], reach: 2, move: '回马枪', desc: '入门枪法，远及两格善攻脚' },
   feishi: { name: '基础暗器', short: '暗器', cat: '暗器', tier: 1, spd: 3, rec: 3, eva: 3, acc: 3, atk: [2, 3, 2, 2], reach: 3, move: '连珠石', desc: '飞蝗石入门，三格内取人，力道偏轻' },
+  gongjian: { name: '基础弓法', short: '弓法', cat: '弓', tier: 1, spd: 1, rec: 2, eva: 2, acc: 4, atk: [3, 4, 2, 3], reach: 5, move: '穿云箭', desc: '开弓放箭，五格内取人；出手慢，贴身拉不开弓' },
+  shediao: { name: '射雕箭法', short: '射雕', cat: '弓', tier: 2, spd: 2, rec: 3, eva: 2, acc: 5, atk: [4, 5, 3, 4], reach: 6, move: '一箭双雕', req: ['gongjian', 30], qi: 20, desc: '草原神射手的箭法，六格外取人，弦响雕落' },
+  lianzhu: { name: '连珠箭', short: '连珠', cat: '弓', tier: 2, spd: 4, rec: 3, eva: 3, acc: 4, atk: [4, 4, 3, 3], reach: 5, move: '流星赶月', req: ['gongjian', 30], qi: 20, desc: '一弦数箭，箭箭相连，出手比寻常弓法快得多' },
   kaishan: { name: '基础槌法', short: '槌法', cat: '槌', tier: 1, spd: 1, rec: 1, eva: 0, acc: 1, atk: [5, 4, 3, 3], stun: 0.15, move: '力劈华山', desc: '入门锤法，一锤千钧，常打晕人' },
   xianglong: { name: '降龙十八掌', short: '降龙', cat: '拳', tier: 2, spd: 3, rec: 4, eva: 2, acc: 4, atk: [5, 4, 4, 3], move: '亢龙有悔', sect: 'gaibang', req: ['changquan', 30], qi: 20, desc: '丐帮镇帮绝学，掌力刚猛' },
   quanzhenjian: { name: '全真剑法', short: '全真', cat: '剑', tier: 2, spd: 5, rec: 4, eva: 4, acc: 5, atk: [4, 5, 3, 2], move: '一气化三清', sect: 'quanzhen', req: ['huashan', 30], qi: 20, desc: '全真教正宗剑法，快准灵动' },
@@ -632,11 +635,11 @@ const SK = {
   anran: { name: '黯然销魂掌', short: '黯然', cat: '拳', tier: 2, spd: 3, rec: 3, eva: 3, acc: 4, atk: [5, 5, 5, 5], move: '拖泥带水', req: ['changquan', 60], qi: 40, desc: '相思越苦，掌力越强' },
   duanzao: { name: '锻造', cat: '生产', info: '打造时修炼', desc: '熟练度越高，越少失败' },
 };
-const BASIC_OF = { 拳: 'changquan', 剑: 'huashan', 刀: 'wuhu', 枪: 'yangjia', 槌: 'kaishan', 暗器: 'feishi' };
-const CAT_ORDER = ['拳', '剑', '刀', '枪', '槌', '暗器', '心法', '步法', '护体', '生产'];
+const BASIC_OF = { 拳: 'changquan', 剑: 'huashan', 刀: 'wuhu', 枪: 'yangjia', 槌: 'kaishan', 暗器: 'feishi', 弓: 'gongjian' };
+const CAT_ORDER = ['拳', '剑', '刀', '枪', '槌', '暗器', '弓', '心法', '步法', '护体', '生产'];
 /* 给玩家看的类别名：心法就是内功、步法就是轻功 */
-const CAT_NAME = { 拳: '拳掌', 剑: '剑法', 刀: '刀法', 枪: '枪法', 槌: '锤法', 暗器: '暗器', 心法: '内功', 步法: '轻功', 护体: '护体', 生产: '技艺' };
-const CAT_TAG = { 拳: '拳', 剑: '剑', 刀: '刀', 枪: '枪', 槌: '锤', 暗器: '暗', 心法: '内', 步法: '轻', 护体: '护', 生产: '艺' };
+const CAT_NAME = { 拳: '拳掌', 剑: '剑法', 刀: '刀法', 枪: '枪法', 槌: '锤法', 暗器: '暗器', 弓: '弓箭', 心法: '内功', 步法: '轻功', 护体: '护体', 生产: '技艺' };
+const CAT_TAG = { 拳: '拳', 剑: '剑', 刀: '刀', 枪: '枪', 槌: '锤', 暗器: '暗', 弓: '弓', 心法: '内', 步法: '轻', 护体: '护', 生产: '艺' };
 const SECTS = {
   quanzhen: { name: '全真教', short: '全真', uniform: 'daopao', gear: 'xuantie', camp: '正', where: '牛家村清虚观' },
   gaibang: { name: '丐帮', short: '丐帮', uniform: 'patched', gear: 'jinsijia', camp: '正', where: '牛家村池塘边' },
@@ -749,8 +752,8 @@ const DROPS = {
   wuseng: [['yao', 0.3]], emeidizi: [['qidan', 0.3]], jiaozhong: [['yao', 0.3]], taohuadizi: [['qidan', 0.3]],
   snowwolf: [['xuelangpi', 0.6], ['shougu', 0.4]],
   shanfei: [['yao', 0.3], ['shengtie', 0.3]], baozi: [['hupi', 0.4], ['shougu', 0.5]], qzdizi: [['qidan', 0.3]], mjzhong: [['yao', 0.3], ['qidan', 0.15]],
-  mazei: [['book_kuangfeng', 0.08], ['yao', 0.3], ['shengtie', 0.3]], shalang: [['langpi', 0.6], ['shougu', 0.4]], shafei: [['book_yanzi', 0.08], ['yao', 0.35], ['shengtie', 0.3]], cylang: [['langpi', 0.7], ['shougu', 0.4]],
-  menggu: [['book_bawang', 0.08], ['yao', 0.4], ['qidan', 0.15]], langwang: [['xuelangpi', 0.8], ['hugu', 0.3]], hsjianke: [['book_yuenv', 0.1], ['qidan', 0.3], ['lingzhi', 0.1]], jqdizi: [['qidan', 0.3], ['lingzhi', 0.12]], 
+  mazei: [['book_kuangfeng', 0.08], ['book_lianzhu', 0.06], ['yao', 0.3], ['shengtie', 0.3]], shalang: [['langpi', 0.6], ['shougu', 0.4]], shafei: [['book_yanzi', 0.08], ['yao', 0.35], ['shengtie', 0.3]], cylang: [['langpi', 0.7], ['shougu', 0.4]],
+  menggu: [['book_bawang', 0.08], ['book_shediao', 0.08], ['niujiao', 0.15], ['yao', 0.4], ['qidan', 0.15]], langwang: [['xuelangpi', 0.8], ['hugu', 0.3]], hsjianke: [['book_yuenv', 0.1], ['qidan', 0.3], ['lingzhi', 0.1]], jqdizi: [['qidan', 0.3], ['lingzhi', 0.12]], 
 };
 
 /* 物品：buyer 表示谁收购，buy 表示能在哪买 */
@@ -811,6 +814,8 @@ const ITEMS = {
   book_kuangfeng: { name: '狂风刀法秘籍', info: '基础刀法30级可研读，大漠马贼身上、野外木箱里有', book: 'kuangfeng' },
   book_bawang: { name: '霸王枪法秘籍', info: '基础枪法30级可研读，塞外蒙古骑兵身上、野外木箱里有', book: 'bawang' },
   book_leiting: { name: '雷霆锤法秘籍', info: '基础槌法30级可研读，矿霸身上、野外木箱里有', book: 'leiting' },
+  book_shediao: { name: '射雕箭法秘籍', info: '基础弓法30级可研读，塞外蒙古骑兵身上、野外木箱里有', book: 'shediao' },
+  book_lianzhu: { name: '连珠箭秘籍', info: '基础弓法30级可研读，雁门关马贼身上、野外木箱里有', book: 'lianzhu' },
   book_yanzi: { name: '燕子三抄水秘籍', info: '基础步法30级可研读，大漠沙匪身上、野外木箱里有', book: 'yanzi' },
   book_guixi: { name: '龟息功秘籍', info: '基础心法40级可研读，洞熊窝里、野外木箱里有', book: 'guixi' },
   book_bixie: { name: '辟邪剑谱', info: '基础剑法50级可研读', sell: 100, book: 'bixie' },
@@ -879,6 +884,11 @@ const EQ = {
   xiujian: { slot: 'weapon', type: '暗器', name: '袖箭', atk: [6, 7, 6, 5], sell: 60 },
   hantieding: { slot: 'weapon', type: '暗器', name: '寒铁透骨钉', atk: [9, 10, 9, 7], sell: 120 },
   baoyu: { slot: 'weapon', type: '暗器', name: '暴雨梨花针', atk: [12, 13, 11, 10], acc: 5, sell: 200, rare: true },
+  /* 弓：背在身后，五六格外放箭；出手慢、单发重，贴身时拉不开弓伤害减半 */
+  liegong: { slot: 'weapon', type: '弓', name: '猎弓', atk: [4, 4, 3, 3], spdMod: 0.95, price: 60 },
+  niujiao: { slot: 'weapon', type: '弓', name: '牛角弓', atk: [8, 8, 6, 7], spdMod: 0.95, sell: 60 },
+  tietai: { slot: 'weapon', type: '弓', name: '铁胎弓', atk: [11, 12, 9, 10], spdMod: 0.95, sell: 120 },
+  sheri: { slot: 'weapon', type: '弓', name: '射日弓', atk: [14, 15, 12, 13], acc: 4, sell: 220, rare: true },
 };
 const partTxt = (pre, a) => pre + a.map((n, i) => (n ? LOCS[i] + n : '')).join('');
 for (const k in EQ) {
@@ -893,6 +903,7 @@ const FORGE = {
     ['hantiejian', { hantie: 3, jingtie: 2 }, 50], ['hantiedao', { hantie: 3, jingtie: 2 }, 50], ['hantieqiang', { hantie: 3, jingtie: 2 }, 50], ['wujinchui', { wujin: 2, jingtie: 3 }, 55],
     ['tieshoutao', { shengtie: 3, jingtie: 2 }, 25], ['hantieshoutao', { hantie: 3, jingtie: 2 }, 50],
     ['xiujian', { shengtie: 2, jingtie: 2 }, 25], ['hantieding', { hantie: 2, jingtie: 2 }, 50],
+    ['niujiao', { jingtie: 2, shougu: 2 }, 25], ['tietai', { hantie: 3, jingtie: 1 }, 50],
     ['xuantie', { xuantiekuang: 3, hantie: 2 }, 75], ['tulong', { wujin: 3, xuantiekuang: 2 }, 80]],
 };
 const TAILOR = [['mianbu', { mianhua: 3 }, 0], ['zhanmao', { tupi: 3 }, 5], ['shoupi', { langpi: 3 }, 5], ['huqiu', { hulipi: 4 }, 15], ['xiongpijia', { xiongpi: 2, langpi: 2 }, 20], ['pishoutao', { langpi: 2 }, 5], ['xuelangqiu', { xuelangpi: 3, mianhua: 2 }, 30]];
@@ -1793,7 +1804,7 @@ const maxHP = () => Math.floor(60 + qi() * 1.5 + pv('心法', 'hp') * 0.4);
 const maxMP = () => Math.floor(20 + pv('心法', 'mp') * 1.2 + gearSum('mp'));
 /* 体力：每招都耗，歇一歇或打坐就回来；基础以外的武功还要再耗内功 */
 const maxST = () => Math.floor(50 + qi() * 0.6 + pv('心法', 'hp') * 0.3);
-const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3, 暗器: 1 };
+const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3, 暗器: 1, 弓: 2 };
 const maxPart = () => 40 + Math.floor(qi() / 2);
 const defense = i => ['body', 'head'].reduce((a, sl) => a + ((S.equip[sl] && EQ[S.equip[sl]].def[i]) || 0), 0);
 const atkSk = () => SK[S.active];
@@ -2705,7 +2716,7 @@ function questText() {
 }
 const reqFail = k => {
   const sk = SK[k];
-  if (sk.req && lv(sk.req[0]) < sk.req[1]) return `${SK[sk.req[0]].name}要练到 ${sk.req[1]} 级（现在 ${lv(sk.req[0]).toFixed(2)}）。${sk.req[0] === 'feishi' && S.skills.feishi == null ? '张铁匠那里有飞镖卖，装上就能练。' : ''}`;
+  if (sk.req && lv(sk.req[0]) < sk.req[1]) return `${SK[sk.req[0]].name}要练到 ${sk.req[1]} 级（现在 ${lv(sk.req[0]).toFixed(2)}）。${sk.req[0] === 'feishi' && S.skills.feishi == null ? '张铁匠那里有飞镖卖，装上就能练。' : sk.req[0] === 'gongjian' && S.skills.gongjian == null ? '张铁匠那里有猎弓卖，装上就能练。' : ''}`;
   if (sk.qi && qi() < sk.qi) return `元气要到 ${sk.qi}（现在 ${qi()}）。年纪渐长、心法精进，元气自然增长。`;
   return null;
 };
@@ -2859,7 +2870,7 @@ function smithTalk() {
   opts.push('离开');
   ask('张铁匠', '叮——当！刀剑枪锤、衣帽铁料，都有。', opts, i => {
     const o = opts[i];
-    if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui', 'pishoutao', 'feibiao'], smithTalk);
+    if (o === '买兵器') buy('张铁匠', ['tiejian', 'gangdao', 'changqiang', 'tiechui', 'pishoutao', 'feibiao', 'liegong'], smithTalk);
     else if (o === '买衣帽铁料') buy('张铁匠', ['jinzhuang', 'changpao', 'douli', 'shengtie'], smithTalk);
     else if (o === '卖东西') sellMenu('张铁匠', 'smith', smithTalk);
     else if (o === '强化兵器') enhanceTalk('铁匠', smithTalk);
@@ -3113,8 +3124,8 @@ const eqName = id => (EQ[id] ? EQ[id].name + (EQ[id].slot === 'weapon' && enhLv(
 function enhTier(id) {
   const e = EQ[id];
   if (e.rare) return 4;
-  if (/^(hantie|wujin)/.test(id)) return 3;
-  if (['qinggang', 'guitou', 'lihua', 'baleng', 'tieshoutao', 'xiujian'].includes(id)) return 2;
+  if (/^(hantie|wujin)/.test(id) || id === 'tietai') return 3;
+  if (['qinggang', 'guitou', 'lihua', 'baleng', 'tieshoutao', 'xiujian', 'niujiao'].includes(id)) return 2;
   return 1;
 }
 function enhCost(id, L) {
@@ -3557,12 +3568,12 @@ function skillInfo(k) {
   if (ATK_CATS.includes(sk.cat)) return `${CAT_NAME[sk.cat]}·${from}${up} 速${RT[sk.spd]}${sk.reach ? ` 远${sk.reach}格` : ''}`;
   return `${CAT_NAME[sk.cat]}·${from}${up}　按A看详情`;
 }
-const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '拳掌：空手或戴手套可用' : sk.cat === '暗器' ? '暗器：要装备飞镖、袖箭等' : `${CAT_NAME[sk.cat]}：要装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${CAT_NAME[sk.cat]}，同时只能运用一门`);
+const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '拳掌：空手或戴手套可用' : sk.cat === '暗器' ? '暗器：要装备飞镖、袖箭等' : sk.cat === '弓' ? '弓箭：要装备弓，贴身伤害减半' : `${CAT_NAME[sk.cat]}：要装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${CAT_NAME[sk.cat]}，同时只能运用一门`);
 function SK_FORMER(sk) { return !!(sk.sect && S.former.includes(sk.sect)); }
 function useSkill(k) {
   const sk = SK[k];
   if (ATK_CATS.includes(sk.cat)) {
-    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : sk.cat === '暗器' ? '要先装备飞镖、袖箭等暗器' : `要先装备${sk.cat}`);
+    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : sk.cat === '暗器' ? '要先装备飞镖、袖箭等暗器' : sk.cat === '弓' ? '要先装备弓' : `要先装备${sk.cat}`);
     S.active = k; S.pref[sk.cat] = k; toast(`改用 ${sk.name}`); sfx('menu');
   } else if (sk.cat === '生产') toast(sk.desc);
   else { S.passive[sk.cat] = k; toast(`${CAT_NAME[sk.cat]}改用 ${sk.name}`); sfx('menu'); }
@@ -3828,7 +3839,7 @@ function openChest(key) {
   const meds = [['yao', 3], ['qingxin', 2], ['baiyao', 2], ['yulu', 1]][tier]; S.items[meds[0]] = (S.items[meds[0]] || 0) + meds[1]; got.push(`${ITEMS[meds[0]].name}${meds[1]}份`);
   const mats = localMats(map.id); if (mats.length) { const m = mats[rnd(0, mats.length - 1)], n = rnd(1, 2); S.items[m] = (S.items[m] || 0) + n; got.push(`${ITEMS[m].name}${n}份`); }
   /* 野外木箱里可能有江湖散学的秘籍，越险的地方越容易有 */
-  const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
+  const books = ['book_hujia', 'book_shenxing', 'book_yuenv', 'book_kuangfeng', 'book_bawang', 'book_leiting', 'book_yanzi', 'book_guixi', 'book_shediao', 'book_lianzhu'].filter(b => S.skills[ITEMS[b].book] == null && !S.items[b]);
   if (tier >= 1 && books.length && Math.random() < [0, 0.15, 0.3, 0.4][tier]) { const b = books[rnd(0, books.length - 1)]; S.items[b] = 1; got.push(ITEMS[b].name); mins *= 2; }
   S.flags[f] = Date.now() + mins * 60000 / FASTX(4);   /* 开出好东西的箱子要等更久才再装满 */
   sfx('coin'); save();
@@ -3992,6 +4003,13 @@ function attack() {
     return len;
   };
   if (cat === '暗器') { P.shot = [line(0, sk.reach || 3)]; if (m2) P.shot.push(line(-1, sk.reach || 3), line(1, sk.reach || 3)); }
+  else if (cat === '弓') {
+    const len = (sk.reach || 5) + (m2 ? 1 : 0);
+    if (m2) {   /* 弓箭第二式：一箭穿过去，一路上的人都中 */
+      let i = 1; for (; i <= len; i++) { const x = P.tx + dx * i, y = P.ty + dy * i; if (blocks(x, y) && !enemyAt(x, y)) break; if (enemyAt(x, y)) hits.push([x, y, 1.2]); }
+      P.shot = [i - 1];
+    } else P.shot = [line(0, len)];
+  }
   else if (cat === '刀' && m2) { for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) if (a || b) hits.push([P.tx + a, P.ty + b, a === dx && b === dy ? 1.1 : 0.7]); }
   else if (cat === '槌' && m2) { const fx_ = P.tx + dx, fy = P.ty + dy; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const x = fx_ + a, y = fy + b; if (x !== P.tx || y !== P.ty) hits.push([x, y, a || b ? 0.6 : 1.15]); } }
   else {
@@ -4008,6 +4026,7 @@ function attack() {
     while (loc < 3 && r > LOC_W[loc]) { r -= LOC_W[loc]; loc++; }
     let dmg = ((sk.tier === 2 ? 11 : 7) * RV[sk.atk[loc]] + (wp && wp.type === sk.cat ? wp.atk[loc] * enhMul() : 0)) * (1 + v / 45) * (0.85 + Math.random() * 0.3);
     if (cat === '暗器') dmg *= 0.85;   /* 远处取人，力道比近身略轻 */
+    if (cat === '弓' && Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty) <= 1) dmg *= 0.5;   /* 贴身拉不开弓 */
     dmg *= mult;
     if (weak) dmg *= 0.6;
     if (injured('arm')) dmg *= 0.6;
@@ -4048,7 +4067,7 @@ function hurtEnemy(e, dmg, label) {
   if (e.hp <= 0) killEnemy(e);
 }
 /* 阵营厮杀：杀敌对阵营弟子涨本派声望和对应指数；杀追兵了结追杀令；杀叛徒完成清理门户。都有几率掉稀有装备 */
-const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'baoyu', 'jinsijia', 'wucanyi'];
+const RARE = ['xuantie', 'tulong', 'bawang', 'zijin', 'tiancan', 'baoyu', 'sheri', 'jinsijia', 'wucanyi'];
 function campKill(e, d) {
   const pc = campOf();
   if (d.camp === '正') { addAlign(0, 2); if (pc === '邪') { addSrep(3); addRep(2); } }
@@ -4573,7 +4592,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v76 ' + FAST_NAME[FAST] : 'v76', 156, 0, 2, 'right');
+  txt(FAST ? 'v77 ' + FAST_NAME[FAST] : 'v77', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -5337,9 +5356,52 @@ const WEAPON_LOOK = {
   lihua: { kind: 'spear' }, hantieqiang: { kind: 'spear' }, baleng: { kind: 'hammer' }, wujinchui: { kind: 'hammer' },
   zijin: { kind: 'hammer' },
   /* 手套：戴在两只手上，颜色深浅分档 */
+  liegong: { kind: 'bow', c: 2 }, niujiao: { kind: 'bow', c: 1 }, tietai: { kind: 'bow', c: 3 }, sheri: { kind: 'bow', c: 0, shine: true },
   feibiao: { kind: 'dart', c: 2 }, xiujian: { kind: 'dart', c: 1 }, hantieding: { kind: 'dart', c: 0 }, baoyu: { kind: 'dart', c: 0, shine: true },
   pishoutao: { kind: 'glove', c: 2 }, tieshoutao: { kind: 'glove', c: 1 }, hantieshoutao: { kind: 'glove', c: 0 }, tiancan: { kind: 'glove', c: 0, shine: true },
 };
+/* 拉弓：弓身横在身前和朝向垂直，前半段弦拉满、搭着箭，放箭后弦弹回 */
+function heldBow(p, W, L, side, up) {
+  const t = clamp(L.swing, 0, 1), col = L.sil ? 3 : W.c === 0 ? 3 : W.c, drawn = t < 0.5;
+  if (side) {
+    const bx = 12;
+    for (let y = 3; y <= 15; y++) { const b = Math.round(Math.sin((y - 3) / 12 * Math.PI) * 2); p(bx + b, y, 1, 1, y === 3 || y === 15 ? 3 : col); }
+    const sx = drawn ? 8 : bx; p(sx, 4, 1, 1, 3); p(sx, 14, 1, 1, 3);
+    for (let y = 4; y <= 14; y++) { const k = drawn ? Math.round((1 - Math.abs(y - 9) / 5) * (bx - 8)) : 0; p(bx - k, y, 1, 1, 2); }
+    if (drawn) { p(8, 9, 9, 1, 3); p(16, 8, 2, 3, 3); p(7, 8, 1, 3, 2); }
+  } else {
+    const by = up ? 4 : 13;
+    for (let x = 1; x <= 15; x++) { const b = Math.round(Math.sin((x - 1) / 14 * Math.PI) * 2); p(x, by + (up ? -b : b), 1, 1, x === 1 || x === 15 ? 3 : col); }
+    for (let x = 2; x <= 14; x++) p(x, by - (up ? -1 : 1) * (drawn ? Math.round((1 - Math.abs(x - 8) / 6) * 3) : 0), 1, 1, 2);
+    if (drawn) { p(8, up ? by - 6 : by - 3, 1, 9, 3); }
+  }
+}
+function heldWeapon(p, W, L, side, up) {
+  const t = clamp(L.swing, 0, 1);
+  /* 握把位置和朝前的方向（左右朝向时 p 会自动镜像） */
+  const [hx, hy, fx, fy] = side ? [10, 11, 1, 0] : up ? [13, 8, 0, -1] : [13, 11, 0, 1];
+  /* 挥动：先举起（偏向上方 70 度），再挥到正前方稍过一点 */
+  const a = (-70 + t * 95) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+  let vx = fx * ca - fy * sa, vy = fx * sa + fy * ca;
+  if (!side && !up) { vx = Math.abs(vx) * 0.5 + 0.5 * Math.abs(sa); vy = fy * Math.max(0.2, ca); }   /* 正面：从右肩斜着劈下来 */
+  if (up) { vx = 0.3 + Math.abs(sa) * 0.4; vy = -Math.max(0.3, ca); }
+  const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n;
+  const dot = (x, y, c, w = 1) => p(Math.round(x), Math.round(y), w, w, c);
+  const kind = W.kind || 'blade', len = kind === 'spear' ? 15 : kind === 'hammer' ? 9 : 10;
+  const nx = -vy, ny = vx;   /* 刃的横向 */
+  for (let i = -1; i <= len; i++) {
+    const x = hx + vx * i, y = hy + vy * i;
+    if (i <= 1) { dot(x, y, 3); continue; }   /* 握把 */
+    if (kind === 'spear') { dot(x, y, 3); if (i >= len - 2) { dot(x + nx, y + ny, 3); dot(x - nx, y - ny, 3); } continue; }
+    if (kind === 'hammer') { dot(x, y, 3); continue; }
+    const core = L.sil ? 3 : (W.core != null ? W.core : 1);
+    if (W.broad) { dot(x, y, 3); if (i < len) dot(x + nx, y + ny, i < len - 1 ? core : 3); if (i < len - 1) dot(x + nx * 2, y + ny * 2, 3); }
+    else { dot(x, y, 3); if (i > 2 && i < len - 1) dot(x + nx, y + ny, core === 3 ? 2 : core); }
+  }
+  if (!kind || kind === 'blade') { dot(hx + vx * 2 + nx * 1.5, hy + vy * 2 + ny * 1.5, W.guard != null ? W.guard : 3); dot(hx + vx * 2 - nx * 1.5, hy + vy * 2 - ny * 1.5, W.guard != null ? W.guard : 3); }
+  if (kind === 'hammer') { const x = hx + vx * len, y = hy + vy * len; for (let a2 = -2; a2 <= 2; a2++) for (let b2 = -1; b2 <= 2; b2++) dot(x + nx * a2 + vx * b2, y + ny * a2 + vy * b2, Math.abs(a2) < 2 && b2 > -1 && b2 < 2 && !L.sil ? 2 : 3); }
+  if (kind === 'spear' && !L.sil) dot(hx + vx * (len - 3) + nx, hy + vy * (len - 3) + ny, 1);
+}
 function drawPerson(sx, sy, dir, step, L, flash) {
   if (flash) return;
   const fl = dir === 'left', side = fl || dir === 'right', up = dir === 'up';
@@ -5355,13 +5417,19 @@ function drawPerson(sx, sy, dir, step, L, flash) {
   const capeC = L.cape === 'white' ? 0 : L.cape === 'grey' ? 1 : 2;
   if (L.cape && !up) { p(2, 6, 12, 9, 3); p(3, 7, 10, 7, capeC); if (side) { p(0, 7, 4, 8, 3); p(1, 8, 2, 6, capeC); } }
   // 长枪、铁锤：竖在身后，比人还高 / 锤头很大
-  if (W && W.kind && W.kind !== 'glove' && W.kind !== 'dart' && !up) {
+  if (W && W.kind === 'bow' && L.swing == null) {   /* 弓斜背在身后：一道弯弓加一根弦 */
+    const x = side ? 3 : 12, col = L.sil ? 3 : W.c;
+    for (let y = 0; y <= 13; y++) { const bulge = Math.round(Math.sin(y / 13 * Math.PI) * 2); p(x + (side ? -bulge : bulge), y, 1, 1, y === 0 || y === 13 ? 3 : col === 0 && !up ? 3 : col); }
+    p(x, 0, 1, 14, up ? 2 : 1);
+    if (W.shine && (frame >> 4) % 2) p(x + (side ? -2 : 2), 6, 1, 1, 0);
+  }
+  if (W && W.kind && W.kind !== 'glove' && W.kind !== 'dart' && W.kind !== 'bow' && !up && L.swing == null) {
     const x = side ? 2 : 13;
     if (W.kind === 'spear') { p(x, -3, 1, 18, 3); p(x - 1, -5, 3, 2, 3); p(x, -6, 1, 1, 3); p(x - 1, -3, 3, 1, 1); }
     else { p(x, 3, 1, 10, 3); p(x - 2, -1, 5, 4, 3); p(x - 1, 0, 3, 2, 2); }
   }
   // 背上的刀剑（正面、侧面时先画，让身体挡住中段）
-  if (W && !W.kind && !up) {
+  if (W && !W.kind && !up && L.swing == null) {
     if (side) {
       p(2, 2, 1, 4, W.hilt); p(1, 6, 3, 1, W.guard);
       p(2, 7, W.broad ? 3 : 2, 6, W.line); if (!L.sil) p(3, 8, 1, 4, W.core);
@@ -5411,6 +5479,9 @@ function drawPerson(sx, sy, dir, step, L, flash) {
     p(2, 8, 1, 3, sleeve === 3 ? 2 : sleeve); p(13, 8, 1, 3, sleeve === 3 ? 2 : sleeve);
     if (B.cuff != null) { p(1, 10, 2, 1, B.cuff); p(13, 10, 2, 1, B.cuff); }
   }
+  /* 出招时兵器拿在手里：从举起挥到前方；刀剑一条刃、刀更宽，枪很长带枪头，锤是长柄大锤头 */
+  if (W && L.swing != null && W.kind === 'bow') heldBow(p, W, L, side, up);
+  else if (W && L.swing != null && W.kind !== 'glove' && W.kind !== 'dart') heldWeapon(p, W, L, side, up);
   /* 暗器：腰间挂一个镖囊，露出几枚镖尾 */
   if (W && W.kind === 'dart' && !up) {
     const bx = side ? 4 : 10, gc = L.sil ? 3 : W.c;
@@ -5527,7 +5598,7 @@ function drawEnemy(e, sx, sy) {
   if (e.lunge > 0) { const [dx, dy] = DIRS[e.dir]; ox = dx * 2; oy = dy * 2; e.lunge--; }
   if (d.dummy) drawBeast('dummy', sx + (e.hitT > 0 ? (e.hitT % 4 < 2 ? 1 : -1) : 0), sy, 'right', 0, false);
   else if (d.beast) drawBeast(d.beast, sx + ox, sy + oy - (d.beast === 'rabbit' && step === 1 ? 2 : 0), e.face, step, flash);
-  else if (d.look) drawPerson(sx + ox, sy + oy, e.dir, step, d.look, flash);
+  else if (d.look) drawPerson(sx + ox, sy + oy, e.dir, step, e.lunge > 0 ? { ...d.look, swing: 1 - e.lunge / 8 } : d.look, flash);
   else if (e.kind === 'bandit') drawPerson(sx + ox, sy + oy, e.dir, step, { body: 'jinzhuang', hair: 'band', mask: true, weapon: 'dao' }, flash);
   else {
     drawPerson(sx + ox, sy + oy, e.dir, step, { body: 'heipao', hat: 'douli', beard: true, weapon: 'dao' }, flash);
@@ -5569,15 +5640,30 @@ function beam(cx, cy, dx, dy, from, len, th) {
   for (let k = 0; k < 4; k++) { R(ex - dx * k - dy * (3 - k), ey - dy * k - dx * (3 - k), 1, 1, 3); R(ex - dx * k + dy * (3 - k), ey - dy * k + dx * (3 - k), 1, 1, 3); }
   R(ex - 1, ey - 1, 3, 3, 3); R(ex + dx * 2 - 1, ey + dy * 2 - 1, 3, 3, 3);
 }
+/* 剑气：一道弯弯的细气刃，两端渐淡 */
+function qiArc(cx, cy, ang, r, sweep) {
+  const n = Math.max(8, Math.round(r * sweep));
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, q = ang - sweep / 2 + sweep * u, edge = u < 0.15 || u > 0.85;
+    const x = cx + Math.round(Math.cos(q) * r), y = cy + Math.round(Math.sin(q) * r);
+    R(x, y, 1, 1, edge ? 2 : 3);
+    if (!edge && i % 2) R(cx + Math.round(Math.cos(q) * (r - 1)), cy + Math.round(Math.sin(q) * (r - 1)), 1, 1, 0);
+  }
+}
 function ring(cx, cy, r, sy, c) { for (let k = 0; k < 28; k++) { const q = k * Math.PI / 14; R(cx + Math.cos(q) * r, cy + Math.sin(q) * r * sy, 2, 1, c); } }
 /* 命中效果按兵器分：剑一道细斜痕，刀一个粗叉，枪一道贯穿线，锤砸出裂地碎石，拳一圈冲击波，暗器钉上一枚星点 */
 function hitMark(k, sx, sy) {
   const life = (k.big ? 12 : 8) - k.t, B = k.big ? 1.5 : 1, dx = k.dx || 0, dy = k.dy || 0;
   if (k.cat === '剑') {
-    const L = Math.round(Math.min(7 * B, 2 + life * 2));
-    for (let i = -L; i <= L; i++) R(sx + i, sy - i, 1, 1, Math.abs(i) < L - 1 ? 3 : 2);
-    if (k.big) for (let i = -L + 2; i <= L - 2; i++) R(sx + i + 2, sy - i + 1, 1, 1, 3);
-    R(sx - 1, sy - 1, 3, 3, 0); R(sx, sy, 1, 1, 3);
+    /* 剑气扩散：一圈断续的剑气从中了剑的地方向外扩开，八道细芒往外射 */
+    const rr = Math.min(10 * B, 2 + life * 1.7);
+    for (let i = 0; i < 16; i++) {
+      const q = i * Math.PI / 8 + life * 0.08;
+      if (i % 4 !== 3) R(sx + Math.round(Math.cos(q) * rr), sy + Math.round(Math.sin(q) * rr * 0.8), 1, 1, life > 6 ? 2 : 3);
+      if (i % 2 === 0) for (let j = 1; j <= 2; j++) { const d2 = rr * 0.45 + j * 1.5; R(sx + Math.round(Math.cos(q) * d2), sy + Math.round(Math.sin(q) * d2 * 0.8), 1, 1, 3); }
+    }
+    if (k.big && rr > 5) { const r2 = rr * 0.6; for (let i = 0; i < 12; i++) { const q = i * Math.PI / 6 - life * 0.1; R(sx + Math.round(Math.cos(q) * r2), sy + Math.round(Math.sin(q) * r2 * 0.8), 1, 1, 3); } }
+    if (life < 5) { R(sx - 2, sy, 5, 1, 3); R(sx, sy - 2, 1, 5, 3); R(sx, sy, 1, 1, 0); }
   } else if (k.cat === '刀') {
     const L = Math.round(Math.min(6 * B, 2 + life * 2));
     for (let i = -L; i <= L; i++) { R(sx + i, sy - i, 2, 1, 3); R(sx + i, sy + i, 2, 1, 3); }
@@ -5596,6 +5682,13 @@ function hitMark(k, sx, sy) {
     const rr = Math.min(7 * B, 2 + life * 1.2);
     for (let i = 0; i < 12; i++) { const q = i * Math.PI / 6; R(sx + Math.round(Math.cos(q) * rr), sy + Math.round(Math.sin(q) * rr), 1, 1, life > 5 ? 2 : 3); }
     R(sx - 2, sy - 2, 5, 5, 3); R(sx - 1, sy - 1, 3, 3, 0);
+  } else if (k.cat === '弓') {
+    /* 箭钉在身上：箭杆朝来的方向露在外面，尾羽一抖一抖 */
+    for (let i = 1; i <= 6; i++) R(sx - dx * i, sy - dy * i, 1, 1, 3);
+    const w = life % 2 ? 1 : 2;
+    for (const s2 of [-1, 1]) R(sx - dx * 6 + dy * s2 * w, sy - dy * 6 + dx * s2 * w, 1, 1, 3);
+    if (life < 4) for (const [a, b] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) R(sx + a, sy + b, 1, 1, 3);
+    R(sx - 1, sy - 1, 3, 3, 0); R(sx, sy, 1, 1, 3);
   } else {
     R(sx - 1, sy, 3, 1, 3); R(sx, sy - 1, 1, 3, 3); R(sx - dx * 2, sy - dy * 2, 1, 1, 3); R(sx - dx * 3, sy - dy * 3, 1, 1, 2);
     if (life < 4) for (const [a, b] of [[2, 2], [-2, 2], [2, -2], [-2, -2]]) R(sx + a, sy + b, 1, 1, 3);
@@ -5630,9 +5723,9 @@ function drawSlash2(cx, cy, cat, prog, dx, dy, ang) {
     }
     if (prog < 0.6) for (const s2 of [-6, 6]) beam(cx + dy * s2, cy + dx * s2, dx, dy, 4, Math.round(4 + prog * 8), 1);
   } else if (cat === '剑') {
+    /* 剑气扩散：一剑劈开，三层剑气一层层往外荡开，越远越宽 */
     crescent(cx, cy, ang - Math.PI * 0.5, Math.PI, 15, 4, prog * 3);
-    crescent(cx, cy, ang + Math.PI * 0.5, -Math.PI, 17, 4, prog * 3 - 1);
-    if (prog > 0.6) beam(cx, cy, dx, dy, 6, Math.round(26 * Math.min(1, (prog - 0.6) * 3)), 3);
+    for (let j = 0; j < 3; j++) { const t = prog * 1.4 - j * 0.18; if (t > 0.1 && t < 1) qiArc(cx, cy, ang, 12 + t * 30, Math.PI * (0.45 + t * 0.5)); }
   } else if (cat === '刀') {
     crescent(cx, cy, ang, Math.PI * 2, 19, 5, prog * 1.25);
     crescent(cx, cy, ang + Math.PI, Math.PI * 2, 13, 3, prog * 1.25 - 0.25);
@@ -5661,12 +5754,23 @@ function drawShot(cx, cy, prog, dx, dy) {
     R(x - 1, y - 1, 3, 3, 3); R(x, y, 1, 1, 0); R(x + dx * 2, y + dy * 2, 1, 1, 3);
   });
 }
+/* 箭：拉弓的前半段不飞，放箭后一支带尾羽的长箭直飞到落点；第二式箭身带一道破空的气线 */
+function drawArrow(cx, cy, prog, dx, dy) {
+  if (prog < 0.35) return;
+  const len = (P.shot && P.shot[0]) || 5, t = Math.min(1, (prog - 0.35) * 2.2), dist = Math.max(10, len * T) * t;
+  const x = cx + dx * dist, y = cy + dy * dist;
+  if (P.move2) for (let i = 4; i < dist; i += 2) R(cx + dx * i, cy + dy * i, 1, 1, 2);
+  for (let i = 0; i < 9; i++) R(x - dx * i, y - dy * i, 1, 1, 3);
+  R(x + dx - dy, y + dy - dx, 1, 1, 3); R(x + dx + dy, y + dy + dx, 1, 1, 3); R(x + dx * 2, y + dy * 2, 1, 1, 3);
+  for (const s2 of [-1, 1]) { R(x - dx * 8 + dy * s2 * 2, y - dy * 8 + dx * s2 * 2, 1, 1, 3); R(x - dx * 9 + dy * s2, y - dy * 9 + dx * s2, 1, 1, 3); }
+}
 function drawSlash(cx, cy) {
   const prog = 1 - P.atkT / P.atkMax;
   const cat = SK[S.active].cat;
   const [dx, dy] = DIRS[P.dir];
   const ang = ANG[P.dir];
   if (cat === '暗器') return drawShot(cx, cy, prog, dx, dy);
+  if (cat === '弓') return drawArrow(cx, cy, prog, dx, dy);
   if (P.move2) return drawSlash2(cx, cy, cat, prog, dx, dy, ang);
   if (cat === '枪') return beam(cx, cy, dx, dy, 6, Math.round(26 * Math.min(1, prog * 1.6)), 3);
   if (cat === '槌') {
@@ -5682,6 +5786,7 @@ function drawSlash(cx, cy) {
   }
   if (cat === '刀') return crescent(cx, cy, ang - Math.PI * 0.5, Math.PI, 16, 5, prog * 1.5);
   crescent(cx, cy, ang - Math.PI * 0.38, Math.PI * 0.76, 15, 3, prog * 1.6);
+  if (prog > 0.35) qiArc(cx, cy, ang, 14 + (prog - 0.35) * 26, Math.PI * 0.5);   /* 一道剑气往前飞 */
 }
 
 function renderWorld() {
@@ -5747,7 +5852,7 @@ function renderWorld() {
         const [dx, dy] = DIRS[P.dir];
         drawPerson(sx - dx * 5, sy - dy * 5, P.dir, 0, { ...playerLook(), ghost: true });
       }
-      drawPerson(sx + ox, sy + oy, P.dir, step, playerLook(), P.hurtT > 0 && P.hurtT % 6 < 3);
+      drawPerson(sx + ox, sy + oy, P.dir, step, P.atkT > 0 ? { ...playerLook(), swing: 1 - P.atkT / P.atkMax } : playerLook(), P.hurtT > 0 && P.hurtT % 6 < 3);
     }
     if (P.atkT > 0) drawSlash(sx + 8, sy + 9);
   } });
@@ -5930,6 +6035,14 @@ function renderUI() {
     R(x, y, w, 13, 3); R(x + 1, y + 1, w - 2, 11, 0); R(x + 2, y + 2, w - 4, 9, 3);
     txt(map.name, x + 5, y + 1, 0);
     if (S.coach > 0) { const ct = `陪练×2 ${Math.ceil(S.coach / 3600)}分`, w2 = tw(ct) + 10; R(x, y + 15, w2, 13, 3); R(x + 1, y + 16, w2 - 2, 11, 0); txt(ct, x + 5, y + 16, 3); }
+    /* 右上角：正在用的武功（类别字 + 全名）；打坐时换成正在运转的内功 */
+    const sid = P.sit ? S.passive['心法'] : S.active;
+    if (sid && SK[sid]) {
+      const tag = CAT_TAG[SK[sid].cat], nm = SK[sid].name, w3 = tw(nm) + 22, x3 = GW - 3 - w3;
+      const y3 = y + (foeShown && x3 < UX + 130 ? 27 : 0);
+      R(x3, y3, w3, 13, 3); R(x3 + 1, y3 + 1, w3 - 2, 11, 0); R(x3 + 2, y3 + 2, 12, 9, 3);
+      txt(tag, x3 + 3, y3 + 1, 0); txt(nm, x3 + 17, y3 + 1, 3);
+    }
     g.setTransform(1, 0, 0, 1, UX, 0);
   }
   g.setTransform(1, 0, 0, 1, UX, 0);
@@ -6006,7 +6119,7 @@ function renderSkillDetail(k) {
     row(69, 6, '闪躲', sk.eva); row(69, MW / 2 + 2, '命中', sk.acc);
     txt('攻击', 6, 81, 2);
     sk.atk.forEach((r, i) => { txt(LOCS[i], 30 + i * 31, 81, 2); txt(RT[r], 41 + i * 31, 81, 3); });
-    const tags = [sk.reach ? `远及${'一两三四'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? `每招耗体力${ST_COST[sk.cat]}内功2` : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
+    const tags = [sk.reach ? `远及${'一两三四五六七'[sk.reach - 1]}格` : '', sk.poison ? '可带毒' : '', sk.stun ? '可击晕' : '', sk.tier === 2 ? `每招耗体力${ST_COST[sk.cat]}内功2` : `每招耗体力${ST_COST[sk.cat]}`].filter(Boolean);
     txt(tags.length ? tags.join(' ') : '无特殊效果', 6, 93, 2);
     txt(`50级第二式「${sk.move}」${v >= 50 ? '已成' : '未成'}`, 6, 105, v >= 50 ? 3 : 2);
   } else if (sk.cat === '护体') {

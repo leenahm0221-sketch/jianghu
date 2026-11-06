@@ -40,12 +40,12 @@ function skillInfo(k) {
   if (ATK_CATS.includes(sk.cat)) return `${CAT_NAME[sk.cat]}·${from}${up} 速${RT[sk.spd]}${sk.reach ? ` 远${sk.reach}格` : ''}`;
   return `${CAT_NAME[sk.cat]}·${from}${up}　按A看详情`;
 }
-const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '拳掌：空手或戴手套可用' : sk.cat === '暗器' ? '暗器：要装备飞镖、袖箭等' : `${CAT_NAME[sk.cat]}：要装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${CAT_NAME[sk.cat]}，同时只能运用一门`);
+const useLabel = sk => (SK_FORMER(sk) ? `原${SECTS[sk.sect].name}武功，上限49.99` : ATK_CATS.includes(sk.cat) ? (sk.cat === '拳' ? '拳掌：空手或戴手套可用' : sk.cat === '暗器' ? '暗器：要装备飞镖、袖箭等' : sk.cat === '弓' ? '弓箭：要装备弓，贴身伤害减半' : `${CAT_NAME[sk.cat]}：要装备${sk.cat}`) : sk.cat === '生产' ? '生产技艺' : `${CAT_NAME[sk.cat]}，同时只能运用一门`);
 function SK_FORMER(sk) { return !!(sk.sect && S.former.includes(sk.sect)); }
 function useSkill(k) {
   const sk = SK[k];
   if (ATK_CATS.includes(sk.cat)) {
-    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : sk.cat === '暗器' ? '要先装备飞镖、袖箭等暗器' : `要先装备${sk.cat}`);
+    if (sk.cat !== wcat()) return toast(sk.cat === '拳' ? '要空手或戴手套才能用拳法' : sk.cat === '暗器' ? '要先装备飞镖、袖箭等暗器' : sk.cat === '弓' ? '要先装备弓' : `要先装备${sk.cat}`);
     S.active = k; S.pref[sk.cat] = k; toast(`改用 ${sk.name}`); sfx('menu');
   } else if (sk.cat === '生产') toast(sk.desc);
   else { S.passive[sk.cat] = k; toast(`${CAT_NAME[sk.cat]}改用 ${sk.name}`); sfx('menu'); }

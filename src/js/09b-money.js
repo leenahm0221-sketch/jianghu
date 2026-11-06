@@ -9,8 +9,8 @@ const eqName = id => (EQ[id] ? EQ[id].name + (EQ[id].slot === 'weapon' && enhLv(
 function enhTier(id) {
   const e = EQ[id];
   if (e.rare) return 4;
-  if (/^(hantie|wujin)/.test(id)) return 3;
-  if (['qinggang', 'guitou', 'lihua', 'baleng', 'tieshoutao', 'xiujian'].includes(id)) return 2;
+  if (/^(hantie|wujin)/.test(id) || id === 'tietai') return 3;
+  if (['qinggang', 'guitou', 'lihua', 'baleng', 'tieshoutao', 'xiujian', 'niujiao'].includes(id)) return 2;
   return 1;
 }
 function enhCost(id, L) {

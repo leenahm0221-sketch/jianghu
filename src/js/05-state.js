@@ -80,7 +80,7 @@ const maxHP = () => Math.floor(60 + qi() * 1.5 + pv('心法', 'hp') * 0.4);
 const maxMP = () => Math.floor(20 + pv('心法', 'mp') * 1.2 + gearSum('mp'));
 /* 体力：每招都耗，歇一歇或打坐就回来；基础以外的武功还要再耗内功 */
 const maxST = () => Math.floor(50 + qi() * 0.6 + pv('心法', 'hp') * 0.3);
-const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3, 暗器: 1 };
+const ST_COST = { 拳: 1, 剑: 2, 刀: 2, 枪: 2, 槌: 3, 暗器: 1, 弓: 2 };
 const maxPart = () => 40 + Math.floor(qi() / 2);
 const defense = i => ['body', 'head'].reduce((a, sl) => a + ((S.equip[sl] && EQ[S.equip[sl]].def[i]) || 0), 0);
 const atkSk = () => SK[S.active];
