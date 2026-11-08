@@ -12,7 +12,13 @@ function update() {
   if (shake > 0) shake--;
   sparks.forEach(k => k.t--); sparks = sparks.filter(k => k.t > 0);
   if (dlg) return updDialog();
-  if (inspect) { if (pressed.a || pressed.b || pressed.start || ++inspect.t > 60 * 30) { inspect = null; sfx('menu'); } return; }
+  if (inspect) {
+    if (pressed.b || pressed.start || ++inspect.t > 60 * 60) { inspect = null; sfx('menu'); return; }
+    if (inspect.card && (pressed.left || pressed.right)) { inspect.btn = ((inspect.btn || 0) + (pressed.left ? 3 : 1)) % 4; inspect.t = 0; sfx('menu'); }
+    if (pressed.a && inspect.card) { const b = ['私聊', '切磋', '组队', '交易'][inspect.btn || 0]; toast(`${b}：等联网第二步开放`); sfx('menu'); }
+    if (pressed.a && !inspect.card) { inspect = null; sfx('menu'); }
+    return;
+  }
   if (menu) return updMenu();
   if (wpick) return updWpick();
   if (hitStop > 0) { hitStop--; return; }

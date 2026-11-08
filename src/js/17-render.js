@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v88 ' + FAST_NAME[FAST] : 'v88', 156, 0, 2, 'right');
+  txt(FAST ? 'v89 ' + FAST_NAME[FAST] : 'v89', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1397,11 +1397,13 @@ function renderWorld() {
   for (const o of NET.others.values()) list.push({ y: o.py, d: () => {
     const sx = Math.round(o.px - cx), sy = Math.round(o.py - cy);
     if (sx < -T || sy < -T || sx > GW || sy > GH) return;
+    footRing(sx, sy, false);
     if (o.sit && !o.moving) { drawPerson(sx, sy + 2, 'down', 0, { ...o.look, noLegs: true }); R(sx + 1, sy + 11, 14, 4, 3); R(sx + 2, sy + 12, 5, 2, 1); R(sx + 9, sy + 12, 5, 2, 1); R(sx, sy + 15, 16, 1, 2); }
     else drawPerson(sx, sy, o.dir, o.moving ? (Math.floor((o.px + o.py) / 8) % 2) + 1 : 0, o.look);
   } });
   if (!P.dead || frame % 8 < 4) list.push({ y: P.py + 0.5, d: () => {
     const sx = P.px - cx, sy = P.py - cy;
+    if (NET.online || NET.others.size) footRing(Math.round(sx), Math.round(sy), true);   /* 单机没别人时不画，免得多余 */
     if (P.sit) {
       drawPerson(sx, sy + 2, 'down', 0, { ...playerLook(), noLegs: true });
       R(sx + 1, sy + 11, 14, 4, 3); R(sx + 2, sy + 12, 5, 2, 1); R(sx + 9, sy + 12, 5, 2, 1); R(sx + 7, sy + 12, 2, 1, 0);
@@ -1449,6 +1451,7 @@ function renderWorld() {
 
 /* NPC：头顶职业图标，有任务时换成闪烁的 ! 或 ?；脚下一直写着名字，走近时换成名字·身份 */
 function renderNpcTags() {
+  npcRects = [];
   /* 主人在屋里的房子：有事找你时，门口上方也冒出 ! 或 ? */
   for (const b of map.buildings || []) {
     if (!b.inside) continue;
@@ -1480,10 +1483,10 @@ function renderNpcTags() {
       const label = n.role ? `${n.name}·${n.role}` : n.name, w = tw(label) + 6;
       const below = P.ty > n.y;
       const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
-      R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0);
+      R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0); npcRects.push([lx, ly, w, 12]);
     } else if (!dlg && !menu && S.showTag !== false && !n.amb && !n.quiet && sy + 17 < UB - 2) {   /* 屋里的闲人走近了才显示名字，免得满屋都是字 */
       /* 离得远时脚下也写着名字，一眼看清谁是谁；走近再显示身份 */
-      txtOutline(n.name, sx + 8, sy + 16, 'center');
+      txtOutline(n.name, sx + 8, sy + 16, 'center'); { const w2 = tw(n.name) + 2; npcRects.push([sx + 8 - w2 / 2, sy + 16, w2, 12]); }
     }
   }
 }
@@ -1548,12 +1551,35 @@ function renderPeek() {
   if (Math.floor(frame / 8) % 2) for (const [ox, oy] of [[0, 0], [13, 0], [0, 13], [13, 13]]) { R(bx + ox, by + oy, 3, 1, 3); R(bx + ox + (ox ? 2 : 0), by + oy + (oy ? -2 : 0), 1, 3, 3); }
 }
 /* 头顶信息：[门派]名字，有称号再加一行。正派浅底黑框，邪派黑底白字，中立或无门派只描边 */
-function headTag(cx, top, name, sectShort, camp, title) {
-  const label = (sectShort ? `[${sectShort}]` : '') + name, w = tw(label) + 6, x = Math.round(cx - w / 2);
-  if (camp === '邪') { R(x, top, w, 12, 3); txt(label, x + 3, top, 0); }
-  else if (camp === '正') { R(x, top, w, 12, 3); R(x + 1, top + 1, w - 2, 10, 0); txt(label, x + 3, top, 3); }
+/* 名牌。真人玩家名字前多一个小菱形 ◆，NPC 永远没有：一眼分得出谁是人 */
+function diamond(x, y, c, ring) {
+  R(x + 2, y, 1, 1, c); R(x + 1, y + 1, 3, 1, c); R(x, y + 2, 5, 1, c); R(x + 1, y + 3, 3, 1, c); R(x + 2, y + 4, 1, 1, c);
+  if (ring != null) R(x + 2, y + 2, 1, 1, ring);
+}
+let tagRects = [], npcRects = [];   /* 本帧已经画了的名牌，人挤在一起时后画的往上让，免得叠成一团 */
+function headTag(cx, top, name, sectShort, camp, title, player) {
+  const label = (sectShort ? `[${sectShort}]` : '') + name, dw = player ? 7 : 0, w = tw(label) + 6 + dw, x = Math.round(cx - w / 2);
+  top = Math.max(top, HUD_H + 1 + (title ? 12 : 0));   /* 不压到顶上的状态栏 */
+  for (let k = 0; k < 4; k++) {
+    const y0 = top - (title ? 12 : 0), hit = tagRects.some(([a, b, c, d]) => x < a + c && a < x + w && y0 < b + d && b < top + 12);
+    if (!hit) break; top -= 13;
+  }
+  tagRects.push([x, top - (title ? 12 : 0), w, title ? 24 : 12]);
+  if (camp === '邪') { R(x, top, w, 12, 3); txt(label, x + 3 + dw, top, 0); if (player) diamond(x + 3, top + 3, 0, 3); }
+  else if (camp === '正') { R(x, top, w, 12, 3); R(x + 1, top + 1, w - 2, 10, 0); txt(label, x + 3 + dw, top, 3); if (player) diamond(x + 3, top + 3, 3, 0); }
+  else if (player) { R(x, top, w, 12, 3); R(x + 1, top + 1, w - 2, 10, 1); txt(label, x + 3 + dw, top, 3); diamond(x + 3, top + 3, 3, 0); }
   else txtOutline(label, cx, top, 'center');
   if (title) { const tw2 = tw(title); txtOutline(title, cx, top - 12, 'center'); }
+}
+/* 玩家脚下的小椭圆：自己是实线，别的玩家是虚线；NPC 和怪没有 */
+function footRing(sx, sy, self) {
+  const cx = sx + 8, cy = sy + 15;
+  for (let i = 0; i < 28; i++) {
+    if (!self && i % 2) continue;
+    const q = i / 28 * Math.PI * 2, x = Math.round(cx + Math.cos(q) * 8), y = Math.round(cy + Math.sin(q) * 2.5);
+    if (Math.sin(q) < -0.3) continue;   /* 后半圈被身子挡住 */
+    R(x, y, 1, 1, self ? 2 : 3);
+  }
 }
 /* 正在和你打的怪：你锁定的那只，或者已经被惹毛、在 4 格内的 */
 const fighting = e => !e.dead && !ED(e).dummy && (e === P.target || (e.adj && Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty) <= 4));
@@ -1566,6 +1592,7 @@ function foeInFocus() {
 let foeShown = false;
 function renderHeadTags() {
   if (S.showTag === false || dlg) return;
+  tagRects = npcRects.slice();   /* NPC 脚下的名字也算进去，玩家名牌会让开 */
   for (const e of enemies) {
     const d = ED(e);
     if (e.dead || !(d.camp || d.hunter) || e === P.target) continue;
@@ -1573,10 +1600,10 @@ function renderHeadTags() {
     const sh = e.sect ? SECTS[e.sect].short : d.short;
     headTag(e.px + 8 - cam.x, e.py - cam.y - 14, d.hunter ? (e.kind === 'pantu' ? '叛徒' : '追兵') : d.nick, sh, d.hunter ? '邪' : d.camp, null);
   }
-  for (const o of NET.others.values()) headTag(Math.round(o.px) + 8 - cam.x, Math.round(o.py) - cam.y - (o.sit ? 11 : 14), o.name, o.sect && SECTS[o.sect] ? SECTS[o.sect].short : null, o.camp, o.title);
+  for (const o of NET.others.values()) headTag(Math.round(o.px) + 8 - cam.x, Math.round(o.py) - cam.y - (o.sit ? 11 : 14), o.name, o.sect && SECTS[o.sect] ? SECTS[o.sect].short : null, o.camp, o.title, true);
   if (P.dead) return;
   const rt = titleOf(REP_TITLES, S.rep);
-  headTag(P.px + 8 - cam.x, P.py - cam.y - (P.sit ? 11 : 14), S.name, S.sect ? SECTS[S.sect].short : null, campOf(), S.champion ? '天下第一' : S.rep >= 20 ? rt : null);
+  headTag(P.px + 8 - cam.x, P.py - cam.y - (P.sit ? 11 : 14), S.name, S.sect ? SECTS[S.sect].short : null, campOf(), S.champion ? '天下第一' : S.rep >= 20 ? rt : null, true);
 }
 /* 说话气泡：显示在名字上方，几秒后消失 */
 function renderSay() {

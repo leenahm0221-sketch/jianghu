@@ -42,10 +42,11 @@ function lootable(x, y) {
   return !!RES_TILES[t] && !isDepleted(x, y);
 }
 const DIRS_LIST = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-function otherAt(x, y) { if (!NET.online) return null; for (const o of NET.others.values()) if (o.x === x && o.y === y) return o; return null; }
+function otherAt(x, y) { if (!NET.online && !NET.others.size) return null; for (const o of NET.others.values()) if (o.x === x && o.y === y) return o; return null; }
 /* 查看别的玩家：向服务器要他最近一次存档里的装备、武功 */
 let inspect = null;
 function inspectPlayer(o) {
+  if (o.fake) { inspect = { id: o.id, name: o.name, card: o.card, t: 0, btn: 0 }; sfx('menu'); return; }
   if (!NET.online || NET.status !== 'up') return toast('没连上服务器');
   inspect = { id: o.id, name: o.name, card: null, t: 0 }; netSend({ t: 'insp', id: o.id }); sfx('menu');
 }
@@ -72,7 +73,10 @@ function renderInspect() {
     txt(SK[k].name + (k === c.active || Object.values(c.passive || {}).includes(k) ? '●' : ''), 21, y, 3);
     txt(Number(v).toFixed(2), MW - 8, y, 2, 'right');
   });
-  txt('●正在用　B返回', MW / 2, 129, 2, 'center');
+  /* 底下一排按钮：私聊 / 切磋 / 组队 / 交易，左右选、A 确定、B 返回 */
+  const BT = ['私聊', '切磋', '组队', '交易'], bw = Math.floor((MW - 16) / 4);
+  BT.forEach((b, i) => { const x = 8 + i * bw, on = (inspect.btn || 0) === i; R(x, 128, bw - 3, 13, 3); if (!on) R(x + 1, 129, bw - 5, 11, 0); txt(b, x + Math.floor((bw - 3) / 2), 129, on ? 0 : 3, 'center'); });
+  txt('●正在用', MW - 8, 16 + 100, 2, 'right');
 }
 function npcAt(x, y) { return npcs.find(n => n.x === x && n.y === y); }
 function buildingAt(x, y) { return (map.buildings || []).find(b => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h); }

@@ -57,6 +57,7 @@ function netUpsert(m) {
 }
 /* 每帧：把自己的位置、外观、存档同步给服务器；其他玩家平滑走到最新位置 */
 function netTick() {
+  if (NET.others.size && !NET.online) updDemo();
   if (!NET.online || !S || !map || NET.status !== 'up') return;
   if (frame % 30 === 0) {
     const prof = { look: playerLook(), sect: S.sect, camp: campOf(), title: S.rep >= 20 ? titleOf(REP_TITLES, S.rep) : null }, ps = JSON.stringify(prof);
@@ -114,3 +115,34 @@ document.getElementById('authform').addEventListener('submit', e => {
 });
 if (NET.url) netConnect();
 
+
+/* 测试用假玩家：单机里放几个“玩家”在身边走动，看名牌 ◆、脚下虚线圈、点开的资料卡（正式测试时和加速一起去掉） */
+const FAKE_P = [
+  { name: '风清扬', sect: 'huashanpai', camp: '正', title: '名动江湖', look: { body: 'hsshan', weapon: 'hantiejian', hair: 'knot' }, skills: { dugu: 88.2, huashan: 99.9 } },
+  { name: '小龙女', sect: 'gumu', camp: '中', title: null, look: { body: 'gmbai', weapon: 'qinggang', hair: 'long' }, skills: { suxin: 64.1, yunvxin: 50.3 } },
+  { name: '任我行', sect: 'riyue', camp: '邪', title: '一方豪强', look: { body: 'ryrobe', weapon: 'tiancan', hair: 'band' }, skills: { xixing: 92.7, heixue: 60.4 } },
+];
+function demoPlayers() {
+  NET.others.clear();
+  FAKE_P.forEach((f, i) => {
+    let x = P.tx, y = P.ty;
+    for (const [dx, dy] of [[4, 1], [-4, 1], [1, 3], [-1, 3], [3, -2], [-3, -2], [2, 2], [-2, 2]].slice(i * 2)) if (canMove(P.tx + dx, P.ty + dy, P) && !otherAt(P.tx + dx, P.ty + dy)) { x = P.tx + dx; y = P.ty + dy; break; }
+    const look = { ...f.look }; if (!EQ[look.weapon]) look.weapon = null; if (!EQ[look.body]) look.body = 'buyi';
+    const sect = SECTS[f.sect] ? f.sect : null;
+    NET.others.set('fake' + i, { id: 'fake' + i, fake: true, name: f.name, sect, camp: f.camp, title: f.title, look, x, y, px: x * T, py: y * T, dir: 'down', moving: false, homeX: x, homeY: y,
+      card: { age: 20 + i * 7, sect, equip: { weapon: look.weapon, body: look.body }, rep: 120 - i * 30, zheng: f.camp === '正' ? 80 : 5, xie: f.camp === '邪' ? 90 : 3, skills: Object.fromEntries(Object.entries(f.skills).filter(([k]) => SK[k])) } });
+  });
+  toast('身边来了三位“玩家”（测试用）');
+}
+function updDemo() {
+  for (const o of NET.others.values()) {
+    if (!o.fake) continue;
+    if (frame % 90 === (o.id.charCodeAt(4) * 29) % 90 && Math.random() < 0.6) {
+      const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][Math.floor(Math.random() * 4)], nx = o.x + dx, ny = o.y + dy;
+      if (Math.abs(nx - o.homeX) <= 2 && Math.abs(ny - o.homeY) <= 2 && canMove(nx, ny, o) && !(nx === P.tx && ny === P.ty)) { o.x = nx; o.y = ny; o.dir = dirOf(dx, dy); }
+    }
+    const tx = o.x * T, ty = o.y * T, dx = tx - o.px, dy = ty - o.py;
+    o.px += Math.sign(dx) * Math.min(Math.abs(dx), 1); o.py += Math.sign(dy) * Math.min(Math.abs(dy), 1);
+    o.moving = dx !== 0 || dy !== 0;
+  }
+}
