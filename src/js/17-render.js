@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v89 ' + FAST_NAME[FAST] : 'v89', 156, 0, 2, 'right');
+  txt(FAST ? 'v90 ' + FAST_NAME[FAST] : 'v90', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -576,6 +576,17 @@ function drawTile0(t, sx, sy, mx, my) {
 }
 
 /* 中式建筑：按 style 画出不同形制。hall 单檐、tall 两层楼阁、double 重檐大殿、pagoda 宝塔；kind 决定招牌与装饰；snow 雪顶 */
+/* 能进的房子统一画同一种门：亮色门框 + 黑门洞 + 门口一级亮台阶，正好压在能进的那一格上，深色墙上也一眼看得出 */
+let plaqueLater = false, plaqueQ = [];   /* 招牌最后画，压在门楣上面，不被门挡住 */
+function drawDoorway(b, sx, sy) {
+  const dc = sx + Math.floor(b.w / 2) * T + 8, bot = sy + b.h * T - 3;
+  R(dc - 8, bot - 19, 16, 2, 3);                 /* 门楣 */
+  R(dc - 7, bot - 17, 14, 17, 0);                /* 亮门框 */
+  R(dc - 6, bot - 16, 12, 16, 3);                /* 门洞 */
+  R(dc - 5, bot - 15, 1, 11, 2); R(dc + 4, bot - 15, 1, 11, 2);   /* 推开到两边的门板 */
+  R(dc - 4, bot - 4, 8, 4, 2);                   /* 屋里的地面 */
+  R(dc - 9, bot, 18, 3, 3); R(dc - 8, bot + 1, 16, 1, 0);        /* 台阶 */
+}
 function drawBuilding(b, sx, sy) {
   if (b.style === 'bigtree') {   /* 老槐树：粗大的树干，一大团树冠盖过两格，往上伸出一截 */
     const r = (x, y, w, h, c) => R(sx + x, sy + y, w, h, c);
@@ -589,6 +600,7 @@ function drawBuilding(b, sx, sy) {
     return;
   }
   const W = b.w * T, H = b.h * T, cx = W / 2;
+  const dc = Math.floor(b.w / 2) * T + 8;   /* 门开在正中那一格（宽度是双数时比画面中线偏右半格），门要画在真正能进的那一格上 */
   const r = (x, y, w, h, c) => R(sx + x, sy + y, w, h, c);
   const roof = (x0, y0, w, h) => {
     r(x0 + 8, y0, w - 16, 2, 3); r(x0 + 6, y0 - 2, 3, 4, 3); r(x0 + 5, y0 - 3, 2, 2, 3); r(x0 + w - 9, y0 - 2, 3, 4, 3); r(x0 + w - 7, y0 - 3, 2, 2, 3);
@@ -613,9 +625,11 @@ function drawBuilding(b, sx, sy) {
   const pillars = (y0, h, xs) => xs.forEach(x => { r(x, y0, 4, h, 3); r(x + 1, y0, 1, h, 2); });
   const lattice = (x, y, w = 14, h = 13) => { r(x, y, w, h, 3); r(x + 1, y + 1, w - 2, h - 2, 0); for (let i = x + 4; i < x + w - 1; i += 3) r(i, y + 1, 1, h - 2, 3); for (let j = y + 4; j < y + h - 1; j += 3) r(x + 1, j, w - 2, 1, 3); };
   const moon = (x, y) => { for (let j = 0; j < 13; j++) for (let i = 0; i < 13; i++) { const d = (i - 6) ** 2 + (j - 6) ** 2; if (d <= 42) r(x + i, y + j, 1, 1, d > 30 ? 3 : (i === 6 || j === 6) ? 3 : 0); } };
-  const door = (bot) => { r(cx - 7, bot - 13, 14, 13, 3); r(cx - 6, bot - 12, 5, 12, 2); r(cx + 1, bot - 12, 5, 12, 2); r(cx - 2, bot - 6, 1, 1, 0); r(cx + 1, bot - 6, 1, 1, 0); r(cx - 9, bot, 18, 3, 3); r(cx - 8, bot + 1, 16, 1, 1); };
+  /* 门：敞开的门洞（里面黑），两扇门板推到两边，门楣一道横梁，门口一级亮色台阶 */
+  const door = (bot) => { r(dc - 8, bot - 15, 16, 15, 3); r(dc - 7, bot - 14, 2, 14, 1); r(dc + 5, bot - 14, 2, 14, 1); r(dc - 5, bot - 13, 10, 13, 3); r(dc - 4, bot - 4, 8, 4, 2); r(dc - 9, bot - 16, 18, 2, 3); r(dc - 9, bot, 18, 3, 3); r(dc - 8, bot + 1, 16, 1, 0); };
   const base = (bot) => { r(1, bot, W - 2, 3, 3); r(2, bot + 1, W - 4, 1, 2); };
-  const plaque = (y, label) => { const w = tw(label) + 8, px = Math.round(cx - w / 2); r(px, y, w, 12, 3); r(px + 1, y + 1, w - 2, 10, 2); r(px + 2, y + 2, w - 4, 8, 3); txt(label, sx + px + 4, sy + y, 0); };
+  const plaque = (y, label) => { if (plaqueLater) { plaqueQ.push(() => plaqueNow(y, label)); return; } plaqueNow(y, label); };
+  const plaqueNow = (y, label) => { const w = tw(label) + 8, px = Math.round(cx - w / 2); r(px, y, w, 12, 3); r(px + 1, y + 1, w - 2, 10, 2); r(px + 2, y + 2, w - 4, 8, 3); txt(label, sx + px + 4, sy + y, 0); };
   const flag = (x, y, ch) => { r(x + 4, y - 6, 1, 32, 3); r(x - 6, y, 10, 18, 3); r(x - 5, y + 1, 8, 15, 0); r(x - 5, y + 16, 2, 2, 3); r(x + 1, y + 16, 2, 2, 3); txt(ch, sx + x - 6, sy + y + 3, 3); };
   const lantern = (x, y) => { r(x + 2, y, 1, 2, 3); r(x, y + 2, 5, 7, 3); r(x + 1, y + 3, 3, 5, 1); r(x + 1, y + 5, 3, 1, 3); r(x + 2, y + 9, 1, 2, 3); };
   const rack = (x, y) => { r(x, y, 16, 12, 3); r(x + 1, y + 1, 14, 10, 0); r(x + 3, y + 2, 1, 9, 3); r(x + 2, y + 2, 3, 1, 3); r(x + 7, y + 3, 1, 8, 3); r(x + 6, y + 5, 3, 1, 3); r(x + 11, y + 2, 2, 5, 3); r(x + 12, y + 7, 1, 4, 3); };
@@ -650,8 +664,8 @@ function drawBuilding(b, sx, sy) {
     r(6, wallTop + 2, W - 12, 1, 3); [6, cx - 9, cx + 8, W - 9].forEach(x => r(x, wallTop, 3, bot - wallTop, 3));
     const win = x => { r(x, wallTop + 5, 11, 9, 3); r(x + 1, wallTop + 6, 9, 7, 0); for (let i = x + 3; i < x + 10; i += 3) r(i, wallTop + 6, 1, 7, 3); };
     win(12); win(W - 23);
-    r(cx - 6, bot - 14, 12, 14, 3); r(cx - 5, bot - 13, 10, 13, 2); r(cx - 5, bot - 9, 10, 1, 3); r(cx + 2, bot - 7, 1, 2, 0);
-    r(cx - 8, bot, 16, 2, 2);
+    r(dc - 7, bot - 15, 14, 15, 3); r(dc - 6, bot - 14, 2, 14, 1); r(dc + 4, bot - 14, 2, 14, 1); r(dc - 4, bot - 13, 8, 13, 3); r(dc - 3, bot - 4, 6, 4, 2);
+    r(dc - 8, bot, 16, 2, 3); r(dc - 7, bot, 14, 1, 0);
     for (let i = 0; i < 3; i++) { r(W - 6 - i * 0, bot - 3 - i * 3, 6, 3, 3); r(W - 5, bot - 2 - i * 3, 4, 1, 1); }
     for (let x = 0; x < 5; x += 2) { r(x, bot - 7, 1, 9, 3); } r(0, bot - 5, 5, 1, 3); r(0, bot - 2, 5, 1, 3);
     if (b.label) plaque(wallTop - 3, b.label);
@@ -682,6 +696,8 @@ function drawBuilding(b, sx, sy) {
     } else if (b.kind === 'cloth') {
       for (let i = 0; i < 7; i++) { const x = 9 + i * 7; if (x + 5 > W - 8) break; r(x, ct + 1, 5, 12, 3); r(x + 1, ct + 1, 3, 11, i % 2 ? 0 : 1); if (i % 2) for (let y = ct + 3; y < ct + 12; y += 3) r(x + 1, y, 3, 1, 2); }
     }
+    /* 柜台正中留出进门的口子：黑门洞加一级亮台阶 */
+    if (b.inside) { r(dc - 7, ct - 2, 14, bot - ct + 2, 3); r(dc - 6, ct - 1, 2, bot - ct + 1, 1); r(dc + 4, ct - 1, 2, bot - ct + 1, 1); r(dc - 4, bot - 4, 8, 4, 2); r(dc - 8, bot, 16, 3, 3); r(dc - 7, bot + 1, 14, 1, 0); }
     if (b.label) plaque(wallTop + 1, b.label);
     return;
   }
@@ -696,9 +712,8 @@ function drawBuilding(b, sx, sy) {
     const gw = 30, gx = cx - gw / 2;
     roof(gx - 4, wt - 8, gw + 8, 11);
     r(gx, wt + 3, gw, bot - wt - 3, 3); r(gx + 2, wt + 3, 2, bot - wt - 3, 2); r(gx + gw - 4, wt + 3, 2, bot - wt - 3, 2);
-    r(cx - 9, bot - 16, 18, 16, 3); r(cx - 8, bot - 15, 7, 15, 2); r(cx + 1, bot - 15, 7, 15, 2);
-    for (let y = bot - 13; y < bot - 1; y += 4) for (const x of [cx - 6, cx - 3, cx + 3, cx + 6]) r(x, y, 1, 1, 0);
-    r(cx - 11, bot, 22, 3, 3); r(cx - 10, bot + 1, 20, 1, 1);
+    r(dc - 9, bot - 16, 18, 16, 3); r(dc - 8, bot - 15, 2, 15, 1); r(dc + 6, bot - 15, 2, 15, 1); r(dc - 5, bot - 14, 10, 14, 3); r(dc - 4, bot - 4, 8, 4, 2);
+    r(dc - 11, bot, 22, 3, 3); r(dc - 10, bot + 1, 20, 1, 0);
     r(cx - 15, bot - 5, 4, 5, 3); r(cx + 11, bot - 5, 4, 5, 3);
     if (b.kind === 'escort') { flag(8, wt - 10, '镖'); flag(W - 4, wt - 10, '镖'); }
     if (b.kind === 'school') { rack(4, wt + 6); rack(W - 20, wt + 6); }
@@ -714,7 +729,7 @@ function drawBuilding(b, sx, sy) {
     r(3, wallTop, W - 6, bot - wallTop - 4, 3); r(4, wallTop, W - 8, bot - wallTop - 5, 1);
     for (const x of [3, 16, cx - 9, cx + 6, W - 19, W - 6]) { r(x, wallTop, 3, bot - wallTop - 4, 3); r(x + 1, wallTop, 1, bot - wallTop - 4, 2); }
     moon(cx - 30 < 6 ? 6 : 7, wallTop + 4); moon(W - 20, wallTop + 4);
-    r(cx - 7, bot - 17, 14, 13, 3); r(cx - 6, bot - 16, 5, 12, 2); r(cx + 1, bot - 16, 5, 12, 2);
+    r(dc - 7, bot - 17, 14, 13, 3); r(dc - 6, bot - 16, 2, 12, 1); r(dc + 4, bot - 16, 2, 12, 1); r(dc - 4, bot - 15, 8, 11, 3);
     for (let i = 0; i < 3; i++) { r(cx - 10 - i * 3, bot - 4 + i * 2, 20 + i * 6, 2, 3); r(cx - 9 - i * 3, bot - 4 + i * 2, 18 + i * 6, 1, i === 2 ? 1 : 0); }
     const dx0 = 2; r(dx0 + 1, bot - 8, 9, 6, 3); r(dx0 + 2, bot - 7, 7, 3, 2); r(dx0, bot - 9, 11, 1, 3); r(dx0 + 2, bot - 2, 1, 2, 3); r(dx0 + 8, bot - 2, 1, 2, 3);
     const sm = (frame / 8) % 10; r(dx0 + 5 + Math.round(Math.sin(frame / 12)), bot - 12 - sm, 1, 3, 2);
@@ -1389,7 +1404,7 @@ function renderWorld() {
   renderTrail();
   for (const b of map.buildings || []) {
     const bx = b.x * T - cx, by = b.y * T - cy;
-    if (bx > -b.w * T - 10 && bx < GW + 10 && by > -b.h * T - 10 && by < GH + 10) { RMAP = darkGround() && b.kind === 'pagoda' ? [0, 0, 1, 3] : null; drawBuilding(b, bx, by); RMAP = null; }
+    if (bx > -b.w * T - 10 && bx < GW + 10 && by > -b.h * T - 10 && by < GH + 10) { RMAP = darkGround() && b.kind === 'pagoda' ? [0, 0, 1, 3] : null; plaqueLater = true; drawBuilding(b, bx, by); plaqueLater = false; if (b.inside) drawDoorway(b, bx, by); plaqueQ.forEach(f => f()); plaqueQ = []; RMAP = null; }
   }
   const list = [];
   for (const n of npcs) { const nx = n.px != null ? n.px : n.x * T, ny = n.py != null ? n.py : n.y * T, walk = nx !== n.x * T || ny !== n.y * T; list.push({ y: ny, d: () => drawPerson(nx - cx, ny - cy, n.dir, walk ? (Math.floor((nx + ny) / 6) % 2) + 1 : 0, n.look) }); }
@@ -1483,10 +1498,10 @@ function renderNpcTags() {
       const label = n.role ? `${n.name}·${n.role}` : n.name, w = tw(label) + 6;
       const below = P.ty > n.y;
       const lx = Math.round(sx + 8 - w / 2), ly = (below && sy - 30 > HUD_H + 1) ? sy - 30 : sy + 17; /* 上方放不下就放到脚下，不压住顶部状态栏 */
-      R(lx, ly, w, 12, 3); txt(label, lx + 3, ly + 1, 0); npcRects.push([lx, ly, w, 12]);
+      plate(lx, ly, w, label, 'npc'); npcRects.push([lx, ly, w, 12]);
     } else if (!dlg && !menu && S.showTag !== false && !n.amb && !n.quiet && sy + 17 < UB - 2) {   /* 屋里的闲人走近了才显示名字，免得满屋都是字 */
       /* 离得远时脚下也写着名字，一眼看清谁是谁；走近再显示身份 */
-      txtOutline(n.name, sx + 8, sy + 16, 'center'); { const w2 = tw(n.name) + 2; npcRects.push([sx + 8 - w2 / 2, sy + 16, w2, 12]); }
+      { const w2 = tw(n.name) + 6, lx2 = Math.round(sx + 8 - w2 / 2); plate(lx2, sy + 16, w2, n.name, 'npc'); npcRects.push([lx2, sy + 16, w2, 12]); }
     }
   }
 }
@@ -1551,25 +1566,22 @@ function renderPeek() {
   if (Math.floor(frame / 8) % 2) for (const [ox, oy] of [[0, 0], [13, 0], [0, 13], [13, 13]]) { R(bx + ox, by + oy, 3, 1, 3); R(bx + ox + (ox ? 2 : 0), by + oy + (oy ? -2 : 0), 1, 3, 3); }
 }
 /* 头顶信息：[门派]名字，有称号再加一行。正派浅底黑框，邪派黑底白字，中立或无门派只描边 */
-/* 名牌。真人玩家名字前多一个小菱形 ◆，NPC 永远没有：一眼分得出谁是人 */
-function diamond(x, y, c, ring) {
-  R(x + 2, y, 1, 1, c); R(x + 1, y + 1, 3, 1, c); R(x, y + 2, 5, 1, c); R(x + 1, y + 3, 3, 1, c); R(x + 2, y + 4, 1, 1, c);
-  if (ring != null) R(x + 2, y + 2, 1, 1, ring);
-}
+/* 名牌按深浅分三档：自己＝黑底白字；别的玩家＝深灰底白字；NPC（村民、门派弟子、怪物头目）＝浅灰底黑字 */
 let tagRects = [], npcRects = [];   /* 本帧已经画了的名牌，人挤在一起时后画的往上让，免得叠成一团 */
-function headTag(cx, top, name, sectShort, camp, title, player) {
-  const label = (sectShort ? `[${sectShort}]` : '') + name, dw = player ? 7 : 0, w = tw(label) + 6 + dw, x = Math.round(cx - w / 2);
+function plate(x, y, w, label, kind) {
+  const [bd, bg, fg] = kind === 'me' ? [3, 3, 0] : kind === 'player' ? [3, 2, 0] : [2, 1, 3];
+  R(x, y, w, 12, bd); R(x + 1, y + 1, w - 2, 10, bg); txt(label, x + 3, y, fg);
+}
+function headTag(cx, top, name, sectShort, camp, title, kind = 'npc') {
+  const label = (sectShort ? `[${sectShort}]` : '') + name, w = tw(label) + 6, x = Math.round(cx - w / 2);
   top = Math.max(top, HUD_H + 1 + (title ? 12 : 0));   /* 不压到顶上的状态栏 */
   for (let k = 0; k < 4; k++) {
     const y0 = top - (title ? 12 : 0), hit = tagRects.some(([a, b, c, d]) => x < a + c && a < x + w && y0 < b + d && b < top + 12);
     if (!hit) break; top -= 13;
   }
   tagRects.push([x, top - (title ? 12 : 0), w, title ? 24 : 12]);
-  if (camp === '邪') { R(x, top, w, 12, 3); txt(label, x + 3 + dw, top, 0); if (player) diamond(x + 3, top + 3, 0, 3); }
-  else if (camp === '正') { R(x, top, w, 12, 3); R(x + 1, top + 1, w - 2, 10, 0); txt(label, x + 3 + dw, top, 3); if (player) diamond(x + 3, top + 3, 3, 0); }
-  else if (player) { R(x, top, w, 12, 3); R(x + 1, top + 1, w - 2, 10, 1); txt(label, x + 3 + dw, top, 3); diamond(x + 3, top + 3, 3, 0); }
-  else txtOutline(label, cx, top, 'center');
-  if (title) { const tw2 = tw(title); txtOutline(title, cx, top - 12, 'center'); }
+  plate(x, top, w, label, kind);
+  if (title) txtOutline(title, cx, top - 12, 'center');
 }
 /* 玩家脚下的小椭圆：自己是实线，别的玩家是虚线；NPC 和怪没有 */
 function footRing(sx, sy, self) {
@@ -1600,10 +1612,10 @@ function renderHeadTags() {
     const sh = e.sect ? SECTS[e.sect].short : d.short;
     headTag(e.px + 8 - cam.x, e.py - cam.y - 14, d.hunter ? (e.kind === 'pantu' ? '叛徒' : '追兵') : d.nick, sh, d.hunter ? '邪' : d.camp, null);
   }
-  for (const o of NET.others.values()) headTag(Math.round(o.px) + 8 - cam.x, Math.round(o.py) - cam.y - (o.sit ? 11 : 14), o.name, o.sect && SECTS[o.sect] ? SECTS[o.sect].short : null, o.camp, o.title, true);
+  for (const o of NET.others.values()) headTag(Math.round(o.px) + 8 - cam.x, Math.round(o.py) - cam.y - (o.sit ? 11 : 14), o.name, o.sect && SECTS[o.sect] ? SECTS[o.sect].short : null, o.camp, o.title, 'player');
   if (P.dead) return;
   const rt = titleOf(REP_TITLES, S.rep);
-  headTag(P.px + 8 - cam.x, P.py - cam.y - (P.sit ? 11 : 14), S.name, S.sect ? SECTS[S.sect].short : null, campOf(), S.champion ? '天下第一' : S.rep >= 20 ? rt : null, true);
+  headTag(P.px + 8 - cam.x, P.py - cam.y - (P.sit ? 11 : 14), S.name, S.sect ? SECTS[S.sect].short : null, campOf(), S.champion ? '天下第一' : S.rep >= 20 ? rt : null, 'me');
 }
 /* 说话气泡：显示在名字上方，几秒后消失 */
 function renderSay() {

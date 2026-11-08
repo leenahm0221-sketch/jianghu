@@ -9,3 +9,7 @@ __pycache__/
 /s_*.png
 /in_*.png
 /layout_sheet.png
+
+# 调试截图不进仓库（图标除外）
+/*.png
+!/icon-*.png
