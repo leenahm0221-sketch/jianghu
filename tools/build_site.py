@@ -35,11 +35,11 @@ def main(src_path, out_dir):
              "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"}, {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}]},
             open(out + 'manifest.json', 'w'), ensure_ascii=False)
   h = hashlib.md5(open(out + 'index.html', 'rb').read()).hexdigest()[:8]
-  open(out + 'sw.js', 'w').write(f'''// 离线缓存：联网时优先拿最新版，断网时用缓存
+  open(out + 'sw.js', 'w').write(f'''// 离线缓存：联网时每次都直接向服务器要最新版（不用浏览器缓存），断网时才用缓存
   const C = 'jianghu-{ver}-{h}';
   self.addEventListener('install', e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(['./', 'index.html', 'manifest.json', 'icon-180.png', 'icon-192.png']))); }});
   self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())));
-  self.addEventListener('fetch', e => {{ if (e.request.method !== 'GET') return; e.respondWith(fetch(e.request).then(r => {{ const cp = r.clone(); caches.open(C).then(c => c.put(e.request, cp)); return r; }}).catch(() => caches.match(e.request))); }});
+  self.addEventListener('fetch', e => {{ if (e.request.method !== 'GET') return; e.respondWith(fetch(e.request, {{ cache: 'no-store' }}).then(r => {{ const cp = r.clone(); caches.open(C).then(c => c.put(e.request, cp)); return r; }}).catch(() => caches.match(e.request))); }});
   ''')
   # 图标：GB 豆绿底，深色像素“侠”字风格的剑
   P = ['#9bbc0f', '#8bac0f', '#306230', '#0f380f']
