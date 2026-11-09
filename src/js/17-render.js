@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v91 ' + FAST_NAME[FAST] : 'v91', 156, 0, 2, 'right');
+  txt(FAST ? 'v92 ' + FAST_NAME[FAST] : 'v92', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1568,10 +1568,10 @@ function renderPeek() {
   if (Math.floor(frame / 8) % 2) for (const [ox, oy] of [[0, 0], [13, 0], [0, 13], [13, 13]]) { R(bx + ox, by + oy, 3, 1, 3); R(bx + ox + (ox ? 2 : 0), by + oy + (oy ? -2 : 0), 1, 3, 3); }
 }
 /* 头顶信息：[门派]名字，有称号再加一行。正派浅底黑框，邪派黑底白字，中立或无门派只描边 */
-/* 名牌：自己＝黑底白字；别的玩家＝深灰底白字；NPC 和怪物只写名字（描边字），不加框 */
+/* 名牌：自己＝深灰底白字；别的玩家＝浅灰底黑字；NPC 和普通怪只写名字（描边字），不加框；首领、反派这类精英怪＝黑底白字 */
 let tagRects = [], npcRects = [];   /* 本帧已经画了的名牌，人挤在一起时后画的往上让，免得叠成一团 */
 function plate(x, y, w, label, kind) {
-  const [bd, bg, fg] = kind === 'me' ? [3, 3, 0] : kind === 'player' ? [3, 2, 0] : [2, 1, 3];
+  const [bd, bg, fg] = kind === 'me' ? [3, 2, 0] : kind === 'player' ? [2, 1, 3] : [3, 3, 0];   /* 自己深灰、别的玩家浅灰、精英怪黑底 */
   R(x, y, w, 12, bd); R(x + 1, y + 1, w - 2, 10, bg); txt(label, x + 3, y, fg);
 }
 function headTag(cx, top, name, sectShort, camp, title, kind = 'npc') {
@@ -1609,7 +1609,12 @@ function renderHeadTags() {
   tagRects = npcRects.slice();   /* NPC 脚下的名字也算进去，玩家名牌会让开 */
   for (const e of enemies) {
     const d = ED(e);
-    if (e.dead || !(d.camp || d.hunter) || e === P.target) continue;
+    if (e.dead) continue;
+    if ((d.boss || d.dboss || d.villain) && !d.dummy) {   /* 精英怪：在画面里就一直显示黑底名牌 */
+      if (Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty) <= 12) headTag(e.px + 8 - cam.x, e.py - cam.y - 14, d.name, null, null, null, 'elite');
+      continue;
+    }
+    if (!(d.camp || d.hunter) || e === P.target) continue;
     if (Math.abs(e.tx - P.tx) + Math.abs(e.ty - P.ty) > 7) continue;
     const sh = e.sect ? SECTS[e.sect].short : d.short;
     headTag(e.px + 8 - cam.x, e.py - cam.y - 14, d.hunter ? (e.kind === 'pantu' ? '叛徒' : '追兵') : d.nick, sh, d.hunter ? '邪' : d.camp, null);
