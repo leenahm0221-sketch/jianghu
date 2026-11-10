@@ -513,6 +513,37 @@ def 远程自动瞄准原地出手(b):
     assert not g.errs, g.errs
     g.close()
 
+@case
+def 钓鱼长条(b):
+    g = Game(b); g.new_game()
+    r = g.ev(f"""(() => {{ const G = {G}, P = G.P2; G.S.items.yugan = 1; let caught = 0;
+      for (let k = 0; k < 5; k++) {{
+        G.startFish(P.tx, P.ty + 1); P.fish.stage = 'bite'; P.fish.t = 99; G.press('a'); G.tick(); G.release('a');
+        const f = P.fish; if (!f || f.stage !== 'game') return 'no-game';
+        const n0 = Object.values(G.S.items).reduce((a, b) => a + b, 0); let n = 0;
+        while (P.fish && P.fish.stage === 'game' && n < 3000) {{ if (f.fy < f.zy + f.zone / 2 - 2) G.press('a'); else G.release('a'); G.tick(); n++; }}
+        G.release('a'); if (Object.values(G.S.items).reduce((a, b) => a + b, 0) > n0) caught++; }}
+      G.startFish(P.tx, P.ty + 1); P.fish.stage = 'bite'; G.press('a'); G.tick(); G.release('a');
+      let m = 0; while (P.fish.stage === 'game' && m < 3000) {{ G.tick(); m++; }}
+      return [caught, P.fish.stage, m]; }})()""")
+    assert r[0] >= 4 and r[1] == 'wait' and r[2] < 3000, r
+    assert not g.errs, g.errs
+    g.close()
+
+@case
+def 赌坊(b):
+    g = Game(b); g.new_game()
+    r = g.ev(f"""(() => {{ const G = {G};
+      const ids = Object.keys(G.MAPS).filter(k => G.MAPS[k].ikind === 'casino');
+      const npcs = ids.map(id => (G.NPCS[id] || []).map(n => n.name).join(','));
+      const c = G.casino, T = (n, a, b) => ({{ n, a, b }});
+      return [ids, npcs, c.pgDeck().length, c.pgScore([T('丁三', 1, 2), T('二四', 2, 4)]).v > c.pgScore([T('天', 6, 6), T('天', 6, 6)]).v,
+        c.pgScore([T('天', 6, 6), T('杂九', 4, 5)]).name, c.pgScore([T('梅', 5, 5), T('长三', 3, 3)]).name]; }})()""")
+    assert len(r[0]) == 2 and all('牌九庄家' in x and '打手' in x for x in r[1]), r
+    assert r[2] == 32 and r[3] and r[4] == '天王' and r[5] == '六点', r
+    assert not g.errs, g.errs
+    g.close()
+
 if __name__ == '__main__':
     fails = 0
     with sync_playwright() as p:

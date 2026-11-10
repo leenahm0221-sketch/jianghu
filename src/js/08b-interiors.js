@@ -4,7 +4,11 @@
    店铺、客栈、药铺这些房子的主人搬进屋里，站在柜台后面；门派大殿的掌门站在供桌前。 */
 /* 牛家村、襄阳放大后，原来那些人跟着挪过去 */
 for (const [id, [ox, oy]] of Object.entries(GROWN)) for (const n of NPCS[id] || []) { n.x += ox; n.y += oy; }
+/* 扬州、洛阳各把一间民居改成赌坊 */
+const CASINO_AT = { yangzhou: 24, luoyang: 31 };
+for (const [town, bi] of Object.entries(CASINO_AT)) { const b = MAPS[town] && MAPS[town].buildings[bi]; if (b && ['house', 'home'].includes(b.kind)) { b.kind = 'casino'; b.label = '赌坊'; } }
 const IN_SIZE = {
+  casino: [15, 10],
   house: [9, 7], home: [9, 7], chief: [9, 7],
   smith: [11, 8], pharmacy: [11, 8], pawn: [11, 8], bank: [11, 8], cloth: [11, 8],
   inn: [13, 8], tavern: [13, 9],
@@ -12,7 +16,7 @@ const IN_SIZE = {
 };
 const IN_SHOP = new Set(['smith', 'pharmacy', 'pawn', 'bank', 'cloth', 'inn', 'tavern']);
 const IN_HOME = new Set(['house', 'home', 'chief']);
-const IN_NAME = { house: '民居', home: '民居', chief: '村长家' };
+const IN_NAME = { house: '民居', home: '民居', chief: '村长家', casino: '赌坊' };
 function makeInterior(ext, b) {
   const [W, H] = IN_SIZE[b.kind], mid = Math.floor(W / 2), k = b.kind;
   const g = Array.from({ length: H }, (_, y) => Array.from({ length: W }, (_, x) => (y < 2 || x === 0 || x === W - 1 || y === H - 1 ? 'Y' : 'L')));
@@ -27,6 +31,12 @@ function makeInterior(ext, b) {
     if (k === 'inn') { set(1, 3, 'b'); set(1, 5, 'b'); set(W - 2, 3, 'b'); set(W - 2, 5, 'b'); }
     if (k === 'tavern') { set(2, 5, 't'); set(W - 3, 5, 't'); set(2, 7, 't'); set(W - 3, 7, 't'); }
     if (k === 'inn') set(3, 6, 't');
+  } else if (k === 'casino') {
+    /* 赌坊：后墙一道柜台（掌柜兑钱），中间三张赌桌：左骰宝、中牌九、右番摊，庄家站在桌子后面 */
+    for (let x = mid - 1; x <= mid + 1; x++) set(x, 3, 'n');
+    for (const x of [1, 2, W - 3, W - 2]) set(x, 2, 'h');
+    for (const x of [2, 3, mid - 1, mid, mid + 1, W - 4, W - 3]) set(x, 6, 't');
+    spots.push([mid, 2]);
   } else if (IN_HOME.has(k)) {
     /* 民居：床、桌子、柜子，角落里有个旧木箱 */
     set(1, 2, 'b'); set(W - 2, 2, 'h'); set(W - 3, 2, 'h'); set(W - 3, 4, 't');
@@ -108,6 +118,9 @@ const IN_FOLK = {
   escort: [['镖师', { body: 'jinzhuang', hair: 'band', weapon: 'gangdao' }, ['镖旗一插，黑白两道都要给几分面子。']],
     ['趟子手', { body: 'vest', hair: 'band' }, ['合——吾——！走镖的时候喊这一嗓子，山贼就知道是谁家的镖。']]],
   nunnery: [['小尼姑', { body: 'nun', hair: 'hood' }, ['施主，佛门清净之地，请勿喧哗。']]],
+  casino: [['赌客', { body: 'buyi', hair: 'messy' }, ['（满头大汗）这把一定是大！一定是大！', '输光了……回家怎么跟婆娘交代。']],
+    ['看热闹的', { body: 'changpao', hair: 'fangjin' }, ['小赌怡情，大赌伤身。我就看看，不下注。', '这赌坊每天输赢都有个数，输多了会被请出去。']],
+    ['阔少', { body: 'heipao', hair: 'crown' }, ['（把银子往桌上一拍）全押！', '本少爷不差钱，就图个乐子。']]],
   hall: [['守殿弟子', null, ['大殿之内，不得动武。', '掌门在上，有事请上前禀报。']],
     ['值守弟子', null, ['今日轮到我守殿，一站就是一整天。']],
     ['扫地弟子', null, ['师兄们都去练功了，就剩我扫地。']]],
@@ -132,6 +145,7 @@ for (const id of Object.keys(MAPS)) {
     if (m.rows[y - 1][x] === 'n' && Math.abs(x - m.doorX) <= 1) continue;
     if (taken.has(x + ',' + y)) continue;
     if (IN_SHOP.has(m.ikind) && y <= 4) continue;   /* 店里的人站在柜台外面 */
+    if (m.ikind === 'casino' && y <= 5) continue;   /* 赌坊：桌子后面是庄家的位置 */
     free.push([x, y]);
   }
   const hs0 = [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
