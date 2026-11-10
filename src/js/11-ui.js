@@ -115,7 +115,7 @@ function menuItems() {
     { label: '头顶信息', right: S.showTag === false ? '关' : '开', act: () => { S.showTag = S.showTag === false; sfx('menu'); } },
     { label: '画面配色', right: PALETTES[palIdx].name, act: () => setPalette((palIdx + 1) % PALETTES.length) },
     { label: '声音', right: muted ? '关' : '开', act: () => { muted = !muted; audioInit(); sfx('menu'); } },
-    { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快50倍，几分钟练到顶'][FAST]); sfx('menu'); } },
+    { label: '测试加速', right: FAST_NAME[FAST], act: () => { FAST = (FAST + 2) % 3; try { localStorage.setItem('jianghu-fast', String(FAST)); } catch (e) {} toast(['测试加速已关', '加速：约一小时练到顶', '极速：练功再快25倍，十来分钟练到顶'][FAST]); sfx('menu'); } },
     ...(FAST ? [{ label: '测试：武功兵器全满', act: () => testMaxAll() }, { label: '测试：身边放三个玩家', act: () => { menu = null; demoPlayers(); } }] : []),
     { label: '背景音乐', right: musicOn ? '开' : '关', act: () => { musicOn = !musicOn; mus.track = null; try { localStorage.setItem('jianghu-music', musicOn ? '1' : '0'); } catch (e) {} sfx('menu'); } },
     { label: menu.confirm ? '确认重新开始？' : '重新开始', act: () => {

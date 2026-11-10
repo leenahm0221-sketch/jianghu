@@ -33,7 +33,7 @@ let musicOn = true;
 let FAST = 2;
 try { const v = localStorage.getItem('jianghu-fast'); if (v === '0' || v === '1') FAST = +v; } catch (e) {}
 const FASTX = n => (FAST ? n : 1);
-const FASTT = n => (FAST === 2 ? n * 50 : FAST ? n : 1);   /* 练功专用 */
+const FASTT = n => (FAST === 2 ? n * 25 : FAST ? n : 1);   /* 练功专用（极速 ×25，给朋友试玩时减半） */
 const FAST_NAME = ['关', '加速', '极速'];
 try { musicOn = localStorage.getItem('jianghu-music') !== '0'; } catch (e) {}
 const TRACKS = {
