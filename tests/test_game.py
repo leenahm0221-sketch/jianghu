@@ -516,17 +516,21 @@ def 远程自动瞄准原地出手(b):
 @case
 def 钓鱼长条(b):
     g = Game(b); g.new_game()
-    r = g.ev(f"""(() => {{ const G = {G}, P = G.P2; G.S.items.yugan = 1; let caught = 0;
-      for (let k = 0; k < 5; k++) {{
-        G.startFish(P.tx, P.ty + 1); P.fish.stage = 'bite'; P.fish.t = 99; G.press('a'); G.tick(); G.release('a');
-        const f = P.fish; if (!f || f.stage !== 'game') return 'no-game';
-        const n0 = Object.values(G.S.items).reduce((a, b) => a + b, 0); let n = 0;
-        while (P.fish && P.fish.stage === 'game' && n < 3000) {{ if (f.fy < f.zy + f.zone / 2 - 2) G.press('a'); else G.release('a'); G.tick(); n++; }}
-        G.release('a'); if (Object.values(G.S.items).reduce((a, b) => a + b, 0) > n0) caught++; }}
-      G.startFish(P.tx, P.ty + 1); P.fish.stage = 'bite'; G.press('a'); G.tick(); G.release('a');
-      let m = 0; while (P.fish.stage === 'game' && m < 3000) {{ G.tick(); m++; }}
-      return [caught, P.fish.stage, m]; }})()""")
-    assert r[0] >= 4 and r[1] == 'wait' and r[2] < 3000, r
+    r = g.ev(f"""(() => {{ const G = {G}, P = G.P2; G.S.items.yugan = 1; G.S.tut = 99; G.dlg = null;
+      const cnt = () => Object.values(G.S.items).reduce((a, b) => a + b, 0);
+      G.startFish(P.tx, P.ty + 1); const f = P.fish; if (!f || f.stage !== 'bar') return 'no-bar';
+      let n0 = cnt(), k = 0;   /* 指针走到黑段中间再按 A：一定钓上来 */
+      while (!(f.pos > f.z0 + f.zw * 0.3 && f.pos < f.z0 + f.zw * 0.7) && k < 2000) {{ G.tick(); k++; }}
+      G.press('a'); G.tick(); G.release('a'); const ok = cnt() > n0 && f.res === 'ok';
+      for (let i = 0; i < 120 && f.stage !== 'bar'; i++) {{ G.press('a'); G.tick(); G.release('a'); G.tick(); }}   /* 歇一会儿自动再弹一根（第一次钓到会弹说明，按 A 关掉） */
+      if (f.stage !== 'bar') return 'no-rebar';
+      k = 0; while (!(f.pos < f.z0 - 0.05 || f.pos > f.z0 + f.zw + 0.05) && k < 2000) {{ G.tick(); k++; }}
+      for (let i = 0; i < 8; i++) G.tick();
+      k = 0; while (!(f.pos < f.z0 - 0.05 || f.pos > f.z0 + f.zw + 0.05) && k < 2000) {{ G.tick(); k++; }}
+      n0 = cnt(); if (f.pos >= f.z0 && f.pos <= f.z0 + f.zw) return 'in-zone';
+      G.press('a'); G.tick(); G.release('a');
+      return [ok, f.res, cnt() === n0]; }})()""")
+    assert r == [True, 'miss', True], r
     assert not g.errs, g.errs
     g.close()
 

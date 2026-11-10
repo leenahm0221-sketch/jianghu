@@ -56,7 +56,7 @@ function renderTitleUI() {
   g.setTransform(1, 0, 0, 1, UX, top);
   txt('江湖少年', 80, 0, 3, 'center', 2);
   txt('第一章 牛家村 · 第二章 血刀', 80, 25, 2, 'center');
-  txt(FAST ? 'v93 ' + FAST_NAME[FAST] : 'v93', 156, 0, 2, 'right');
+  txt(FAST ? 'v94 ' + FAST_NAME[FAST] : 'v94', 156, 0, 2, 'right');
   g.setTransform(1, 0, 0, 1, UX, UB - 144);
   const opts = titleOptions();
   const h = opts.length * 13 + 9;
@@ -1451,7 +1451,7 @@ function renderWorld() {
   } });
   list.sort((a, b) => a.y - b.y).forEach(o => o.d());
   if (P.fish) {
-    const f = P.fish, bite = f.stage === 'bite' || f.stage === 'game';
+    const f = P.fish, bite = f.stage === 'bar';
     const hx = P.px - cx + (P.dir === 'left' ? 1 : 14), hy = P.py - cy + 6;
     const bx = f.x * T - cx + 8, by = f.y * T - cy + 8 + (bite ? 2 : Math.round(Math.sin(frame / 12)));
     const tipx = hx + (bx - hx) * 0.35, tipy = hy - 10;
@@ -1459,7 +1459,7 @@ function renderWorld() {
     for (let i = 0; i <= 16; i++) { const t2 = i / 16; R(tipx + (bx - tipx) * t2, tipy + (by - tipy) * t2 + Math.sin(t2 * Math.PI) * 4, 1, 1, 2); }
     R(bx - 1, by - 2, 3, 3, 3); R(bx, by - 2, 1, 1, 0);
     if (bite) { for (let k = 0; k < 8; k++) R(bx + Math.cos(k) * 4, by + Math.sin(k) * 2, 1, 1, 0); }
-    if (f.stage === 'bite' && frame % 12 < 9) { const ex = P.px - cx + 3, ey = P.py - cy - 15; R(ex, ey, 10, 12, 3); txt('!', ex + 5, ey, 0, 'center'); }
+    if (false) { const ex = P.px - cx + 3, ey = P.py - cy - 15; R(ex, ey, 10, 12, 3); txt('!', ex + 5, ey, 0, 'center'); }
   }
   drawSparks();
   R(0, 0, GW, HUD_H, 3);
@@ -1809,24 +1809,18 @@ function renderWpick() {
   if (st > 0) { R(x + w / 2 - 3, y + 14, 6, 1, 3); R(x + w / 2 - 2, y + 13, 4, 1, 3); }
   if (st + VIS < L.length) { R(x + w / 2 - 3, y + h - 6, 6, 1, 3); R(x + w / 2 - 2, y + h - 5, 4, 1, 3); }
 }
-/* 钓鱼长条：画面正中一根竖条，深色水里一个亮框（按住 A 往上）、一条鱼在窜，右边一根进度条 */
+/* 钓鱼长条：画面中间一根横条，灰底上一段黑色，指针来回扫，扫到黑色时按 A */
 function renderFishGame() {
-  const f = P.fish; if (!f || f.stage !== 'game') return;
-  const H = FBAR, x = Math.round(MW / 2 - 19), y = Math.max(HUD_H + 16, Math.round((UB - H) / 2));   /* 菜单坐标系里居中 */
-  R(x - 4, y - 14, 46, H + 28, 3); R(x - 3, y - 13, 44, H + 26, 0);   /* 外框 */
-  txt(ITEMS[f.kind] && f.hard >= 3 ? '大鱼！' : '咬钩了', x + 19, y - 13, 3, 'center');
-  R(x, y, 22, H, 3); R(x + 1, y + 1, 20, H - 2, 2);                    /* 水 */
-  for (let i = 0; i < 6; i++) R(x + 3 + ((frame >> 3) + i * 7) % 16, y + 6 + i * 15, 2, 1, 1);   /* 水纹 */
-  const zy = Math.round(y + f.zy), zh = f.zone;
-  R(x + 1, zy, 20, zh, 1); R(x + 1, zy, 20, 1, 0); R(x + 1, zy + zh - 1, 20, 1, 0);   /* 鱼篓框 */
-  /* 鱼：身子、尾巴、眼睛，左右摆尾 */
-  const fy = Math.round(y + f.fy), fx = x + 6, sw = (frame >> 2) % 2;
-  R(fx + 1, fy - 2, 8, 4, 3); R(fx, fy - 1, 10, 2, 3); R(fx + 9 + sw, fy - 3, 2, 2, 3); R(fx + 9 + sw, fy + 1, 2, 2, 3); R(fx + 2, fy - 1, 1, 1, 0);
-  if (f.kind === 'jinli') { R(fx + 4, fy - 1, 3, 1, 1); }
-  /* 进度条 */
-  const px = x + 28, ph = Math.round((H - 2) * clamp(f.prog, 0, 1));
-  R(px, y, 8, H, 3); R(px + 1, y + 1, 6, H - 2, 0); R(px + 1, y + H - 1 - ph, 6, ph, f.prog > 0.75 ? 3 : 2);
-  R(x - 4, y + H + 1, 46, 12, 0); txt('按住A', x + 19, y + H, 3, 'center');
+  const f = P.fish; if (!f || f.stage !== 'bar') return;
+  const W = 120, x = Math.round((MW - W) / 2), y = Math.max(HUD_H + 10, Math.round(UB / 2) - 30);
+  R(x - 4, y - 14, W + 8, 36, 3); R(x - 3, y - 13, W + 6, 34, 0);       /* 外框 */
+  txt(f.hard >= 3 ? '大鱼！看准了按A' : '黑色时按A', x + W / 2, y - 13, 3, 'center');
+  R(x, y, W, 12, 3); R(x + 1, y + 1, W - 2, 10, 1);                     /* 灰色长条 */
+  const zx = x + 1 + Math.round((W - 2) * f.z0), zw = Math.max(3, Math.round((W - 2) * f.zw));
+  R(zx, y + 1, zw, 10, 3);                                                /* 黑色那一段 */
+  const px = x + 1 + Math.round((W - 3) * f.pos);
+  R(px - 1, y - 3, 3, 18, 3); R(px, y - 2, 1, 16, 0);                     /* 指针：白芯黑边，上下都探出来 */
+  R(px - 2, y - 4, 5, 1, 3); R(px - 2, y + 15, 5, 1, 3);
 }
 function renderMenu() {
   MW = Math.min(SAFE_W, 236); g.translate(Math.round((160 - MW) / 2), 0);

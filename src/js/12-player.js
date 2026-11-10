@@ -254,18 +254,17 @@ function gather(x, y, t) {
     S.items[sp] = (S.items[sp] || 0) + m; toast(`采到${ITEMS[sp].name}${m > 1 ? '×' + m : ''}！还有${ITEMS[r.item].name}${n > 1 ? '×' + n : ''}`); sfx('level');
   } else { toast(`${r.msg}${n > 1 ? '×' + n : ''}`); sfx('coin'); }
 }
-/* 钓鱼：甩竿 → 等待 → 浮标一沉头上冒“!”，按 A 咬钩 → 画面中间弹出一根竖长条：
-   长条里有一条鱼上下乱窜，按住 A 让“鱼篓框”往上浮、松开往下沉，把鱼框在里面，右边的进度条涨满就钓上来，掉光鱼就跑了。
-   熟练度越高，框越大、咬钩窗口越宽、稀有鱼越多；鱼越稀有越会乱窜 */
+/* 钓鱼：甩竿后马上在画面中间弹出一根横长条：灰色底上有一段黑色，一根指针来回扫。
+   指针走到黑色那段时按 A 就钓上来，按早了按晚了鱼就跑了。钓完歇一下，自动再弹一根，按 B 收竿。
+   熟练度越高黑段越宽；鱼越稀有，黑段越窄、指针越快 */
 const FISH = { shanhai: [['jiyu', 70], ['liyu', 30]], jueqing: [['liyu', 70], ['jiyu', 30]], hangzhou: [['jiyu', 50], ['liyu', 50]], damo: [['jiyu', 60], ['liyu', 40]], taohua: [['liyu', 60], ['jiyu', 40]], village: [['jiyu', 80], ['liyu', 20]],
   yangzhou: [['liyu', 60], ['jiyu', 40]], xiangyang: [['jiyu', 60], ['liyu', 40]], emei: [['bingyu', 100]] };
-const FISH_HARD = { jiyu: 1, liyu: 2, bingyu: 3, jinli: 4 };   /* 鱼有多难钓：越大越会窜 */
-const FBAR = 96;   /* 长条的高度（像素） */
+const FISH_HARD = { jiyu: 1, liyu: 2, bingyu: 3, jinli: 4 };   /* 鱼有多难钓 */
 function startFish(x, y) {
   if (!S.items.yugan) return say(null, '要有鱼竿才能钓鱼。牛家村池塘边的老渔翁有卖。');
   if (S.skills.diaoyu == null) learn('diaoyu');
-  P.fish = { x, y, stage: 'wait', t: rnd(100, 280) }; P.sit = false; P.target = null;
-  toast('甩竿……'); sfx('swing');
+  P.fish = { x, y }; P.sit = false; P.target = null;
+  newFishBar(P.fish); sfx('swing');
 }
 function pickFish() {
   const pool = FISH[map.id] || FISH.village, total = pool.reduce((a, [, w]) => a + w, 0);
@@ -274,47 +273,25 @@ function pickFish() {
   if (map.id !== 'emei' && Math.random() * 100 < 1 + lv('diaoyu') * 0.08) kind = 'jinli';
   return kind;
 }
+function newFishBar(f) {
+  const kind = pickFish(), hard = FISH_HARD[kind] || 1;
+  const zw = clamp(0.2 + lv('diaoyu') * 0.0015 - (hard - 1) * 0.04, 0.07, 0.32);   /* 黑段宽度（占整条的比例） */
+  Object.assign(f, { stage: 'bar', kind, hard, zw, z0: 0.12 + Math.random() * (0.76 - zw), pos: 0, dir: 1, spd: 0.013 + hard * 0.0045, t: 0, res: null });
+}
 function updFish() {
   const f = P.fish;
-  if (f.stage === 'game') return updFishGame(f);
   if (pressed.b || heldDir()) { P.fish = null; toast('收竿'); return; }
-  if (f.stage === 'wait') {
-    if (pressed.a) { P.fish = null; toast('收竿太早，什么也没钓到'); return; }
-    if (--f.t <= 0) { f.stage = 'bite'; f.t = Math.round(24 + lv('diaoyu') * 0.5); sfx('menu'); }
-  } else {
-    if (pressed.a) {   /* 咬钩了：弹出长条 */
-      const kind = pickFish(), zone = Math.round(22 + lv('diaoyu') * 0.14);
-      Object.assign(f, { stage: 'game', kind, hard: FISH_HARD[kind] || 1, zone, zy: FBAR - zone, zv: 0, fy: FBAR * 0.5, fv: 0, ft: FBAR * 0.5, fcd: 0, prog: 0.3, t: 0 });
-      sfx('swing'); return;
-    }
-    if (--f.t <= 0) { toast('鱼跑了……'); train('diaoyu', 0.5); f.stage = 'wait'; f.t = rnd(100, 280); }
-  }
-}
-function updFishGame(f) {
+  if (f.stage === 'rest') { if (--f.t <= 0) newFishBar(f); return; }
   f.t++;
-  if (pressed.b) { P.fish = null; toast('收竿，鱼跑了'); return; }
-  /* 鱼篓框：按住 A 往上浮，松开往下沉，碰到上下边会弹一下 */
-  f.zv += held.a || held.up ? -0.32 : 0.26;
-  f.zv = clamp(f.zv, -3.2, 3.2); f.zy += f.zv;
-  if (f.zy < 0) { f.zy = 0; f.zv = Math.abs(f.zv) * 0.3; }
-  if (f.zy > FBAR - f.zone) { f.zy = FBAR - f.zone; f.zv = -Math.abs(f.zv) * 0.3; }
-  /* 鱼：隔一阵子换个目标游过去；难钓的鱼换得勤、游得快，锦鲤还会突然乱窜 */
-  if (--f.fcd <= 0) {
-    const span = 20 + f.hard * 18;
-    f.ft = clamp(f.fy + (Math.random() * 2 - 1) * span, 4, FBAR - 4);
-    f.fcd = Math.round(rnd(50, 90) / (0.6 + f.hard * 0.4));
-    if (f.hard >= 4 && Math.random() < 0.3) f.ft = Math.random() < 0.5 ? 6 : FBAR - 6;
+  f.pos += f.dir * f.spd;
+  if (f.pos >= 1) { f.pos = 1; f.dir = -1; }
+  if (f.pos <= 0) { f.pos = 0; f.dir = 1; }
+  if (pressed.a && f.t > 6) {
+    const hit = f.pos >= f.z0 && f.pos <= f.z0 + f.zw;
+    if (hit) { gainItem(f.kind); train('diaoyu', f.kind === 'jinli' ? 10 : 3 + f.hard); sfx(f.kind === 'jinli' ? 'level' : 'coin'); }
+    else { toast(`${ITEMS[f.kind] ? ITEMS[f.kind].name : '鱼'}跑了……`); train('diaoyu', 0.5); sfx('hurt'); }
+    Object.assign(f, { stage: 'rest', t: 50, res: hit ? 'ok' : 'miss' });
   }
-  f.fv += (f.ft - f.fy) * (0.006 + f.hard * 0.004); f.fv *= 0.86; f.fy = clamp(f.fy + f.fv, 3, FBAR - 3);
-  /* 进度：鱼在框里就涨，跑出去就掉 */
-  const inside = f.fy >= f.zy && f.fy <= f.zy + f.zone;
-  f.prog += inside ? 0.0062 : -(0.0035 + f.hard * 0.0008);
-  if (inside && f.t % 16 === 0) sfx('menu');
-  if (f.prog >= 1) {
-    gainItem(f.kind); train('diaoyu', f.kind === 'jinli' ? 10 : 3 + f.hard); sfx(f.kind === 'jinli' ? 'level' : 'coin');
-    Object.assign(f, { stage: 'wait', t: rnd(100, 280) }); return;
-  }
-  if (f.prog <= 0) { toast(`${ITEMS[f.kind] ? ITEMS[f.kind].name : '鱼'}挣脱了……`); train('diaoyu', 1); sfx('hurt'); Object.assign(f, { stage: 'wait', t: rnd(100, 280) }); }
 }
 function actA() {
   const [dx, dy] = DIRS[P.dir];
